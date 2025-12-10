@@ -58,7 +58,7 @@ export default function App() {
       {/* Header */}
       <header className="flex-none bg-slate-900 border-b border-slate-800 p-4 flex items-center justify-between z-10 shadow-lg">
         <div>
-          <h1 className="text-xl font-display font-bold text-transparent bg-clip-text bg-gradient-to-r from-brand-400 to-purple-400">
+          <h1 className="text-xl font-display font-bold text-white">
             {APP_CONFIG.teamName} <span className="text-slate-500 text-sm font-sans tracking-wide">| {APP_CONFIG.appName}</span>
           </h1>
           <div className="text-xs text-slate-500 font-mono mt-1">

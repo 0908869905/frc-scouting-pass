@@ -9,7 +9,14 @@ export const APP_CONFIG = {
 };
 
 export const MATCH_LEVEL_OPTIONS = Object.values(MatchLevel);
-export const ROBOT_POSITION_OPTIONS = Object.values(RobotPosition);
+
+// Reordered to display Red 1-3 on the left column and Blue 1-3 on the right column
+export const ROBOT_POSITION_OPTIONS = [
+  RobotPosition.Red1, RobotPosition.Blue1,
+  RobotPosition.Red2, RobotPosition.Blue2,
+  RobotPosition.Red3, RobotPosition.Blue3
+];
+
 export const PICKUP_SOURCE_OPTIONS = Object.values(PickupSource);
 export const ENDGAME_OPTIONS = Object.values(EndGameStatus);
 
