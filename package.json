@@ -1,3 +1,4 @@
+
 {
   "name": "frc-6998-scouting-pass",
   "private": true,
@@ -12,7 +13,8 @@
     "lucide-react": "^0.300.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-qr-code": "^2.0.12"
+    "react-qr-code": "^2.0.12",
+    "lz-string": "^1.5.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.0",
