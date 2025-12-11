@@ -1,9 +1,9 @@
+
 import React from 'react';
-import { ScoutingData, MatchLevel, RobotPosition, INITIAL_DATA } from '../types';
+import { ScoutingData, MatchLevel, RobotPosition, INITIAL_DATA, Handedness } from '../types';
 import { MATCH_LEVEL_OPTIONS, ROBOT_POSITION_OPTIONS, PICKUP_SOURCE_OPTIONS, ENDGAME_OPTIONS } from '../constants';
 import { Counter, Toggle, SelectGroup, Stopwatch } from './ui/InputFields';
 import { Button } from './ui/Button';
-import { Handedness } from '../App';
 
 interface TabProps {
   data: ScoutingData;

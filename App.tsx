@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { MatchPhase, ScoutingData, INITIAL_DATA, MatchLevel } from './types';
+import { MatchPhase, ScoutingData, INITIAL_DATA, MatchLevel, Handedness } from './types';
 import { PreMatchTab, AutonTab, TeleopTab, PostMatchTab } from './components/TabViews';
 import { QRCodeTab } from './components/QRCodeTab';
 import { HistoryModal } from './components/HistoryModal';
@@ -10,8 +10,6 @@ import { ChevronRight, ChevronLeft, Settings, X, History as HistoryIcon } from '
 import { getUnsyncedCount } from './services/storage';
 
 const phases: MatchPhase[] = ['PreMatch', 'Auton', 'Teleop', 'PostMatch', 'QRCode'];
-
-export type Handedness = 'right' | 'left';
 
 export default function App() {
   const [currentPhase, setCurrentPhase] = useState<MatchPhase>('PreMatch');

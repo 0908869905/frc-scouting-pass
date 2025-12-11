@@ -5,6 +5,7 @@ export type MatchPhase =
   | 'QRCode';
 
 export type ScoutingMode = 'Match' | 'Pit';
+export type Handedness = 'right' | 'left';
 
 export enum MatchLevel {
   Practice = 'Practice',
