@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { X, CheckCircle, AlertCircle, CloudUpload, Trash2, RefreshCw } from 'lucide-react';
+import { X, CheckCircle, AlertCircle, UploadCloud, Trash2, RefreshCw } from 'lucide-react';
 import { MatchRecord } from '../types';
 import { getHistory, deleteMatchRecord, markAsSynced } from '../services/storage';
 import { uploadToGoogleSheets } from '../services/googleSheets';
@@ -104,7 +104,7 @@ export const HistoryModal: React.FC<Props> = ({ isOpen, onClose }) => {
                 disabled={unsyncedCount === 0 || isSyncing}
                 className="gap-2"
             >
-                {isSyncing ? <RefreshCw className="animate-spin" size={16} /> : <CloudUpload size={16} />}
+                {isSyncing ? <RefreshCw className="animate-spin" size={16} /> : <UploadCloud size={16} />}
                 {isSyncing ? 'Syncing...' : 'Sync Pending'}
             </Button>
         </div>
@@ -142,7 +142,7 @@ export const HistoryModal: React.FC<Props> = ({ isOpen, onClose }) => {
                             onClick={() => handleSingleSync(record)}
                             disabled={isSyncing}
                         >
-                            <CloudUpload size={14} className="mr-1" /> Retry
+                            <UploadCloud size={14} className="mr-1" /> Retry
                         </Button>
                     )}
                     
