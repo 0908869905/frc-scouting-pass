@@ -24,6 +24,11 @@ export const generateTSV = (data: ScoutingData): string => {
   return schema.map(key => {
     const val = data[key as keyof ScoutingData];
     
+    // Specific handling for empty text fields that should report "None"
+    if ((key === 'defendedBy' || key === 'comments') && (!val || String(val).trim() === '')) {
+        return 'None';
+    }
+
     // Abbreviate Match Level
     if (key === 'matchLevel') {
         return MATCH_LEVEL_ABBREV[String(val)] || String(val);
@@ -53,6 +58,14 @@ export const uploadToGoogleSheets = async (data: ScoutingData): Promise<boolean>
 
   // Create a copy to transform values for upload consistency with TSV
   const payload: any = { ...data };
+
+  // Ensure empty optional text fields send "None"
+  if (!payload.defendedBy || payload.defendedBy.trim() === '') {
+      payload.defendedBy = 'None';
+  }
+  if (!payload.comments || payload.comments.trim() === '') {
+      payload.comments = 'None';
+  }
 
   if (payload.matchLevel && MATCH_LEVEL_ABBREV[payload.matchLevel]) {
       payload.matchLevel = MATCH_LEVEL_ABBREV[payload.matchLevel];

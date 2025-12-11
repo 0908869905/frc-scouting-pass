@@ -5,8 +5,9 @@ import { ScoutingData } from '../types';
 import { generateTSV, uploadToGoogleSheets } from '../services/googleSheets';
 import { saveMatchToHistory, markAsSynced } from '../services/storage';
 import { Button } from './ui/Button';
-import { Copy, UploadCloud, CheckCircle, AlertCircle, Save, WifiOff, FileText, Zap } from 'lucide-react';
+import { Copy, UploadCloud, CheckCircle, AlertCircle, Save, WifiOff, FileText, Zap, Info } from 'lucide-react';
 import LZString from 'lz-string';
+import { TSV_SCHEMA_MATCH, TSV_SCHEMA_PIT } from '../constants';
 
 interface Props {
   data: ScoutingData;
@@ -17,8 +18,11 @@ export const QRCodeTab: React.FC<Props> = ({ data, onReset }) => {
   const [status, setStatus] = useState<'idle' | 'saving' | 'uploaded' | 'offline_saved' | 'error'>('idle');
   const [isSavedLocally, setIsSavedLocally] = useState(false);
   const [qrMode, setQrMode] = useState<'compressed' | 'raw'>('compressed');
+  const [showSchema, setShowSchema] = useState(false);
   
   const tsvData = generateTSV(data);
+  const schema = data.mode === 'Pit' ? TSV_SCHEMA_PIT : TSV_SCHEMA_MATCH;
+  const rawValues = tsvData.split('\t');
   
   // LZ-String compression to Base64 to make QR less dense
   const compressedData = LZString.compressToBase64(tsvData);
@@ -95,13 +99,32 @@ export const QRCodeTab: React.FC<Props> = ({ data, onReset }) => {
       </div>
       
       {/* Helper Text */}
-      <div className="text-center space-y-1 w-full max-w-md px-4">
+      <div className="text-center space-y-2 w-full max-w-md px-4">
           <p className="text-slate-400 text-xs">
               {qrMode === 'compressed' ? 'LZ-String Base64 Encoded' : 'Plain Text Tab Separated Values'}
           </p>
-          <div className="text-left text-slate-500 text-[10px] font-mono bg-slate-900 p-2 rounded border border-slate-800 w-full break-all">
+          <div className="text-left text-slate-500 text-[10px] font-mono bg-slate-900 p-2 rounded border border-slate-800 w-full break-all max-h-32 overflow-y-auto">
             {displayValue}
           </div>
+
+          {/* Schema Viewer Toggle */}
+          <button 
+            onClick={() => setShowSchema(!showSchema)}
+            className="text-xs text-brand-400 hover:text-brand-300 flex items-center justify-center gap-1 mx-auto"
+          >
+            <Info size={12} /> {showSchema ? 'Hide Data Labels' : 'Show Data Labels'}
+          </button>
+          
+          {showSchema && (
+            <div className="grid grid-cols-[1fr,auto] gap-x-2 gap-y-1 text-[10px] text-left bg-slate-900/50 p-3 rounded border border-slate-800 w-full max-h-60 overflow-y-auto">
+                {schema.map((key, i) => (
+                <React.Fragment key={key}>
+                    <div className="text-slate-500 font-mono truncate border-b border-slate-800/50 py-1">{key}</div>
+                    <div className="text-brand-400 font-mono font-bold border-b border-slate-800/50 py-1">{rawValues[i]}</div>
+                </React.Fragment>
+                ))}
+            </div>
+          )}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-md px-4">
