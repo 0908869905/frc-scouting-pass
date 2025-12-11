@@ -4,7 +4,7 @@ export const APP_CONFIG = {
   teamName: "6998",
   appName: "Scouting PASS",
   year: 2025,
-  googleScriptUrl: "https://script.google.com/macros/s/AKfycbxv2gWGD14h43UBp4d3imS8SSzIWdbnbXYnTCY9nEq51xbzNDLETBDBzqV1oo2Wg8o/exec", // Replace with actual URL
+  googleScriptUrl: "https://script.google.com/macros/s/AKfycbx0TRMBWMmUXF7ipm_Ts4uPsLBbHBFwoTxM8bbJ4T-oof8YslnJJP5W1u-_gtRqfF8/exec", // Replace with actual URL
   tbaApiKey: "YOUR_TBA_API_KEY_HERE" // Optional
 };
 
