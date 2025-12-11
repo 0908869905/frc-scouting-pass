@@ -1,9 +1,16 @@
-export type MatchPhase = 'PreMatch' | 'Auton' | 'Teleop' | 'PostMatch' | 'QRCode';
+
+export type MatchPhase = 
+  | 'PreMatch' | 'Auton' | 'Teleop' | 'PostMatch' 
+  | 'PitInfo' | 'PitRobot' | 'PitSpecs' // Pit phases
+  | 'QRCode';
+
+export type ScoutingMode = 'Match' | 'Pit';
 
 export enum MatchLevel {
   Practice = 'Practice',
   Quals = 'Quals',
-  Playoffs = 'Playoffs'
+  Playoffs = 'Playoffs',
+  Test = 'Test'
 }
 
 export enum RobotPosition {
@@ -31,15 +38,19 @@ export enum PickupSource {
   None = 'Not Attempted'
 }
 
-// The core data structure collected during a match
+// The core data structure collected during a match or pit scouting
 export interface ScoutingData {
-  // Pre-Match
+  mode: ScoutingMode;
+
+  // --- Common ---
   scouterName: string;
   eventCode: string;
+  teamNumber: string;
+
+  // --- Match Scouting Fields ---
   matchLevel: MatchLevel;
   matchNumber: number;
   robotPosition: RobotPosition;
-  teamNumber: string;
   humanPlayerPresent: boolean;
 
   // Auton
@@ -88,11 +99,37 @@ export interface ScoutingData {
   droppedCoral: boolean;
   droppedAlgae: boolean;
   comments: string;
+  tags: string[]; // Strategy Tags
+
+  // --- Pit Scouting Fields ---
+  pitDriveTrain: string;
+  pitMotorType: string;
+  pitLength: number; // inches or cm
+  pitWidth: number;
+  pitWeight: number; // lbs or kg
+  pitCanCoralL1: boolean;
+  pitCanCoralL2: boolean;
+  pitCanCoralL3: boolean;
+  pitCanCoralL4: boolean;
+  pitCanAlgaeProcessor: boolean;
+  pitCanAlgaeNet: boolean;
+  pitCanDeepCage: boolean;
+  pitCanShallowCage: boolean;
+  pitAutoNotes: string;
+}
+
+// Extended type for stored history
+export interface MatchRecord {
+  id: string; // uuid
+  data: ScoutingData;
+  timestamp: number;
+  synced: boolean;
 }
 
 export const INITIAL_DATA: ScoutingData = {
+  mode: 'Match',
   scouterName: '',
-  eventCode: '2025nytr', // Example default
+  eventCode: '2026MSLR',
   matchLevel: MatchLevel.Quals,
   matchNumber: 1,
   robotPosition: RobotPosition.Red1,
@@ -141,5 +178,22 @@ export const INITIAL_DATA: ScoutingData = {
   tippedOver: false,
   droppedCoral: false,
   droppedAlgae: false,
-  comments: ''
+  comments: '',
+  tags: [],
+
+  // Pit defaults
+  pitDriveTrain: 'Swerve',
+  pitMotorType: 'Kraken',
+  pitLength: 0,
+  pitWidth: 0,
+  pitWeight: 0,
+  pitCanCoralL1: false,
+  pitCanCoralL2: false,
+  pitCanCoralL3: false,
+  pitCanCoralL4: false,
+  pitCanAlgaeProcessor: false,
+  pitCanAlgaeNet: false,
+  pitCanDeepCage: false,
+  pitCanShallowCage: false,
+  pitAutoNotes: ''
 };

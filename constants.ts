@@ -4,7 +4,7 @@ export const APP_CONFIG = {
   teamName: "6998",
   appName: "Scouting PASS",
   year: 2025,
-  googleScriptUrl: "YOUR_GOOGLE_APPS_SCRIPT_URL_HERE", // Replace with actual URL
+  googleScriptUrl: "https://script.google.com/macros/s/AKfycbxv2gWGD14h43UBp4d3imS8SSzIWdbnbXYnTCY9nEq51xbzNDLETBDBzqV1oo2Wg8o/exec", // Replace with actual URL
   tbaApiKey: "YOUR_TBA_API_KEY_HERE" // Optional
 };
 
@@ -21,7 +21,7 @@ export const PICKUP_SOURCE_OPTIONS = Object.values(PickupSource);
 export const ENDGAME_OPTIONS = Object.values(EndGameStatus);
 
 // This order dictates the TSV column order. MUST match the ScoutingData keys.
-export const TSV_SCHEMA = [
+export const TSV_SCHEMA_MATCH = [
   'scouterName', 'eventCode', 'matchLevel', 'matchNumber', 'robotPosition', 'teamNumber', 'humanPlayerPresent',
   'autoLeave', 
   'autoCoralL1Success', 'autoCoralL1Fail', 
@@ -42,4 +42,13 @@ export const TSV_SCHEMA = [
   
   'defenseRating', 'driverRating', 'speedRating', 'defendedBy', 'coopBonus', 'algaeRemaning',
   'robotDied', 'tippedOver', 'droppedCoral', 'droppedAlgae', 'comments'
+];
+
+export const TSV_SCHEMA_PIT = [
+  'scouterName', 'eventCode', 'teamNumber',
+  'pitDriveTrain', 'pitMotorType', 'pitLength', 'pitWidth', 'pitWeight',
+  'pitCanCoralL1', 'pitCanCoralL2', 'pitCanCoralL3', 'pitCanCoralL4',
+  'pitCanAlgaeProcessor', 'pitCanAlgaeNet',
+  'pitCanDeepCage', 'pitCanShallowCage',
+  'pitAutoNotes'
 ];

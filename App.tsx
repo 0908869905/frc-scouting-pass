@@ -1,33 +1,87 @@
+
 import React, { useState, useEffect } from 'react';
 import { MatchPhase, ScoutingData, INITIAL_DATA, MatchLevel } from './types';
 import { PreMatchTab, AutonTab, TeleopTab, PostMatchTab } from './components/TabViews';
 import { QRCodeTab } from './components/QRCodeTab';
+import { HistoryModal } from './components/HistoryModal';
 import { Button } from './components/ui/Button';
 import { APP_CONFIG } from './constants';
-import { ChevronRight, ChevronLeft, QrCode } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Settings, X, History as HistoryIcon } from 'lucide-react';
+import { getUnsyncedCount } from './services/storage';
 
 const phases: MatchPhase[] = ['PreMatch', 'Auton', 'Teleop', 'PostMatch', 'QRCode'];
+
+export type Handedness = 'right' | 'left';
 
 export default function App() {
   const [currentPhase, setCurrentPhase] = useState<MatchPhase>('PreMatch');
   const [data, setData] = useState<ScoutingData>(() => {
-    // Try to load from local storage to prevent data loss on refresh
     const saved = localStorage.getItem('scoutingData');
     return saved ? JSON.parse(saved) : INITIAL_DATA;
   });
+  
+  // Settings & History State
+  const [showSettings, setShowSettings] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const [handedness, setHandedness] = useState<Handedness>(() => {
+    return (localStorage.getItem('handedness') as Handedness) || 'right';
+  });
 
-  // Save to local storage on change
+  // Simple poller to update unsynced badge on header (optional but nice)
+  const [unsyncedCount, setUnsyncedCount] = useState(0);
+
+  useEffect(() => {
+    setUnsyncedCount(getUnsyncedCount());
+    const interval = setInterval(() => {
+        setUnsyncedCount(getUnsyncedCount());
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [showHistory]); // Update when history closes/opens
+
   useEffect(() => {
     localStorage.setItem('scoutingData', JSON.stringify(data));
   }, [data]);
+
+  useEffect(() => {
+    localStorage.setItem('handedness', handedness);
+  }, [handedness]);
 
   const updateData = (fields: Partial<ScoutingData>) => {
     setData(prev => ({ ...prev, ...fields }));
   };
 
+  const validateRequiredFields = (notify: boolean = true): boolean => {
+    const errors: string[] = [];
+    if (!data.scouterName.trim()) errors.push("Scouter Name");
+    if (!data.eventCode.trim()) errors.push("Event Code");
+    if (!data.teamNumber.trim()) errors.push("Team Number");
+    if (!data.matchNumber || data.matchNumber < 1) errors.push("Match Number");
+
+    if (errors.length > 0) {
+      if (notify) {
+        alert(`Required fields missing:\n- ${errors.join('\n- ')}\n\nPlease fill these in Pre-Match.`);
+      }
+      return false;
+    }
+    return true;
+  };
+
   const handleNext = () => {
     const idx = phases.indexOf(currentPhase);
-    if (idx < phases.length - 1) setCurrentPhase(phases[idx + 1]);
+    const nextPhase = phases[idx + 1];
+
+    if (currentPhase === 'PreMatch') {
+      if (!validateRequiredFields()) return;
+    }
+
+    if (nextPhase === 'QRCode') {
+      if (!validateRequiredFields()) {
+        setCurrentPhase('PreMatch');
+        return;
+      }
+    }
+
+    if (idx < phases.length - 1) setCurrentPhase(nextPhase);
   };
 
   const handlePrev = () => {
@@ -36,7 +90,6 @@ export default function App() {
   };
 
   const handleReset = () => {
-    // Preserve scouter name, event code, and increment match number
     const nextMatchNum = data.matchLevel === MatchLevel.Quals ? data.matchNumber + 1 : data.matchNumber;
     
     setData({
@@ -54,7 +107,48 @@ export default function App() {
   const progress = ((phaseIndex + 1) / phases.length) * 100;
 
   return (
-    <div className="h-full flex flex-col bg-slate-950 text-slate-100 font-sans">
+    <div className="h-full flex flex-col bg-slate-950 text-slate-100 font-sans relative">
+      <HistoryModal isOpen={showHistory} onClose={() => setShowHistory(false)} />
+
+      {/* Settings Modal */}
+      {showSettings && (
+        <div className="absolute inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 w-full max-w-sm shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-display font-bold text-white">Settings</h2>
+              <button onClick={() => setShowSettings(false)} className="text-slate-400 hover:text-white">
+                <X size={24} />
+              </button>
+            </div>
+            
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm text-slate-400 font-bold uppercase mb-3">One-Handed Mode</label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button 
+                    onClick={() => setHandedness('left')}
+                    className={`p-4 rounded-xl border-2 transition-all font-medium ${handedness === 'left' ? 'border-brand-500 bg-brand-900/20 text-white' : 'border-slate-700 bg-slate-800 text-slate-400'}`}
+                  >
+                    Left Handed
+                  </button>
+                  <button 
+                    onClick={() => setHandedness('right')}
+                    className={`p-4 rounded-xl border-2 transition-all font-medium ${handedness === 'right' ? 'border-brand-500 bg-brand-900/20 text-white' : 'border-slate-700 bg-slate-800 text-slate-400'}`}
+                  >
+                    Right Handed
+                  </button>
+                </div>
+                <p className="text-xs text-slate-500 mt-2">Controls button placement for easier thumb access.</p>
+              </div>
+            </div>
+            
+            <div className="mt-8">
+              <Button fullWidth onClick={() => setShowSettings(false)}>Done</Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <header className="flex-none bg-slate-900 border-b border-slate-800 p-4 flex items-center justify-between z-10 shadow-lg">
         <div>
@@ -62,15 +156,41 @@ export default function App() {
             {APP_CONFIG.teamName} <span className="text-slate-500 text-sm font-sans tracking-wide">| {APP_CONFIG.appName}</span>
           </h1>
           <div className="text-xs text-slate-500 font-mono mt-1">
-             Match {data.matchNumber} • {data.robotPosition} • {data.teamNumber || "No Team"}
+             Match {data.matchNumber} • {data.robotPosition}
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
+           <button 
+             onClick={() => setShowHistory(true)}
+             className="p-2 rounded-full hover:bg-slate-800 text-slate-400 hover:text-white transition-colors relative"
+           >
+             <HistoryIcon size={20} />
+             {unsyncedCount > 0 && (
+                 <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-orange-500 rounded-full border border-slate-900"></span>
+             )}
+           </button>
+           <button 
+             onClick={() => setShowSettings(true)}
+             className="p-2 rounded-full hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"
+           >
+             <Settings size={20} />
+           </button>
            <div className="hidden md:flex gap-1">
               {phases.map(p => (
                 <div 
                   key={p} 
-                  onClick={() => setCurrentPhase(p)}
+                  onClick={() => {
+                     const targetIdx = phases.indexOf(p);
+                     const currentIdx = phases.indexOf(currentPhase);
+                     if (targetIdx > currentIdx) {
+                        if (currentIdx === 0 && !validateRequiredFields()) return;
+                        if (p === 'QRCode' && !validateRequiredFields()) {
+                            setCurrentPhase('PreMatch'); 
+                            return;
+                        }
+                     }
+                     setCurrentPhase(p);
+                  }}
                   className={`cursor-pointer h-2 w-8 rounded-full transition-all ${p === currentPhase ? 'bg-brand-500' : 'bg-slate-800 hover:bg-slate-700'}`}
                 />
               ))}
@@ -85,10 +205,10 @@ export default function App() {
 
       {/* Main Content Area */}
       <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-6 w-full max-w-5xl mx-auto no-scrollbar">
-        {currentPhase === 'PreMatch' && <PreMatchTab data={data} update={updateData} />}
-        {currentPhase === 'Auton' && <AutonTab data={data} update={updateData} />}
-        {currentPhase === 'Teleop' && <TeleopTab data={data} update={updateData} />}
-        {currentPhase === 'PostMatch' && <PostMatchTab data={data} update={updateData} />}
+        {currentPhase === 'PreMatch' && <PreMatchTab data={data} update={updateData} handedness={handedness} />}
+        {currentPhase === 'Auton' && <AutonTab data={data} update={updateData} handedness={handedness} />}
+        {currentPhase === 'Teleop' && <TeleopTab data={data} update={updateData} handedness={handedness} />}
+        {currentPhase === 'PostMatch' && <PostMatchTab data={data} update={updateData} handedness={handedness} />}
         {currentPhase === 'QRCode' && <QRCodeTab data={data} onReset={handleReset} />}
       </main>
 

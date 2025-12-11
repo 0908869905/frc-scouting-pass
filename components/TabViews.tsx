@@ -3,10 +3,12 @@ import { ScoutingData, MatchLevel, RobotPosition, INITIAL_DATA } from '../types'
 import { MATCH_LEVEL_OPTIONS, ROBOT_POSITION_OPTIONS, PICKUP_SOURCE_OPTIONS, ENDGAME_OPTIONS } from '../constants';
 import { Counter, Toggle, SelectGroup, Stopwatch } from './ui/InputFields';
 import { Button } from './ui/Button';
+import { Handedness } from '../App';
 
 interface TabProps {
   data: ScoutingData;
   update: (fields: Partial<ScoutingData>) => void;
+  handedness?: Handedness;
 }
 
 export const PreMatchTab: React.FC<TabProps> = ({ data, update }) => {
@@ -14,7 +16,9 @@ export const PreMatchTab: React.FC<TabProps> = ({ data, update }) => {
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in fade-in slide-in-from-right-4 duration-300">
       <div className="space-y-4">
         <div>
-          <label className="block text-sm text-slate-400 font-bold uppercase mb-1">Scouter Name</label>
+          <label className="block text-sm text-slate-400 font-bold uppercase mb-1">
+            Scouter Name <span className="text-red-500">*</span>
+          </label>
           <input 
             type="text" 
             className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white focus:ring-2 focus:ring-brand-500 outline-none"
@@ -24,7 +28,9 @@ export const PreMatchTab: React.FC<TabProps> = ({ data, update }) => {
           />
         </div>
         <div>
-          <label className="block text-sm text-slate-400 font-bold uppercase mb-1">Event Code</label>
+          <label className="block text-sm text-slate-400 font-bold uppercase mb-1">
+            Event Code <span className="text-red-500">*</span>
+          </label>
           <input 
             type="text" 
             className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white focus:ring-2 focus:ring-brand-500 outline-none"
@@ -39,12 +45,18 @@ export const PreMatchTab: React.FC<TabProps> = ({ data, update }) => {
           onChange={(v) => update({ matchLevel: v as any })} 
         />
         <div>
-          <label className="block text-sm text-slate-400 font-bold uppercase mb-1">Match Number</label>
+          <label className="block text-sm text-slate-400 font-bold uppercase mb-1">
+            Match Number <span className="text-red-500">*</span>
+          </label>
           <input 
             type="number" 
+            min="1"
             className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white focus:ring-2 focus:ring-brand-500 outline-none text-2xl font-display"
             value={data.matchNumber}
-            onChange={(e) => update({ matchNumber: parseInt(e.target.value) || 0 })}
+            onChange={(e) => {
+              const val = parseInt(e.target.value);
+              update({ matchNumber: isNaN(val) ? 0 : val })
+            }}
           />
         </div>
       </div>
@@ -56,12 +68,18 @@ export const PreMatchTab: React.FC<TabProps> = ({ data, update }) => {
           onChange={(v) => update({ robotPosition: v as any })} 
         />
         <div>
-          <label className="block text-sm text-slate-400 font-bold uppercase mb-1">Team Number</label>
+          <label className="block text-sm text-slate-400 font-bold uppercase mb-1">
+            Team Number <span className="text-red-500">*</span>
+          </label>
           <input 
             type="text" 
+            inputMode="numeric"
             className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white focus:ring-2 focus:ring-brand-500 outline-none text-4xl font-display font-bold tracking-widest text-center"
             value={data.teamNumber}
-            onChange={(e) => update({ teamNumber: e.target.value })}
+            onChange={(e) => {
+              const val = e.target.value.replace(/\D/g, '').slice(0, 5);
+              update({ teamNumber: val });
+            }}
             placeholder="####"
           />
         </div>
@@ -75,7 +93,7 @@ export const PreMatchTab: React.FC<TabProps> = ({ data, update }) => {
   );
 };
 
-export const AutonTab: React.FC<TabProps> = ({ data, update }) => {
+export const AutonTab: React.FC<TabProps> = ({ data, update, handedness }) => {
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
       <div className="grid grid-cols-1">
@@ -84,39 +102,66 @@ export const AutonTab: React.FC<TabProps> = ({ data, update }) => {
       
       <div className="bg-slate-900/50 p-4 rounded-2xl border border-slate-800">
         <h3 className="text-brand-400 font-display mb-4 text-center text-lg">Coral Scoring</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <Counter label="L4 Success" value={data.autoCoralL4Success} onChange={(v) => update({ autoCoralL4Success: v })} />
-          <Counter label="L4 Fail" value={data.autoCoralL4Fail} onChange={(v) => update({ autoCoralL4Fail: v })} />
+        <div className="grid grid-cols-2 gap-3">
+          <Counter handedness={handedness} label="L4 Success" value={data.autoCoralL4Success} onChange={(v) => update({ autoCoralL4Success: v })} />
+          <Counter handedness={handedness} label="L4 Fail" value={data.autoCoralL4Fail} onChange={(v) => update({ autoCoralL4Fail: v })} />
           
-          <Counter label="L3 Success" value={data.autoCoralL3Success} onChange={(v) => update({ autoCoralL3Success: v })} />
-          <Counter label="L3 Fail" value={data.autoCoralL3Fail} onChange={(v) => update({ autoCoralL3Fail: v })} />
+          <Counter handedness={handedness} label="L3 Success" value={data.autoCoralL3Success} onChange={(v) => update({ autoCoralL3Success: v })} />
+          <Counter handedness={handedness} label="L3 Fail" value={data.autoCoralL3Fail} onChange={(v) => update({ autoCoralL3Fail: v })} />
           
-          <Counter label="L2 Success" value={data.autoCoralL2Success} onChange={(v) => update({ autoCoralL2Success: v })} />
-          <Counter label="L2 Fail" value={data.autoCoralL2Fail} onChange={(v) => update({ autoCoralL2Fail: v })} />
+          <Counter handedness={handedness} label="L2 Success" value={data.autoCoralL2Success} onChange={(v) => update({ autoCoralL2Success: v })} />
+          <Counter handedness={handedness} label="L2 Fail" value={data.autoCoralL2Fail} onChange={(v) => update({ autoCoralL2Fail: v })} />
           
-          <Counter label="L1 Success" value={data.autoCoralL1Success} onChange={(v) => update({ autoCoralL1Success: v })} />
-          <Counter label="L1 Fail" value={data.autoCoralL1Fail} onChange={(v) => update({ autoCoralL1Fail: v })} />
+          <Counter handedness={handedness} label="L1 Success" value={data.autoCoralL1Success} onChange={(v) => update({ autoCoralL1Success: v })} />
+          <Counter handedness={handedness} label="L1 Fail" value={data.autoCoralL1Fail} onChange={(v) => update({ autoCoralL1Fail: v })} />
         </div>
       </div>
 
       <div className="bg-slate-900/50 p-4 rounded-2xl border border-slate-800">
         <h3 className="text-brand-400 font-display mb-4 text-center text-lg">Algae Scoring</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <Counter label="Processor Hit" value={data.autoProcessorSuccess} onChange={(v) => update({ autoProcessorSuccess: v })} />
-          <Counter label="Processor Miss" value={data.autoProcessorFail} onChange={(v) => update({ autoProcessorFail: v })} />
-          <Counter label="Net Hit" value={data.autoNetSuccess} onChange={(v) => update({ autoNetSuccess: v })} />
-          <Counter label="Net Miss" value={data.autoNetFail} onChange={(v) => update({ autoNetFail: v })} />
+        <div className="grid grid-cols-2 gap-3">
+          <Counter handedness={handedness} label="Processor Hit" value={data.autoProcessorSuccess} onChange={(v) => update({ autoProcessorSuccess: v })} />
+          <Counter handedness={handedness} label="Processor Miss" value={data.autoProcessorFail} onChange={(v) => update({ autoProcessorFail: v })} />
+          <Counter handedness={handedness} label="Net Hit" value={data.autoNetSuccess} onChange={(v) => update({ autoNetSuccess: v })} />
+          <Counter handedness={handedness} label="Net Miss" value={data.autoNetFail} onChange={(v) => update({ autoNetFail: v })} />
         </div>
       </div>
     </div>
   );
 };
 
-export const TeleopTab: React.FC<TabProps> = ({ data, update }) => {
+export const TeleopTab: React.FC<TabProps> = ({ data, update, handedness }) => {
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300 pb-20">
       
-      {/* Strategy / Info */}
+      <div className="bg-slate-900/50 p-4 rounded-2xl border border-slate-800">
+        <h3 className="text-brand-400 font-display mb-4 text-center text-lg">Coral Scoring</h3>
+        <div className="grid grid-cols-2 gap-3">
+          <Counter handedness={handedness} label="L4 Success" value={data.teleCoralL4Success} onChange={(v) => update({ teleCoralL4Success: v })} />
+          <Counter handedness={handedness} label="L4 Fail" value={data.teleCoralL4Fail} onChange={(v) => update({ teleCoralL4Fail: v })} />
+          
+          <Counter handedness={handedness} label="L3 Success" value={data.teleCoralL3Success} onChange={(v) => update({ teleCoralL3Success: v })} />
+          <Counter handedness={handedness} label="L3 Fail" value={data.teleCoralL3Fail} onChange={(v) => update({ teleCoralL3Fail: v })} />
+          
+          <Counter handedness={handedness} label="L2 Success" value={data.teleCoralL2Success} onChange={(v) => update({ teleCoralL2Success: v })} />
+          <Counter handedness={handedness} label="L2 Fail" value={data.teleCoralL2Fail} onChange={(v) => update({ teleCoralL2Fail: v })} />
+          
+          <Counter handedness={handedness} label="L1 Success" value={data.teleCoralL1Success} onChange={(v) => update({ teleCoralL1Success: v })} />
+          <Counter handedness={handedness} label="L1 Fail" value={data.teleCoralL1Fail} onChange={(v) => update({ teleCoralL1Fail: v })} />
+        </div>
+      </div>
+
+      <div className="bg-slate-900/50 p-4 rounded-2xl border border-slate-800">
+        <h3 className="text-brand-400 font-display mb-4 text-center text-lg">Algae Scoring</h3>
+        <div className="grid grid-cols-2 gap-3">
+          <Counter handedness={handedness} label="Processor Hit" value={data.teleProcessorSuccess} onChange={(v) => update({ teleProcessorSuccess: v })} />
+          <Counter handedness={handedness} label="Processor Miss" value={data.teleProcessorFail} onChange={(v) => update({ teleProcessorFail: v })} />
+          <Counter handedness={handedness} label="Net Hit" value={data.teleNetSuccess} onChange={(v) => update({ teleNetSuccess: v })} />
+          <Counter handedness={handedness} label="Net Miss" value={data.teleNetFail} onChange={(v) => update({ teleNetFail: v })} />
+        </div>
+      </div>
+
+      {/* Strategy / Info Moved Here */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <SelectGroup 
           label="Pickup Source" 
@@ -126,33 +171,6 @@ export const TeleopTab: React.FC<TabProps> = ({ data, update }) => {
         />
         <div className="flex flex-col justify-end">
            <Toggle label="Opponent Processor Shot?" value={data.teleOpponentProcessor} onChange={(v) => update({ teleOpponentProcessor: v })} />
-        </div>
-      </div>
-
-      <div className="bg-slate-900/50 p-4 rounded-2xl border border-slate-800">
-        <h3 className="text-brand-400 font-display mb-4 text-center text-lg">Coral Scoring</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <Counter label="L4 Success" value={data.teleCoralL4Success} onChange={(v) => update({ teleCoralL4Success: v })} />
-          <Counter label="L4 Fail" value={data.teleCoralL4Fail} onChange={(v) => update({ teleCoralL4Fail: v })} />
-          
-          <Counter label="L3 Success" value={data.teleCoralL3Success} onChange={(v) => update({ teleCoralL3Success: v })} />
-          <Counter label="L3 Fail" value={data.teleCoralL3Fail} onChange={(v) => update({ teleCoralL3Fail: v })} />
-          
-          <Counter label="L2 Success" value={data.teleCoralL2Success} onChange={(v) => update({ teleCoralL2Success: v })} />
-          <Counter label="L2 Fail" value={data.teleCoralL2Fail} onChange={(v) => update({ teleCoralL2Fail: v })} />
-          
-          <Counter label="L1 Success" value={data.teleCoralL1Success} onChange={(v) => update({ teleCoralL1Success: v })} />
-          <Counter label="L1 Fail" value={data.teleCoralL1Fail} onChange={(v) => update({ teleCoralL1Fail: v })} />
-        </div>
-      </div>
-
-      <div className="bg-slate-900/50 p-4 rounded-2xl border border-slate-800">
-        <h3 className="text-brand-400 font-display mb-4 text-center text-lg">Algae Scoring</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <Counter label="Processor Hit" value={data.teleProcessorSuccess} onChange={(v) => update({ teleProcessorSuccess: v })} />
-          <Counter label="Processor Miss" value={data.teleProcessorFail} onChange={(v) => update({ teleProcessorFail: v })} />
-          <Counter label="Net Hit" value={data.teleNetSuccess} onChange={(v) => update({ teleNetSuccess: v })} />
-          <Counter label="Net Miss" value={data.teleNetFail} onChange={(v) => update({ teleNetFail: v })} />
         </div>
       </div>
 
@@ -176,6 +194,7 @@ export const TeleopTab: React.FC<TabProps> = ({ data, update }) => {
 };
 
 export const PostMatchTab: React.FC<TabProps> = ({ data, update }) => {
+  const MAX_COMMENTS = 150;
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
       
@@ -221,10 +240,16 @@ export const PostMatchTab: React.FC<TabProps> = ({ data, update }) => {
       </div>
 
       <div>
-        <label className="block text-sm text-slate-400 font-bold uppercase mb-1">Comments</label>
+        <div className="flex justify-between items-center mb-1">
+          <label className="text-sm text-slate-400 font-bold uppercase">Comments</label>
+          <span className={`text-xs ${data.comments.length >= MAX_COMMENTS ? 'text-red-500' : 'text-slate-500'}`}>
+            {MAX_COMMENTS - data.comments.length} left
+          </span>
+        </div>
         <textarea 
           rows={4}
-          className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white focus:ring-2 focus:ring-brand-500 outline-none"
+          maxLength={MAX_COMMENTS}
+          className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white focus:ring-2 focus:ring-brand-500 outline-none resize-none"
           value={data.comments}
           onChange={(e) => update({ comments: e.target.value })}
           placeholder="Strategy, strengths, weaknesses..."
