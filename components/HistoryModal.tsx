@@ -5,6 +5,7 @@ import { MatchRecord } from '../types';
 import { getHistory, deleteMatchRecord, markAsSynced } from '../services/storage';
 import { uploadToGoogleSheets } from '../services/googleSheets';
 import { Button } from './ui/Button';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface Props {
   isOpen: boolean;
@@ -12,6 +13,7 @@ interface Props {
 }
 
 export const HistoryModal: React.FC<Props> = ({ isOpen, onClose }) => {
+  const { t } = useLanguage();
   const [history, setHistory] = useState<MatchRecord[]>([]);
   const [isSyncing, setIsSyncing] = useState(false);
 
@@ -73,9 +75,9 @@ export const HistoryModal: React.FC<Props> = ({ isOpen, onClose }) => {
         <div className="p-4 border-b border-slate-700 flex justify-between items-center bg-slate-800/50 rounded-t-2xl">
           <div>
             <h2 className="text-xl font-display font-bold text-white flex items-center gap-2">
-              Match History
+              {t('history')}
               <span className="text-sm font-sans font-normal text-slate-400 bg-slate-800 px-2 py-0.5 rounded-full border border-slate-700">
-                {history.length} records
+                {history.length} {t('records')}
               </span>
             </h2>
           </div>
@@ -89,11 +91,11 @@ export const HistoryModal: React.FC<Props> = ({ isOpen, onClose }) => {
             <div className="text-sm text-slate-400">
                 {unsyncedCount > 0 ? (
                     <span className="text-orange-400 font-bold flex items-center gap-1">
-                        <AlertCircle size={16} /> {unsyncedCount} Pending Uploads
+                        <AlertCircle size={16} /> {unsyncedCount} {t('pendingUploads')}
                     </span>
                 ) : (
                     <span className="text-green-500 font-bold flex items-center gap-1">
-                        <CheckCircle size={16} /> All Synced
+                        <CheckCircle size={16} /> {t('allSynced')}
                     </span>
                 )}
             </div>
@@ -105,7 +107,7 @@ export const HistoryModal: React.FC<Props> = ({ isOpen, onClose }) => {
                 className="gap-2"
             >
                 {isSyncing ? <RefreshCw className="animate-spin" size={16} /> : <UploadCloud size={16} />}
-                {isSyncing ? 'Syncing...' : 'Sync Pending'}
+                {isSyncing ? t('syncing') : t('syncPending')}
             </Button>
         </div>
 
@@ -118,11 +120,11 @@ export const HistoryModal: React.FC<Props> = ({ isOpen, onClose }) => {
               <div key={record.id} className="bg-slate-800/50 border border-slate-700 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:bg-slate-800 transition-colors">
                 <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                        <span className="font-display font-bold text-lg text-white">Match {record.data.matchNumber}</span>
+                        <span className="font-display font-bold text-lg text-white">{t('match')} {record.data.matchNumber}</span>
                         <span className="text-xs text-slate-400 bg-slate-900 px-2 py-0.5 rounded border border-slate-700">
                             {record.data.teamNumber}
                         </span>
-                        <span className="text-xs text-slate-500 uppercase tracking-wider">{record.data.matchLevel}</span>
+                        <span className="text-xs text-slate-500 uppercase tracking-wider">{t(record.data.matchLevel) || record.data.matchLevel}</span>
                     </div>
                     <div className="text-xs text-slate-500">
                         {new Date(record.timestamp).toLocaleString()} • {record.data.scouterName}
@@ -142,14 +144,14 @@ export const HistoryModal: React.FC<Props> = ({ isOpen, onClose }) => {
                             onClick={() => handleSingleSync(record)}
                             disabled={isSyncing}
                         >
-                            <UploadCloud size={14} className="mr-1" /> Retry
+                            <UploadCloud size={14} className="mr-1" /> {t('retry')}
                         </Button>
                     )}
                     
                     <button 
                         onClick={() => handleDelete(record.id)}
                         className="p-2 text-slate-500 hover:text-red-500 hover:bg-red-950/30 rounded-lg transition-colors"
-                        title="Delete"
+                        title={t('delete')}
                     >
                         <Trash2 size={18} />
                     </button>

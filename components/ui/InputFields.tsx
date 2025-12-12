@@ -1,3 +1,4 @@
+
 import React, { useRef, useState, useEffect } from 'react';
 import { Button } from './Button';
 import { Minus, Plus, RefreshCw } from 'lucide-react';
@@ -116,30 +117,40 @@ export const Toggle: React.FC<ToggleProps> = ({ label, value, onChange }) => {
 };
 
 // --- Select / Radio Group ---
+export interface SelectOption {
+  label: string;
+  value: string;
+}
+
 interface SelectProps {
   label: string;
   value: string;
-  options: string[];
+  options: string[] | SelectOption[];
   onChange: (val: string) => void;
 }
 
 export const SelectGroup: React.FC<SelectProps> = ({ label, value, options, onChange }) => {
+  // Normalize options to object array
+  const normalizedOptions: SelectOption[] = options.map(opt => 
+    typeof opt === 'string' ? { label: opt, value: opt } : opt
+  );
+
   return (
     <div className="flex flex-col gap-2">
       <label className="text-slate-400 text-sm font-bold uppercase">{label}</label>
       <div className="grid grid-cols-2 gap-2">
-        {options.map(opt => (
+        {normalizedOptions.map(opt => (
           <button
-            key={opt}
-            onClick={() => onChange(opt)}
+            key={opt.value}
+            onClick={() => onChange(opt.value)}
             className={`
               p-3 rounded-lg text-sm font-medium transition-all text-center min-h-[3rem] flex items-center justify-center
-              ${value === opt 
+              ${value === opt.value 
                 ? 'bg-brand-600 text-white shadow-lg shadow-brand-900/50' 
                 : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}
             `}
           >
-            {opt}
+            {opt.label}
           </button>
         ))}
       </div>

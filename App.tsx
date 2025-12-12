@@ -6,12 +6,14 @@ import { QRCodeTab } from './components/QRCodeTab';
 import { HistoryModal } from './components/HistoryModal';
 import { Button } from './components/ui/Button';
 import { APP_CONFIG } from './constants';
-import { ChevronRight, ChevronLeft, Settings, X, History as HistoryIcon } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Settings, X, History as HistoryIcon, Globe } from 'lucide-react';
 import { getUnsyncedCount } from './services/storage';
+import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
 
 const phases: MatchPhase[] = ['PreMatch', 'Auton', 'Teleop', 'PostMatch', 'QRCode'];
 
-export default function App() {
+function AppContent() {
+  const { t, lang, setLang } = useLanguage();
   const [currentPhase, setCurrentPhase] = useState<MatchPhase>('PreMatch');
   const [data, setData] = useState<ScoutingData>(() => {
     const saved = localStorage.getItem('scoutingData');
@@ -50,14 +52,14 @@ export default function App() {
 
   const validateRequiredFields = (notify: boolean = true): boolean => {
     const errors: string[] = [];
-    if (!data.scouterName.trim()) errors.push("Scouter Name");
-    if (!data.eventCode.trim()) errors.push("Event Code");
-    if (!data.teamNumber.trim()) errors.push("Team Number");
-    if (!data.matchNumber || data.matchNumber < 1) errors.push("Match Number");
+    if (!data.scouterName.trim()) errors.push(t('scouterName'));
+    if (!data.eventCode.trim()) errors.push(t('eventCode'));
+    if (!data.teamNumber.trim()) errors.push(t('teamNumber'));
+    if (!data.matchNumber || data.matchNumber < 1) errors.push(t('matchNumber'));
 
     if (errors.length > 0) {
       if (notify) {
-        alert(`Required fields missing:\n- ${errors.join('\n- ')}\n\nPlease fill these in Pre-Match.`);
+        alert(`Required fields missing:\n- ${errors.join('\n- ')}`);
       }
       return false;
     }
@@ -104,6 +106,10 @@ export default function App() {
   const phaseIndex = phases.indexOf(currentPhase);
   const progress = ((phaseIndex + 1) / phases.length) * 100;
 
+  const toggleLang = () => {
+    setLang(lang === 'en' ? 'zh' : 'en');
+  };
+
   return (
     <div className="h-full flex flex-col bg-slate-950 text-slate-100 font-sans relative">
       <HistoryModal isOpen={showHistory} onClose={() => setShowHistory(false)} />
@@ -113,7 +119,7 @@ export default function App() {
         <div className="absolute inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 w-full max-w-sm shadow-2xl animate-in zoom-in-95 duration-200">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-display font-bold text-white">Settings</h2>
+              <h2 className="text-xl font-display font-bold text-white">{t('settings')}</h2>
               <button onClick={() => setShowSettings(false)} className="text-slate-400 hover:text-white">
                 <X size={24} />
               </button>
@@ -121,27 +127,26 @@ export default function App() {
             
             <div className="space-y-6">
               <div>
-                <label className="block text-sm text-slate-400 font-bold uppercase mb-3">One-Handed Mode</label>
+                <label className="block text-sm text-slate-400 font-bold uppercase mb-3">{t('oneHanded')}</label>
                 <div className="grid grid-cols-2 gap-3">
                   <button 
                     onClick={() => setHandedness('left')}
                     className={`p-4 rounded-xl border-2 transition-all font-medium ${handedness === 'left' ? 'border-brand-500 bg-brand-900/20 text-white' : 'border-slate-700 bg-slate-800 text-slate-400'}`}
                   >
-                    Left Handed
+                    {t('leftHanded')}
                   </button>
                   <button 
                     onClick={() => setHandedness('right')}
                     className={`p-4 rounded-xl border-2 transition-all font-medium ${handedness === 'right' ? 'border-brand-500 bg-brand-900/20 text-white' : 'border-slate-700 bg-slate-800 text-slate-400'}`}
                   >
-                    Right Handed
+                    {t('rightHanded')}
                   </button>
                 </div>
-                <p className="text-xs text-slate-500 mt-2">Controls button placement for easier thumb access.</p>
               </div>
             </div>
             
             <div className="mt-8">
-              <Button fullWidth onClick={() => setShowSettings(false)}>Done</Button>
+              <Button fullWidth onClick={() => setShowSettings(false)}>{t('done')}</Button>
             </div>
           </div>
         </div>
@@ -154,10 +159,19 @@ export default function App() {
             {APP_CONFIG.teamName} <span className="text-slate-500 text-sm font-sans tracking-wide">| {APP_CONFIG.appName}</span>
           </h1>
           <div className="text-xs text-slate-500 font-mono mt-1">
-             Match {data.matchNumber} • {data.robotPosition}
+             {t('match')} {data.matchNumber} • {t(data.robotPosition) || data.robotPosition}
           </div>
         </div>
         <div className="flex items-center gap-3">
+           <button 
+             onClick={toggleLang}
+             className="p-2 rounded-full hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"
+             title={lang === 'en' ? 'Switch to Traditional Chinese' : '切換至英文'}
+           >
+             <Globe size={20} />
+             <span className="sr-only">Language</span>
+           </button>
+
            <button 
              onClick={() => setShowHistory(true)}
              className="p-2 rounded-full hover:bg-slate-800 text-slate-400 hover:text-white transition-colors relative"
@@ -218,7 +232,7 @@ export default function App() {
           disabled={phaseIndex === 0}
           className="flex-1"
         >
-          <ChevronLeft className="mr-1" /> Prev
+          <ChevronLeft className="mr-1" /> {t('prev')}
         </Button>
         
         {currentPhase !== 'QRCode' ? (
@@ -227,14 +241,22 @@ export default function App() {
             onClick={handleNext} 
             className="flex-[2]"
           >
-            Next <ChevronRight className="ml-1" />
+            {t('next')} <ChevronRight className="ml-1" />
           </Button>
         ) : (
           <div className="flex-[2] text-center text-slate-500 text-sm flex items-center justify-center">
-            Scan to Finish
+            {t('scanFinish')}
           </div>
         )}
       </footer>
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <LanguageProvider>
+      <AppContent />
+    </LanguageProvider>
   );
 }

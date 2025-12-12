@@ -1,13 +1,14 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import QRCode from 'react-qr-code';
 import { ScoutingData } from '../types';
 import { generateTSV, uploadToGoogleSheets } from '../services/googleSheets';
 import { saveMatchToHistory, markAsSynced } from '../services/storage';
 import { Button } from './ui/Button';
-import { Copy, UploadCloud, CheckCircle, AlertCircle, Save, WifiOff, FileText, Zap, Info } from 'lucide-react';
+import { Copy, CheckCircle, AlertCircle, Save, WifiOff, FileText, Zap, Info } from 'lucide-react';
 import LZString from 'lz-string';
 import { TSV_SCHEMA_MATCH, TSV_SCHEMA_PIT } from '../constants';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface Props {
   data: ScoutingData;
@@ -15,6 +16,7 @@ interface Props {
 }
 
 export const QRCodeTab: React.FC<Props> = ({ data, onReset }) => {
+  const { t } = useLanguage();
   const [status, setStatus] = useState<'idle' | 'saving' | 'uploaded' | 'offline_saved' | 'error'>('idle');
   const [isSavedLocally, setIsSavedLocally] = useState(false);
   const [qrMode, setQrMode] = useState<'compressed' | 'raw'>('compressed');
@@ -76,13 +78,13 @@ export const QRCodeTab: React.FC<Props> = ({ data, onReset }) => {
             onClick={() => setQrMode('raw')}
             className={`px-4 py-2 rounded-md text-sm font-bold flex items-center gap-2 transition-all ${qrMode === 'raw' ? 'bg-brand-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
         >
-            <FileText size={16} /> Raw TSV
+            <FileText size={16} /> {t('rawTSV')}
         </button>
         <button
             onClick={() => setQrMode('compressed')}
             className={`px-4 py-2 rounded-md text-sm font-bold flex items-center gap-2 transition-all ${qrMode === 'compressed' ? 'bg-brand-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
         >
-            <Zap size={16} /> Compressed
+            <Zap size={16} /> {t('compressed')}
         </button>
       </div>
 
@@ -112,7 +114,7 @@ export const QRCodeTab: React.FC<Props> = ({ data, onReset }) => {
             onClick={() => setShowSchema(!showSchema)}
             className="text-xs text-brand-400 hover:text-brand-300 flex items-center justify-center gap-1 mx-auto"
           >
-            <Info size={12} /> {showSchema ? 'Hide Data Labels' : 'Show Data Labels'}
+            <Info size={12} /> {showSchema ? t('hideLabels') : t('showLabels')}
           </button>
           
           {showSchema && (
@@ -129,7 +131,7 @@ export const QRCodeTab: React.FC<Props> = ({ data, onReset }) => {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-md px-4">
         <Button onClick={handleCopy} variant="secondary" className="gap-2">
-          <Copy size={20} /> Copy TSV
+          <Copy size={20} /> {t('copyTSV')}
         </Button>
 
         <Button 
@@ -138,11 +140,11 @@ export const QRCodeTab: React.FC<Props> = ({ data, onReset }) => {
           disabled={status === 'saving' || status === 'uploaded'}
           className={`gap-2 ${status === 'offline_saved' ? 'bg-orange-600 hover:bg-orange-500' : ''}`}
         >
-          {status === 'idle' && <><Save size={20} /> Save & Submit</>}
-          {status === 'saving' && 'Saving...'}
-          {status === 'uploaded' && <><CheckCircle size={20} /> Saved & Sent!</>}
-          {status === 'offline_saved' && <><WifiOff size={20} /> Saved (Offline)</>}
-          {status === 'error' && <><AlertCircle size={20} /> Error</>}
+          {status === 'idle' && <><Save size={20} /> {t('saveSubmit')}</>}
+          {status === 'saving' && t('saving')}
+          {status === 'uploaded' && <><CheckCircle size={20} /> {t('savedSent')}</>}
+          {status === 'offline_saved' && <><WifiOff size={20} /> {t('savedOffline')}</>}
+          {status === 'error' && <><AlertCircle size={20} /> {t('error')}</>}
         </Button>
       </div>
 
@@ -154,10 +156,10 @@ export const QRCodeTab: React.FC<Props> = ({ data, onReset }) => {
 
       <div className="w-full max-w-md pt-6 border-t border-slate-800 px-4">
         <Button fullWidth variant="danger" onClick={handleResetClick}>
-          Reset Form for Next Match
+          {t('reset')}
         </Button>
         <p className="text-center text-xs text-slate-600 mt-2">
-            Resetting creates a new form. Previous data is kept in History.
+            {t('resetWarning')}
         </p>
       </div>
     </div>
