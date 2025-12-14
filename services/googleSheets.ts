@@ -18,16 +18,10 @@ const ROBOT_POS_ABBREV: Record<string, string> = {
   'Blue 3': 'B3'
 };
 
-// Helper to format comments with status flags "1 0 0 0 Comment..."
+// Helper to format comments
+// Previously included flags "1 0 Comment", now just returns comment text based on user feedback.
 const formatComments = (data: ScoutingData): string => {
-  const flags = [
-    data.robotDied ? '1' : '0',
-    data.tippedOver ? '1' : '0',
-    data.droppedCoral ? '1' : '0',
-    data.droppedAlgae ? '1' : '0'
-  ];
-  const text = (data.comments && data.comments.trim() !== '') ? data.comments.trim() : 'None';
-  return `${flags.join(' ')} ${text}`;
+  return (data.comments && data.comments.trim() !== '') ? data.comments.trim() : 'None';
 };
 
 export const generateTSV = (data: ScoutingData): string => {
@@ -86,7 +80,7 @@ export const uploadToGoogleSheets = async (data: ScoutingData): Promise<boolean>
       payload.robotPosition = ROBOT_POS_ABBREV[payload.robotPosition];
   }
 
-  // Format Comments with flags
+  // Format Comments
   payload.comments = formatComments(data);
 
   // Iterate over all keys to apply consistency rules
