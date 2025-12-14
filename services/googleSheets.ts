@@ -18,10 +18,27 @@ const ROBOT_POS_ABBREV: Record<string, string> = {
   'Blue 3': 'B3'
 };
 
+// Helper to format comments with status flags "1 0 0 0 Comment..."
+const formatComments = (data: ScoutingData): string => {
+  const flags = [
+    data.robotDied ? '1' : '0',
+    data.tippedOver ? '1' : '0',
+    data.droppedCoral ? '1' : '0',
+    data.droppedAlgae ? '1' : '0'
+  ];
+  const text = (data.comments && data.comments.trim() !== '') ? data.comments.trim() : 'None';
+  return `${flags.join(' ')} ${text}`;
+};
+
 export const generateTSV = (data: ScoutingData): string => {
   const schema = data.mode === 'Pit' ? TSV_SCHEMA_PIT : TSV_SCHEMA_MATCH;
   
   return schema.map(key => {
+    // Custom formatted fields
+    if (key === 'comments') {
+        return formatComments(data).replace(/\t/g, ' ').replace(/\n/g, ' ');
+    }
+
     const val = data[key as keyof ScoutingData];
     
     // 1. Booleans -> 1 / 0
@@ -69,6 +86,9 @@ export const uploadToGoogleSheets = async (data: ScoutingData): Promise<boolean>
       payload.robotPosition = ROBOT_POS_ABBREV[payload.robotPosition];
   }
 
+  // Format Comments with flags
+  payload.comments = formatComments(data);
+
   // Iterate over all keys to apply consistency rules
   Object.keys(payload).forEach(key => {
     const val = payload[key];
@@ -82,6 +102,7 @@ export const uploadToGoogleSheets = async (data: ScoutingData): Promise<boolean>
         payload[key] = val.length > 0 ? val.join(',') : 'None';
     }
     // Empty/Null -> 'None'
+    // comments is already formatted and non-empty, so it skips this
     else if (val === undefined || val === null || String(val).trim() === '') {
         payload[key] = 'None';
     }
