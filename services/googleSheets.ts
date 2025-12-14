@@ -24,29 +24,30 @@ export const generateTSV = (data: ScoutingData): string => {
   return schema.map(key => {
     const val = data[key as keyof ScoutingData];
     
-    // Specific handling for empty text fields that should report "None"
-    if ((key === 'defendedBy' || key === 'comments') && (!val || String(val).trim() === '')) {
+    // 1. Booleans -> 1 / 0
+    if (typeof val === 'boolean') return val ? '1' : '0';
+
+    // 2. Arrays (tags) -> joined or None
+    if (Array.isArray(val)) {
+       return val.length > 0 ? val.join(',') : 'None';
+    }
+
+    // 3. Empty/Null/Undefined -> None
+    // This catches empty strings like defendedBy="", comments="", etc.
+    if (val === undefined || val === null || String(val).trim() === '') {
         return 'None';
     }
 
-    // Abbreviate Match Level
+    // 4. Abbreviations
     if (key === 'matchLevel') {
         return MATCH_LEVEL_ABBREV[String(val)] || String(val);
     }
-
-    // Abbreviate Robot Position
     if (key === 'robotPosition') {
         return ROBOT_POS_ABBREV[String(val)] || String(val);
     }
     
-    if (key === 'tags' && Array.isArray(val)) {
-       return val.join(',');
-    }
-
-    if (typeof val === 'boolean') return val ? 'TRUE' : 'FALSE';
-    if (val === undefined || val === null) return '';
-    
-    return String(val).replace(/\t/g, ' ').replace(/\n/g, ' '); // Sanitize
+    // 5. Default string handling
+    return String(val).replace(/\t/g, ' ').replace(/\n/g, ' '); 
   }).join('\t');
 };
 
@@ -59,14 +60,7 @@ export const uploadToGoogleSheets = async (data: ScoutingData): Promise<boolean>
   // Create a copy to transform values for upload consistency with TSV
   const payload: any = { ...data };
 
-  // Ensure empty optional text fields send "None"
-  if (!payload.defendedBy || payload.defendedBy.trim() === '') {
-      payload.defendedBy = 'None';
-  }
-  if (!payload.comments || payload.comments.trim() === '') {
-      payload.comments = 'None';
-  }
-
+  // Abbreviations
   if (payload.matchLevel && MATCH_LEVEL_ABBREV[payload.matchLevel]) {
       payload.matchLevel = MATCH_LEVEL_ABBREV[payload.matchLevel];
   }
@@ -74,6 +68,24 @@ export const uploadToGoogleSheets = async (data: ScoutingData): Promise<boolean>
   if (payload.robotPosition && ROBOT_POS_ABBREV[payload.robotPosition]) {
       payload.robotPosition = ROBOT_POS_ABBREV[payload.robotPosition];
   }
+
+  // Iterate over all keys to apply consistency rules
+  Object.keys(payload).forEach(key => {
+    const val = payload[key];
+
+    // Booleans -> 1 / 0
+    if (typeof val === 'boolean') {
+      payload[key] = val ? 1 : 0;
+    } 
+    // Arrays -> 'None' if empty
+    else if (Array.isArray(val)) {
+        payload[key] = val.length > 0 ? val.join(',') : 'None';
+    }
+    // Empty/Null -> 'None'
+    else if (val === undefined || val === null || String(val).trim() === '') {
+        payload[key] = 'None';
+    }
+  });
 
   try {
     const response = await fetch(APP_CONFIG.googleScriptUrl, {

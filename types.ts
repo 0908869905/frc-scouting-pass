@@ -36,7 +36,7 @@ export enum PickupSource {
   Source = 'Coral Station',
   Floor = 'Floor',
   Both = 'Both',
-  None = 'Not Attempted'
+  None = 'None'
 }
 
 // The core data structure collected during a match or pit scouting
