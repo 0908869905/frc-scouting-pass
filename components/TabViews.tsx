@@ -225,7 +225,7 @@ export const TeleopTab: React.FC<TabProps> = ({ data, update, handedness }) => {
 
 export const PostMatchTab: React.FC<TabProps> = ({ data, update }) => {
   const { t } = useLanguage();
-  const MAX_COMMENTS = 150;
+  const MAX_COMMENTS = 300;
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
       
@@ -278,7 +278,7 @@ export const PostMatchTab: React.FC<TabProps> = ({ data, update }) => {
           </span>
         </div>
         <textarea 
-          rows={4}
+          rows={5}
           maxLength={MAX_COMMENTS}
           className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white focus:ring-2 focus:ring-brand-500 outline-none resize-none"
           value={data.comments}
