@@ -19,7 +19,7 @@ const ROBOT_POS_ABBREV: Record<string, string> = {
 };
 
 // Helper to format comments
-// Previously included flags "1 0 Comment", now just returns comment text based on user feedback.
+// Returns the raw comment text. Supports Chinese and other Unicode characters.
 const formatComments = (data: ScoutingData): string => {
   return (data.comments && data.comments.trim() !== '') ? data.comments.trim() : 'None';
 };
@@ -30,6 +30,7 @@ export const generateTSV = (data: ScoutingData): string => {
   return schema.map(key => {
     // Custom formatted fields
     if (key === 'comments') {
+        // Replace tabs and newlines to maintain TSV structure, but preserve all other characters (including Chinese)
         return formatComments(data).replace(/\t/g, ' ').replace(/\n/g, ' ');
     }
 
@@ -107,7 +108,7 @@ export const uploadToGoogleSheets = async (data: ScoutingData): Promise<boolean>
       method: 'POST',
       mode: 'no-cors',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json; charset=utf-8',
       },
       body: JSON.stringify(payload)
     });
