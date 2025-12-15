@@ -24,14 +24,33 @@ const formatComments = (data: ScoutingData): string => {
   return (data.comments && data.comments.trim() !== '') ? data.comments.trim() : 'None';
 };
 
+// Helper to escape unicode for TSV/QR Code to ensure survival through external scanners
+// which might mangle UTF-8 characters during their own upload process.
+const escapeUnicode = (str: string) => {
+  return str.replace(/[^\x00-\x7F]/g, c => {
+    return '\\u' + ('0000' + c.charCodeAt(0).toString(16)).slice(-4);
+  });
+};
+
+// Safely stringify JSON with Unicode escaping to ensure correct transmission
+// across no-cors requests to Google Apps Script (which can sometimes mangle raw UTF-8).
+const safeJsonStringify = (obj: any) => {
+  return JSON.stringify(obj).replace(/[^\x00-\x7F]/g, c => {
+    return '\\u' + ('0000' + c.charCodeAt(0).toString(16)).slice(-4);
+  });
+};
+
 export const generateTSV = (data: ScoutingData): string => {
   const schema = data.mode === 'Pit' ? TSV_SCHEMA_PIT : TSV_SCHEMA_MATCH;
   
   return schema.map(key => {
     // Custom formatted fields
     if (key === 'comments') {
-        // Replace tabs and newlines to maintain TSV structure, but preserve all other characters (including Chinese)
-        return formatComments(data).replace(/\t/g, ' ').replace(/\n/g, ' ');
+        // Replace tabs and newlines to maintain TSV structure
+        // AND escape unicode characters so they survive the trip through the QR scanner app
+        // This prevents "blank" cells in Google Sheets when using external scanners
+        const raw = formatComments(data).replace(/\t/g, ' ').replace(/\n/g, ' ');
+        return escapeUnicode(raw);
     }
 
     const val = data[key as keyof ScoutingData];
@@ -81,7 +100,7 @@ export const uploadToGoogleSheets = async (data: ScoutingData): Promise<boolean>
       payload.robotPosition = ROBOT_POS_ABBREV[payload.robotPosition];
   }
 
-  // Format Comments
+  // Format Comments - Raw for uploadToGoogleSheets because safeJsonStringify handles escaping
   payload.comments = formatComments(data);
 
   // Iterate over all keys to apply consistency rules
@@ -108,9 +127,11 @@ export const uploadToGoogleSheets = async (data: ScoutingData): Promise<boolean>
       method: 'POST',
       mode: 'no-cors',
       headers: {
-        'Content-Type': 'application/json; charset=utf-8',
+        'Content-Type': 'application/json',
       },
-      body: JSON.stringify(payload)
+      // Use safeJsonStringify to escape unicode characters (e.g. Chinese)
+      // This prevents encoding issues on the receiving Google Apps Script side
+      body: safeJsonStringify(payload)
     });
     return true; 
   } catch (error) {
