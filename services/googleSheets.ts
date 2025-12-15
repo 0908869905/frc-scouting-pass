@@ -24,16 +24,9 @@ const formatComments = (data: ScoutingData): string => {
   return (data.comments && data.comments.trim() !== '') ? data.comments.trim() : 'None';
 };
 
-// Helper to escape unicode for TSV/QR Code to ensure survival through external scanners
-// which might mangle UTF-8 characters during their own upload process.
-const escapeUnicode = (str: string) => {
-  return str.replace(/[^\x00-\x7F]/g, c => {
-    return '\\u' + ('0000' + c.charCodeAt(0).toString(16)).slice(-4);
-  });
-};
-
 // Safely stringify JSON with Unicode escaping to ensure correct transmission
 // across no-cors requests to Google Apps Script (which can sometimes mangle raw UTF-8).
+// We keep this for the JSON API upload as JSON.parse on the server handles unicode escapes automatically.
 const safeJsonStringify = (obj: any) => {
   return JSON.stringify(obj).replace(/[^\x00-\x7F]/g, c => {
     return '\\u' + ('0000' + c.charCodeAt(0).toString(16)).slice(-4);
@@ -47,10 +40,9 @@ export const generateTSV = (data: ScoutingData): string => {
     // Custom formatted fields
     if (key === 'comments') {
         // Replace tabs and newlines to maintain TSV structure
-        // AND escape unicode characters so they survive the trip through the QR scanner app
-        // This prevents "blank" cells in Google Sheets when using external scanners
-        const raw = formatComments(data).replace(/\t/g, ' ').replace(/\n/g, ' ');
-        return escapeUnicode(raw);
+        // We DO NOT escape unicode here, as TSV is not JSON. 
+        // We want raw Chinese characters in the QR Code.
+        return formatComments(data).replace(/\t/g, ' ').replace(/\n/g, ' ');
     }
 
     const val = data[key as keyof ScoutingData];
@@ -131,6 +123,7 @@ export const uploadToGoogleSheets = async (data: ScoutingData): Promise<boolean>
       },
       // Use safeJsonStringify to escape unicode characters (e.g. Chinese)
       // This prevents encoding issues on the receiving Google Apps Script side
+      // JSON.parse(e.postData.contents) in GAS will automatically convert \uXXXX back to Chinese.
       body: safeJsonStringify(payload)
     });
     return true; 
