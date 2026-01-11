@@ -17,7 +17,17 @@ function AppContent() {
   const [currentPhase, setCurrentPhase] = useState<MatchPhase>('PreMatch');
   const [data, setData] = useState<ScoutingData>(() => {
     const saved = localStorage.getItem('scoutingData');
-    return saved ? JSON.parse(saved) : INITIAL_DATA;
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        // Merge with INITIAL_DATA to ensure new fields (e.g. autoFuel) exist
+        return { ...INITIAL_DATA, ...parsed };
+      } catch (e) {
+        console.error("Failed to parse saved data", e);
+        return INITIAL_DATA;
+      }
+    }
+    return INITIAL_DATA;
   });
   
   // Settings & History State
