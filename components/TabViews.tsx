@@ -152,26 +152,42 @@ export const PreMatchTab: React.FC<TabProps> = ({ data, update }) => {
 
       <div className="space-y-2">
         <label className="text-xs font-bold text-slate-500 uppercase">{t('robotPosition')}</label>
-        <div className="grid grid-cols-3 gap-2">
-          {ROBOT_POSITION_OPTIONS.map(pos => {
-            const isRed = pos.startsWith('Red');
-            const isSelected = data.robotPosition === pos;
-            return (
-              <button
-                key={pos}
-                onClick={() => update({ robotPosition: pos as any })}
-                className={`p-3 rounded-lg text-sm font-bold border-2 transition-all ${
-                  isSelected
-                    ? isRed 
+        <div className="grid grid-cols-2 gap-4">
+          {/* Red Alliance Column */}
+          <div className="flex flex-col gap-2">
+             <div className="text-center text-red-500 font-bold text-xs uppercase tracking-wider mb-1">Red Alliance</div>
+             {ROBOT_POSITION_OPTIONS.filter(p => p.startsWith('Red')).map(pos => (
+                <button
+                  key={pos}
+                  onClick={() => update({ robotPosition: pos as any })}
+                  className={`p-4 rounded-xl text-base font-bold border-2 transition-all flex items-center justify-center ${
+                    data.robotPosition === pos
                       ? 'bg-red-500/20 border-red-500 text-red-500 shadow-[0_0_15px_rgba(239,68,68,0.2)]'
-                      : 'bg-blue-500/20 border-blue-500 text-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.2)]'
-                    : 'bg-slate-900 border-slate-800 text-slate-500 hover:border-slate-700'
-                }`}
-              >
-                {t(pos)}
-              </button>
-            );
-          })}
+                      : 'bg-slate-900 border-slate-800 text-slate-500 hover:border-slate-700 hover:bg-slate-800'
+                  }`}
+                >
+                  {t(pos)}
+                </button>
+             ))}
+          </div>
+
+          {/* Blue Alliance Column */}
+          <div className="flex flex-col gap-2">
+             <div className="text-center text-blue-500 font-bold text-xs uppercase tracking-wider mb-1">Blue Alliance</div>
+             {ROBOT_POSITION_OPTIONS.filter(p => p.startsWith('Blue')).map(pos => (
+                <button
+                  key={pos}
+                  onClick={() => update({ robotPosition: pos as any })}
+                  className={`p-4 rounded-xl text-base font-bold border-2 transition-all flex items-center justify-center ${
+                    data.robotPosition === pos
+                      ? 'bg-blue-500/20 border-blue-500 text-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.2)]'
+                      : 'bg-slate-900 border-slate-800 text-slate-500 hover:border-slate-700 hover:bg-slate-800'
+                  }`}
+                >
+                  {t(pos)}
+                </button>
+             ))}
+          </div>
         </div>
       </div>
 
