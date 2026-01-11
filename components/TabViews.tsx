@@ -29,6 +29,10 @@ const Counter: React.FC<{
   const [isPulsing, setIsPulsing] = useState(false);
   const longPressTimer = useRef<NodeJS.Timeout | null>(null);
   const rapidInterval = useRef<NodeJS.Timeout | null>(null);
+  const valueRef = useRef(value); // Track current value for interval callbacks
+
+  // Keep ref in sync with prop
+  valueRef.current = value;
 
   const triggerPulse = useCallback(() => {
     setIsPulsing(true);
@@ -36,29 +40,30 @@ const Counter: React.FC<{
   }, []);
 
   const handleInc = useCallback(() => {
-    if (value < max) {
-      onChange(value + 1);
+    if (valueRef.current < max) {
+      onChange(valueRef.current + 1);
       triggerPulse();
     }
-  }, [value, max, onChange, triggerPulse]);
+  }, [max, onChange, triggerPulse]);
 
   const handleDec = useCallback(() => {
-    if (value > min) {
-      onChange(value - 1);
+    if (valueRef.current > min) {
+      onChange(valueRef.current - 1);
       triggerPulse();
     }
-  }, [value, min, onChange, triggerPulse]);
+  }, [min, onChange, triggerPulse]);
 
-  // Long press for rapid increment (+5)
+  // Long press for rapid increment
   const startLongPress = useCallback((isIncrement: boolean) => {
     longPressTimer.current = setTimeout(() => {
       rapidInterval.current = setInterval(() => {
-        if (isIncrement) {
-          onChange((prev: number) => Math.min(prev + 1, max));
-        } else {
-          onChange((prev: number) => Math.max(prev - 1, min));
+        if (isIncrement && valueRef.current < max) {
+          onChange(valueRef.current + 1);
+          triggerPulse();
+        } else if (!isIncrement && valueRef.current > min) {
+          onChange(valueRef.current - 1);
+          triggerPulse();
         }
-        triggerPulse();
       }, 80);
     }, 400);
   }, [max, min, onChange, triggerPulse]);
