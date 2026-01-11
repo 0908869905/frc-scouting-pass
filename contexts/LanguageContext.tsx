@@ -12,44 +12,25 @@ const translations = {
     matchNumber: "Match Number",
     robotPosition: "Robot Position",
     teamNumber: "Team Number",
-    humanPlayer: "Human Player in Processor Area?",
     autoHeader: "[Auto]",
     teleopHeader: "[Teleop]",
     
     // Auto
     leaveZone: "Leave Starting Zone",
-    coralScoring: "Coral Scoring",
-    algaeScoring: "Algae Scoring",
-    l4Success: "L4 Success",
-    l4Fail: "L4 Fail",
-    l3Success: "L3 Success",
-    l3Fail: "L3 Fail",
-    l2Success: "L2 Success",
-    l2Fail: "L2 Fail",
-    l1Success: "L1 Success",
-    l1Fail: "L1 Fail",
-    processorHit: "Processor Hit",
-    processorMiss: "Processor Miss",
-    netHit: "Net Hit",
-    netMiss: "Net Miss",
-
+    autoFuel: "Fuel Scored (Active Hub)",
+    towerLevel1: "Tower Level 1",
+    
     // Teleop
-    pickupSource: "Pickup Source",
-    opponentProcessor: "Opponent Processor Shot?",
-    endGame: "End Game",
-    bargeTimer: "Barge Timer",
-    finalStatus: "Final Status",
+    teleFuel: "Fuel Scored (Active Hub)",
+    teleTower: "Tower Climb (End Game)",
 
     // Post Match
-    driverSkill: "Driver Skill (0-5)",
     defenseRating: "Defense Rating (0-5)",
+    driverRating: "Driver Skill (0-5)",
     speedRating: "Speed Rating (0-5)",
-    coopBonus: "Coop Bonus Met?",
     defendedBy: "Defended By (Team #)",
     robotDied: "Robot Died/Disabled",
     tippedOver: "Tipped Over",
-    droppedCoral: "Dropped Coral (2+)",
-    droppedAlgae: "Dropped Algae (2+)",
     comments: "Comments",
     commentsPlaceholder: "Strategy, strengths, weaknesses...",
 
@@ -96,17 +77,12 @@ const translations = {
     "Red 1": "Red 1", "Red 2": "Red 2", "Red 3": "Red 3",
     "Blue 1": "Blue 1", "Blue 2": "Blue 2", "Blue 3": "Blue 3",
     
-    "Coral Station": "Coral Station", 
-    "Floor": "Floor", 
-    "Both": "Both", 
-    "Not Attempted": "Not Attempted",
-    
     "None": "None", 
     "Parked": "Parked", 
-    "Deep Cage": "Deep Cage", 
-    "Shallow Cage": "Shallow Cage", 
-    "Failed Deep": "Failed Deep", 
-    "Failed Shallow": "Failed Shallow"
+    "Level 1": "Level 1",
+    "Level 2": "Level 2",
+    "Level 3": "Level 3",
+    "Failed": "Failed"
   },
   zh: {
     // Headers
@@ -116,44 +92,25 @@ const translations = {
     matchNumber: "場次",
     robotPosition: "機器人位置",
     teamNumber: "隊伍編號",
-    humanPlayer: "人類玩家在處理區？",
     autoHeader: "[自動階段]",
     teleopHeader: "[手動階段]",
     
     // Auto
     leaveZone: "離開起始區",
-    coralScoring: "珊瑚得分",
-    algaeScoring: "藻類得分",
-    l4Success: "L4 成功",
-    l4Fail: "L4 失敗",
-    l3Success: "L3 成功",
-    l3Fail: "L3 失敗",
-    l2Success: "L2 成功",
-    l2Fail: "L2 失敗",
-    l1Success: "L1 成功",
-    l1Fail: "L1 失敗",
-    processorHit: "處理器命中",
-    processorMiss: "處理器失誤",
-    netHit: "網命中",
-    netMiss: "網失誤",
+    autoFuel: "得分燃料 (活躍 Hub)",
+    towerLevel1: "塔樓層級 1",
 
     // Teleop
-    pickupSource: "拾取來源",
-    opponentProcessor: "射入對手處理器？",
-    endGame: "終局",
-    bargeTimer: "登船計時",
-    finalStatus: "最終狀態",
+    teleFuel: "得分燃料 (活躍 Hub)",
+    teleTower: "攀爬塔樓 (終局)",
 
     // Post Match
-    driverSkill: "駕駛技術 (0-5)",
     defenseRating: "防守評分 (0-5)",
+    driverRating: "駕駛技術 (0-5)",
     speedRating: "速度評分 (0-5)",
-    coopBonus: "達成合作獎勵？",
     defendedBy: "被誰防守 (隊伍號碼)",
     robotDied: "機器人死亡/失效",
     tippedOver: "翻倒",
-    droppedCoral: "掉落珊瑚 (2+)",
-    droppedAlgae: "掉落藻類 (2+)",
     comments: "備註",
     commentsPlaceholder: "策略、優勢、劣勢...",
 
@@ -200,17 +157,12 @@ const translations = {
     "Red 1": "紅 1", "Red 2": "紅 2", "Red 3": "紅 3",
     "Blue 1": "藍 1", "Blue 2": "藍 2", "Blue 3": "藍 3",
     
-    "Coral Station": "珊瑚站", 
-    "Floor": "地面", 
-    "Both": "兩者", 
-    "Not Attempted": "未嘗試",
-    
     "None": "無", 
     "Parked": "停泊", 
-    "Deep Cage": "深籠", 
-    "Shallow Cage": "淺籠", 
-    "Failed Deep": "深籠失敗", 
-    "Failed Shallow": "淺籠失敗"
+    "Level 1": "層級 1",
+    "Level 2": "層級 2",
+    "Level 3": "層級 3",
+    "Failed": "失敗"
   }
 };
 

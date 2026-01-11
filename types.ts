@@ -26,17 +26,10 @@ export enum RobotPosition {
 export enum EndGameStatus {
   None = 'None',
   Parked = 'Parked',
-  DeepCage = 'Deep Cage',
-  ShallowCage = 'Shallow Cage',
-  FailedDeep = 'Failed Deep',
-  FailedShallow = 'Failed Shallow'
-}
-
-export enum PickupSource {
-  Source = 'Coral Station',
-  Floor = 'Floor',
-  Both = 'Both',
-  None = 'None'
+  Level1 = 'Level 1',
+  Level2 = 'Level 2',
+  Level3 = 'Level 3',
+  Failed = 'Failed'
 }
 
 // The core data structure collected during a match or pit scouting
@@ -52,53 +45,23 @@ export interface ScoutingData {
   matchLevel: MatchLevel;
   matchNumber: number;
   robotPosition: RobotPosition;
-  humanPlayerPresent: boolean;
-
+  
   // Auton
   autoLeave: boolean;
-  autoCoralL1Success: number;
-  autoCoralL1Fail: number;
-  autoCoralL2Success: number;
-  autoCoralL2Fail: number;
-  autoCoralL3Success: number;
-  autoCoralL3Fail: number;
-  autoCoralL4Success: number;
-  autoCoralL4Fail: number;
-  autoProcessorSuccess: number;
-  autoProcessorFail: number;
-  autoNetSuccess: number;
-  autoNetFail: number;
-
-  // Teleop
-  teleCoralL1Success: number;
-  teleCoralL1Fail: number;
-  teleCoralL2Success: number;
-  teleCoralL2Fail: number;
-  teleCoralL3Success: number;
-  teleCoralL3Fail: number;
-  teleCoralL4Success: number;
-  teleCoralL4Fail: number;
-  teleProcessorSuccess: number;
-  teleProcessorFail: number;
-  teleNetSuccess: number;
-  teleNetFail: number;
+  autoFuel: number;        // Points: 1 per fuel in active hub
+  autoTowerLevel1: boolean; // Points: 15 for Level 1 in Auto
   
-  telePickupSource: PickupSource;
-  teleOpponentProcessor: boolean;
-  teleBargeTime: number; // Seconds
-  teleEndGame: EndGameStatus;
+  // Teleop
+  teleFuel: number;        // Points: 1 per fuel in active hub
+  teleTower: EndGameStatus; // Points: L2=20, L3=30
 
   // Post Match
   defenseRating: number; // 0-5
   driverRating: number; // 0-5
   speedRating: number; // 0-5
   defendedBy: string;
-  coopBonus: boolean;
-  algaeRemaning: number;
   robotDied: boolean;
   tippedOver: boolean;
-  droppedCoral: boolean;
-  droppedAlgae: boolean;
   comments: string;
   tags: string[]; // Strategy Tags
 
@@ -108,14 +71,10 @@ export interface ScoutingData {
   pitLength: number; // inches or cm
   pitWidth: number;
   pitWeight: number; // lbs or kg
-  pitCanCoralL1: boolean;
-  pitCanCoralL2: boolean;
-  pitCanCoralL3: boolean;
-  pitCanCoralL4: boolean;
-  pitCanAlgaeProcessor: boolean;
-  pitCanAlgaeNet: boolean;
-  pitCanDeepCage: boolean;
-  pitCanShallowCage: boolean;
+  pitCanFuel: boolean;
+  pitCanTowerL1: boolean;
+  pitCanTowerL2: boolean;
+  pitCanTowerL3: boolean;
   pitAutoNotes: string;
 }
 
@@ -135,50 +94,20 @@ export const INITIAL_DATA: ScoutingData = {
   matchNumber: 1,
   robotPosition: RobotPosition.Red1,
   teamNumber: '',
-  humanPlayerPresent: false,
 
   autoLeave: false,
-  autoCoralL1Success: 0,
-  autoCoralL1Fail: 0,
-  autoCoralL2Success: 0,
-  autoCoralL2Fail: 0,
-  autoCoralL3Success: 0,
-  autoCoralL3Fail: 0,
-  autoCoralL4Success: 0,
-  autoCoralL4Fail: 0,
-  autoProcessorSuccess: 0,
-  autoProcessorFail: 0,
-  autoNetSuccess: 0,
-  autoNetFail: 0,
+  autoFuel: 0,
+  autoTowerLevel1: false,
 
-  teleCoralL1Success: 0,
-  teleCoralL1Fail: 0,
-  teleCoralL2Success: 0,
-  teleCoralL2Fail: 0,
-  teleCoralL3Success: 0,
-  teleCoralL3Fail: 0,
-  teleCoralL4Success: 0,
-  teleCoralL4Fail: 0,
-  teleProcessorSuccess: 0,
-  teleProcessorFail: 0,
-  teleNetSuccess: 0,
-  teleNetFail: 0,
-
-  telePickupSource: PickupSource.None,
-  teleOpponentProcessor: false,
-  teleBargeTime: 0,
-  teleEndGame: EndGameStatus.None,
+  teleFuel: 0,
+  teleTower: EndGameStatus.None,
 
   defenseRating: 0,
   driverRating: 0,
   speedRating: 0,
   defendedBy: '',
-  coopBonus: false,
-  algaeRemaning: 0,
   robotDied: false,
   tippedOver: false,
-  droppedCoral: false,
-  droppedAlgae: false,
   comments: '',
   tags: [],
 
@@ -188,13 +117,9 @@ export const INITIAL_DATA: ScoutingData = {
   pitLength: 0,
   pitWidth: 0,
   pitWeight: 0,
-  pitCanCoralL1: false,
-  pitCanCoralL2: false,
-  pitCanCoralL3: false,
-  pitCanCoralL4: false,
-  pitCanAlgaeProcessor: false,
-  pitCanAlgaeNet: false,
-  pitCanDeepCage: false,
-  pitCanShallowCage: false,
+  pitCanFuel: false,
+  pitCanTowerL1: false,
+  pitCanTowerL2: false,
+  pitCanTowerL3: false,
   pitAutoNotes: ''
 };

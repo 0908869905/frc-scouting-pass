@@ -1,9 +1,9 @@
-import { MatchLevel, RobotPosition, PickupSource, EndGameStatus } from './types';
+import { MatchLevel, RobotPosition, EndGameStatus } from './types';
 
 export const APP_CONFIG = {
   teamName: "6998",
   appName: "Scouting PASS",
-  year: 2025,
+  year: 2026,
   googleScriptUrl: "https://script.google.com/macros/s/AKfycbxRad3OJI_i0k9oEJhC65YxGxvxYbIM0tnMH66scmFCtHxIYtI-Ihno4sySS2VTFDSW/exec", // Replace with actual URL
   tbaApiKey: "YOUR_TBA_API_KEY_HERE" // Optional
 };
@@ -17,38 +17,21 @@ export const ROBOT_POSITION_OPTIONS = [
   RobotPosition.Red3, RobotPosition.Blue3
 ];
 
-export const PICKUP_SOURCE_OPTIONS = Object.values(PickupSource);
 export const ENDGAME_OPTIONS = Object.values(EndGameStatus);
 
 // This order dictates the TSV column order. MUST match the ScoutingData keys.
 export const TSV_SCHEMA_MATCH = [
-  'scouterName', 'eventCode', 'matchLevel', 'matchNumber', 'robotPosition', 'teamNumber', 'humanPlayerPresent',
-  'autoLeave', 
-  'autoCoralL1Success', 'autoCoralL1Fail', 
-  'autoCoralL2Success', 'autoCoralL2Fail', 
-  'autoCoralL3Success', 'autoCoralL3Fail', 
-  'autoCoralL4Success', 'autoCoralL4Fail',
-  'autoProcessorSuccess', 'autoProcessorFail',
-  'autoNetSuccess', 'autoNetFail',
-  
-  'teleCoralL1Success', 'teleCoralL1Fail', 
-  'teleCoralL2Success', 'teleCoralL2Fail', 
-  'teleCoralL3Success', 'teleCoralL3Fail', 
-  'teleCoralL4Success', 'teleCoralL4Fail',
-  'teleProcessorSuccess', 'teleProcessorFail',
-  'teleNetSuccess', 'teleNetFail',
-  
-  'telePickupSource', 'teleOpponentProcessor', 'teleBargeTime', 'teleEndGame',
-  
-  'defenseRating', 'driverRating', 'speedRating', 'defendedBy', 'coopBonus', 'algaeRemaning',
-  'robotDied', 'tippedOver', 'droppedCoral', 'droppedAlgae', 'comments'
+  'scouterName', 'eventCode', 'matchLevel', 'matchNumber', 'robotPosition', 'teamNumber',
+  'autoLeave', 'autoFuel', 'autoTowerLevel1',
+  'teleFuel', 'teleTower',
+  'defenseRating', 'driverRating', 'speedRating', 'defendedBy',
+  'robotDied', 'tippedOver', 'comments'
 ];
 
 export const TSV_SCHEMA_PIT = [
   'scouterName', 'eventCode', 'teamNumber',
   'pitDriveTrain', 'pitMotorType', 'pitLength', 'pitWidth', 'pitWeight',
-  'pitCanCoralL1', 'pitCanCoralL2', 'pitCanCoralL3', 'pitCanCoralL4',
-  'pitCanAlgaeProcessor', 'pitCanAlgaeNet',
-  'pitCanDeepCage', 'pitCanShallowCage',
+  'pitCanFuel',
+  'pitCanTowerL1', 'pitCanTowerL2', 'pitCanTowerL3',
   'pitAutoNotes'
 ];
