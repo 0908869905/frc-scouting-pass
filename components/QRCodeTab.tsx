@@ -5,7 +5,7 @@ import { ScoutingData } from '../types';
 import { generateTSV, uploadToGoogleSheets } from '../services/googleSheets';
 import { saveMatchToHistory, markAsSynced } from '../services/storage';
 import { Button } from './ui/Button';
-import { Copy, CheckCircle, AlertCircle, Save, WifiOff, FileText, Zap, Info } from 'lucide-react';
+import { Copy, CheckCircle, AlertCircle, Save, WifiOff, Zap, Info } from 'lucide-react';
 import LZString from 'lz-string';
 import { TSV_SCHEMA_MATCH, TSV_SCHEMA_PIT } from '../constants';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -19,7 +19,6 @@ export const QRCodeTab: React.FC<Props> = ({ data, onReset }) => {
   const { t } = useLanguage();
   const [status, setStatus] = useState<'idle' | 'saving' | 'uploaded' | 'offline_saved' | 'error'>('idle');
   const [isSavedLocally, setIsSavedLocally] = useState(false);
-  const [qrMode, setQrMode] = useState<'compressed' | 'raw'>('compressed');
   const [showSchema, setShowSchema] = useState(false);
   
   const tsvData = generateTSV(data);
@@ -28,11 +27,9 @@ export const QRCodeTab: React.FC<Props> = ({ data, onReset }) => {
   
   // LZ-String compression to Base64 to make QR less dense
   const compressedData = LZString.compressToBase64(tsvData);
-  
-  const displayValue = qrMode === 'compressed' ? compressedData : tsvData;
 
   const handleCopy = () => {
-    // Usually humans want the raw TSV when copying to clipboard, even if QR is compressed
+    // Usually humans want the raw TSV when copying to clipboard
     navigator.clipboard.writeText(tsvData);
     alert('Raw TSV copied to clipboard!');
   };
@@ -72,20 +69,10 @@ export const QRCodeTab: React.FC<Props> = ({ data, onReset }) => {
   return (
     <div className="flex flex-col items-center justify-center space-y-6 animate-in fade-in zoom-in duration-300 pb-20 w-full">
       
-      {/* QR Mode Toggle */}
-      <div className="flex bg-slate-800 p-1 rounded-lg border border-slate-700">
-        <button
-            onClick={() => setQrMode('raw')}
-            className={`px-4 py-2 rounded-md text-sm font-bold flex items-center gap-2 transition-all ${qrMode === 'raw' ? 'bg-brand-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
-        >
-            <FileText size={16} /> {t('rawTSV')}
-        </button>
-        <button
-            onClick={() => setQrMode('compressed')}
-            className={`px-4 py-2 rounded-md text-sm font-bold flex items-center gap-2 transition-all ${qrMode === 'compressed' ? 'bg-brand-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
-        >
-            <Zap size={16} /> {t('compressed')}
-        </button>
+      {/* Title */}
+      <div className="flex items-center gap-2 text-brand-400">
+        <Zap size={20} />
+        <span className="text-sm font-bold uppercase tracking-wider">Compressed QR Code</span>
       </div>
 
       {/* QR Code Container */}
@@ -94,19 +81,19 @@ export const QRCodeTab: React.FC<Props> = ({ data, onReset }) => {
             <QRCode
                 size={256}
                 style={{ height: "auto", maxWidth: "100%", width: "100%" }}
-                value={displayValue}
+                value={compressedData}
                 viewBox={`0 0 256 256`}
             />
         </div>
       </div>
       
-      {/* Helper Text */}
+      {/* Raw TSV Preview (human readable) */}
       <div className="text-center space-y-2 w-full max-w-md px-4">
           <p className="text-slate-400 text-xs">
-              {qrMode === 'compressed' ? 'LZ-String Base64 Encoded' : 'Plain Text Tab Separated Values'}
+              Raw Data Preview
           </p>
           <div className="text-left text-slate-500 text-[10px] font-mono bg-slate-900 p-2 rounded border border-slate-800 w-full break-all max-h-32 overflow-y-auto">
-            {displayValue}
+            {tsvData}
           </div>
 
           {/* Schema Viewer Toggle */}
