@@ -702,14 +702,37 @@ cp ios-icons/*.png ios/App/App/Assets.xcassets/AppIcon.appiconset/
 
 ---
 
+### Phase 13: 程式碼簡化
+- **Status:** ✅ complete
+- **Completed:** 2026-01-24
+
+#### Task 13.1: 死碼清除
+- 刪除 `components/ui/InputFields.tsx` - 重複的組件，從未被 import
+- 刪除 `services/tbaService.ts` - stub 函數，永遠回傳 null
+
+#### Task 13.2: 程式碼優化
+- `FieldCanvas.tsx`: 移除重複的 PathPoint 介面
+- `TabViews.tsx`: 移除未使用的 Button import
+- `QRCodeTab.tsx`: 簡化冗餘的三元運算式
+- `googleSheets.ts`: `any` → 正確型別
+- `LanguageContext.tsx`: 移除 @ts-ignore
+- 多個檔案: 優化 React import (改用具體 import)
+
+**統計:**
+- 刪除 ~250 行死碼
+- 優化 10 個檔案
+- 淨減少 241 行程式碼
+
+---
+
 ## 5-Question Reboot Check (Updated)
 | Question | Answer |
 |----------|--------|
-| Where am I? | Windows 部分全部完成，App Icon 已生成，準備在 Mac 上打包 |
+| Where am I? | Windows 部分全部完成，程式碼已簡化，準備在 Mac 上打包 |
 | Where am I going? | Mac: 建立 iOS 專案 → 設定圖標 → Xcode 簽名 → 上架 App Store |
 | What's the goal? | 讓 scouter 可以離線使用 iOS App 進行比賽 scouting |
-| What have I learned? | Capacitor iOS 打包流程、PWA 設定、Vercel 部署、iOS 圖標尺寸 |
-| What have I done? | 場地圖本地化 + PWA + Vercel 部署 + Capacitor 設定 + App Icon 生成 |
+| What have I learned? | Capacitor iOS 打包、PWA 設定、Vercel 部署、iOS 圖標尺寸、程式碼簡化 |
+| What have I done? | 場地圖本地化 + PWA + Vercel + Capacitor + App Icon + 程式碼簡化 |
 
 ---
 
