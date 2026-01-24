@@ -1,5 +1,5 @@
-
-import React, { useState } from 'react';
+import { Fragment, useState } from 'react';
+import type { FC } from 'react';
 import QRCode from 'react-qr-code';
 import { ScoutingData } from '../types';
 import { generateTSV, uploadToGoogleSheets } from '../services/googleSheets';
@@ -15,7 +15,7 @@ interface Props {
   onReset: () => void;
 }
 
-export const QRCodeTab: React.FC<Props> = ({ data, onReset }) => {
+export const QRCodeTab: FC<Props> = ({ data, onReset }) => {
   const { t } = useLanguage();
   const [status, setStatus] = useState<'idle' | 'saving' | 'uploaded' | 'offline_saved' | 'error'>('idle');
   const [isSavedLocally, setIsSavedLocally] = useState(false);
@@ -107,10 +107,10 @@ export const QRCodeTab: React.FC<Props> = ({ data, onReset }) => {
           {showSchema && (
             <div className="grid grid-cols-[1fr,auto] gap-x-2 gap-y-1 text-[10px] text-left bg-slate-900/50 p-3 rounded border border-slate-800 w-full max-h-60 overflow-y-auto">
                 {schema.map((key, i) => (
-                <React.Fragment key={key}>
+                <Fragment key={key}>
                     <div className="text-slate-500 font-mono truncate border-b border-slate-800/50 py-1">{key}</div>
                     <div className="text-brand-400 font-mono font-bold border-b border-slate-800/50 py-1">{rawValues[i]}</div>
-                </React.Fragment>
+                </Fragment>
                 ))}
             </div>
           )}
@@ -121,9 +121,9 @@ export const QRCodeTab: React.FC<Props> = ({ data, onReset }) => {
           <Copy size={20} /> {t('copyTSV')}
         </Button>
 
-        <Button 
-          onClick={handleSaveAndUpload} 
-          variant={status === 'uploaded' ? 'success' : status === 'offline_saved' ? 'primary' : 'primary'}
+        <Button
+          onClick={handleSaveAndUpload}
+          variant={status === 'uploaded' ? 'success' : 'primary'}
           disabled={status === 'saving' || status === 'uploaded'}
           className={`gap-2 ${status === 'offline_saved' ? 'bg-orange-600 hover:bg-orange-500' : ''}`}
         >

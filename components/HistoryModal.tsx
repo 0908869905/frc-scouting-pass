@@ -1,5 +1,5 @@
-
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import type { FC } from 'react';
 import { X, CheckCircle, AlertCircle, UploadCloud, Trash2, RefreshCw } from 'lucide-react';
 import { MatchRecord } from '../types';
 import { getHistory, deleteMatchRecord, markAsSynced } from '../services/storage';
@@ -12,7 +12,7 @@ interface Props {
   onClose: () => void;
 }
 
-export const HistoryModal: React.FC<Props> = ({ isOpen, onClose }) => {
+export const HistoryModal: FC<Props> = ({ isOpen, onClose }) => {
   const { t } = useLanguage();
   const [history, setHistory] = useState<MatchRecord[]>([]);
   const [isSyncing, setIsSyncing] = useState(false);

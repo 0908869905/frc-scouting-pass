@@ -32,12 +32,12 @@ const formatComments = (data: ScoutingData): string => {
 
 // Safely stringify JSON with Unicode escaping to ensure correct transmission
 // across no-cors requests to Google Apps Script (which can sometimes mangle raw UTF-8).
-// We keep this for the JSON API upload as JSON.parse on the server handles unicode escapes automatically.
-const safeJsonStringify = (obj: any) => {
+// JSON.parse on the server handles unicode escapes automatically.
+function safeJsonStringify(obj: Record<string, unknown>): string {
   return JSON.stringify(obj).replace(/[^\x00-\x7F]/g, c => {
     return '\\u' + ('0000' + c.charCodeAt(0).toString(16)).slice(-4);
   });
-};
+}
 
 export const generateTSV = (data: ScoutingData): string => {
   const schema = data.mode === 'Pit' ? TSV_SCHEMA_PIT : TSV_SCHEMA_MATCH;
@@ -91,7 +91,7 @@ export const uploadToGoogleSheets = async (data: ScoutingData): Promise<boolean>
   }
 
   // Create a copy to transform values for upload consistency with TSV
-  const payload: any = { ...data };
+  const payload: Record<string, unknown> = { ...data };
 
   // Abbreviations
   if (payload.matchLevel && MATCH_LEVEL_ABBREV[payload.matchLevel]) {

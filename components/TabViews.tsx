@@ -1,7 +1,6 @@
-
-import React, { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback } from 'react';
+import type { FC } from 'react';
 import { ScoutingData, Handedness, EndGameStatus } from '../types';
-import { Button } from './ui/Button';
 import { useLanguage } from '../contexts/LanguageContext';
 import { Plus, Minus, Check, Zap } from 'lucide-react';
 import { MATCH_LEVEL_OPTIONS, ROBOT_POSITION_OPTIONS, ENDGAME_OPTIONS } from '../constants';
@@ -18,7 +17,7 @@ interface TabProps {
 // -----------------------------------------------------------------------------
 
 // Enhanced Counter with larger buttons, pulse animation, and long-press support
-const Counter: React.FC<{
+const Counter: FC<{
   label: string;
   value: number;
   onChange: (val: number) => void;
@@ -120,7 +119,7 @@ const Counter: React.FC<{
 };
 
 // Enhanced Toggle with larger touch target
-const Toggle: React.FC<{
+const Toggle: FC<{
   label: string;
   checked: boolean;
   onChange: (checked: boolean) => void;
@@ -153,7 +152,7 @@ const Toggle: React.FC<{
 // Pre-Match Tab
 // -----------------------------------------------------------------------------
 
-export const PreMatchTab: React.FC<TabProps> = ({ data, update }) => {
+export const PreMatchTab: FC<TabProps> = ({ data, update }) => {
   const { t } = useLanguage();
 
   return (
@@ -269,11 +268,10 @@ export const PreMatchTab: React.FC<TabProps> = ({ data, update }) => {
 // Auton Tab - Green Theme
 // -----------------------------------------------------------------------------
 
-export const AutonTab: React.FC<TabProps> = ({ data, update, handedness }) => {
+export const AutonTab: FC<TabProps> = ({ data, update, handedness }) => {
   const { t } = useLanguage();
 
-  // Derive alliance from robot position
-  const alliance = data.robotPosition.startsWith('Red') ? 'red' : 'blue';
+  const alliance: 'red' | 'blue' = data.robotPosition.startsWith('Red') ? 'red' : 'blue';
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-right-8 duration-500">
@@ -288,7 +286,7 @@ export const AutonTab: React.FC<TabProps> = ({ data, update, handedness }) => {
       <FieldCanvas
         path={data.autoPath}
         onPathChange={(path) => update({ autoPath: path })}
-        alliance={alliance as 'red' | 'blue'}
+        alliance={alliance}
       />
 
       {/* Main Content */}
@@ -326,7 +324,7 @@ export const AutonTab: React.FC<TabProps> = ({ data, update, handedness }) => {
 // Teleop Tab - Blue Theme
 // -----------------------------------------------------------------------------
 
-export const TeleopTab: React.FC<TabProps> = ({ data, update, handedness }) => {
+export const TeleopTab: FC<TabProps> = ({ data, update, handedness }) => {
   const { t } = useLanguage();
 
   return (
@@ -382,11 +380,11 @@ export const TeleopTab: React.FC<TabProps> = ({ data, update, handedness }) => {
 // Post Match Tab - Orange Theme
 // -----------------------------------------------------------------------------
 
-export const PostMatchTab: React.FC<TabProps> = ({ data, update }) => {
+export const PostMatchTab: FC<TabProps> = ({ data, update }) => {
   const { t } = useLanguage();
 
   // Inline Rating Component
-  const Rating: React.FC<{ label: string; value: number; onChange: (v: number) => void }> = ({ label, value, onChange }) => (
+  const Rating: FC<{ label: string; value: number; onChange: (v: number) => void }> = ({ label, value, onChange }) => (
     <div className="space-y-2">
       <div className="flex justify-between items-center">
         <label className="text-xs font-bold text-slate-400 uppercase">{label}</label>

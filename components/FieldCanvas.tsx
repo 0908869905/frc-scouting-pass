@@ -1,13 +1,10 @@
-import React, { useRef, useEffect, useState, useCallback } from 'react';
+import { useRef, useEffect, useState, useCallback, PointerEvent } from 'react';
+import type { FC } from 'react';
 import { Trash2, Undo2, Share2 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
+import { PathPoint } from '../types';
 import fieldRed from '../field-red.png';
 import fieldBlue from '../field-blue.png';
-
-export interface PathPoint {
-  x: number;
-  y: number;
-}
 
 interface FieldCanvasProps {
   path: PathPoint[];
@@ -18,7 +15,7 @@ interface FieldCanvasProps {
 // Half-field aspect ratio (height/width) - based on provided field images
 const HALF_FIELD_ASPECT_RATIO = 1.0; // Square aspect ratio
 
-export const FieldCanvas: React.FC<FieldCanvasProps> = ({ path, onPathChange, alliance }) => {
+export const FieldCanvas: FC<FieldCanvasProps> = ({ path, onPathChange, alliance }) => {
   const { t } = useLanguage();
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -130,7 +127,7 @@ export const FieldCanvas: React.FC<FieldCanvasProps> = ({ path, onPathChange, al
   }, [path, currentStroke, canvasSize]);
 
   // Convert pointer event to percentage coordinates
-  const getPointFromEvent = useCallback((e: React.PointerEvent): PathPoint => {
+  const getPointFromEvent = useCallback((e: PointerEvent): PathPoint => {
     const canvas = canvasRef.current;
     if (!canvas) return { x: 0, y: 0 };
 
@@ -144,14 +141,14 @@ export const FieldCanvas: React.FC<FieldCanvasProps> = ({ path, onPathChange, al
     };
   }, []);
 
-  const handlePointerDown = useCallback((e: React.PointerEvent) => {
+  const handlePointerDown = useCallback((e: PointerEvent) => {
     e.preventDefault();
     setIsDrawing(true);
     const point = getPointFromEvent(e);
     setCurrentStroke([point]);
   }, [getPointFromEvent]);
 
-  const handlePointerMove = useCallback((e: React.PointerEvent) => {
+  const handlePointerMove = useCallback((e: PointerEvent) => {
     if (!isDrawing) return;
     e.preventDefault();
 
@@ -235,7 +232,7 @@ export const FieldCanvas: React.FC<FieldCanvasProps> = ({ path, onPathChange, al
         downloadImage(blob);
       }
     }, 'image/png');
-  }, [canvasSize, fieldImage, alliance]);
+  }, [canvasSize, fieldImage]);
 
   const downloadImage = (blob: Blob) => {
     const url = URL.createObjectURL(blob);

@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { MatchPhase, ScoutingData, INITIAL_DATA, MatchLevel, Handedness } from './types';
 import { PreMatchTab, AutonTab, TeleopTab, PostMatchTab } from './components/TabViews';
 import { QRCodeTab } from './components/QRCodeTab';

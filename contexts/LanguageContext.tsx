@@ -1,5 +1,5 @@
-
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
+import type { FC, ReactNode } from 'react';
 
 type Language = 'en' | 'zh';
 
@@ -184,7 +184,7 @@ interface LanguageContextType {
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
-export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const LanguageProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const [lang, setLang] = useState<Language>(() => {
     return (localStorage.getItem('app_language') as Language) || 'en';
   });
@@ -194,8 +194,8 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   }, [lang]);
 
   const t = (key: string): string => {
-    // @ts-ignore
-    return translations[lang][key] || key;
+    const langTranslations = translations[lang] as Record<string, string>;
+    return langTranslations[key] || key;
   };
 
   return (
