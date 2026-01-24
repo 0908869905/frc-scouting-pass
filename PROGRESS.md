@@ -626,11 +626,30 @@ Auto Path Drawing 功能開發 - 在 Auton 頁籤添加場地圖路徑繪製功�
 **Files Created:**
 - `FRC/capacitor.config.ts`
 
-#### Task 12.2: iOS 專案建立 (Mac)
+#### Task 12.2: App Icon 生成 (Windows)
+- **Status:** ✅ complete
+- 使用 Google Nano Banana 生成原始圖標 (4096x4096)
+- 用 Python PIL 轉換為所有 iOS 所需尺寸
+- 同時更新 PWA 圖標
+
+**圖標特色:**
+- 6998 數字為主視覺
+- NNKIEH + 國立南科國際實驗高級中學
+- 科技/機器人風格、青金色配色
+
+**Files Created:**
+- `ios-icons/AppIcon-1024.png` (App Store)
+- `ios-icons/AppIcon-*.png` (13 個尺寸: 20, 29, 40, 58, 60, 76, 80, 87, 120, 152, 167, 180, 1024)
+
+**Files Updated:**
+- `public/icons/icon-192.png` (PWA)
+- `public/icons/icon-512.png` (PWA)
+
+#### Task 12.3: iOS 專案建立 (Mac)
 - **Status:** ⏳ 待執行
 - 需要在 Mac 上執行
 
-#### Task 12.3: Xcode 設定與打包 (Mac)
+#### Task 12.4: Xcode 設定與打包 (Mac)
 - **Status:** ⏳ 待執行
 - 需要在 Mac 上執行
 
@@ -664,10 +683,15 @@ npx cap open ios
 4. **Bundle Identifier** 保持 `com.frc6998.scouting`
 5. 勾選 **Automatically manage signing**
 
-### 步驟 5: App Icon
-- 需要 1024x1024 的 App Icon
-- 放到 `ios/App/App/Assets.xcassets/AppIcon.appiconset/`
-- 或在 Xcode 中直接拖放
+### 步驟 5: App Icon (已準備好)
+圖標已在 `ios-icons/` 目錄，執行以下指令複製：
+```bash
+cp ios-icons/*.png ios/App/App/Assets.xcassets/AppIcon.appiconset/
+```
+或在 Xcode 中：
+1. 打開 `ios/App/App/Assets.xcassets`
+2. 點擊 `AppIcon`
+3. 拖放 `ios-icons/AppIcon-1024.png` 到 1024pt 格子
 
 ### 步驟 6: 打包上傳
 1. 目標設備選 **Any iOS Device (arm64)**
@@ -681,11 +705,11 @@ npx cap open ios
 ## 5-Question Reboot Check (Updated)
 | Question | Answer |
 |----------|--------|
-| Where am I? | Windows 部分完成，準備在 Mac 上打包 iOS App |
-| Where am I going? | Mac: 建立 iOS 專案 → Xcode 設定 → 上架 App Store |
+| Where am I? | Windows 部分全部完成，App Icon 已生成，準備在 Mac 上打包 |
+| Where am I going? | Mac: 建立 iOS 專案 → 設定圖標 → Xcode 簽名 → 上架 App Store |
 | What's the goal? | 讓 scouter 可以離線使用 iOS App 進行比賽 scouting |
-| What have I learned? | Capacitor iOS 打包流程、PWA 設定、Vercel 部署 |
-| What have I done? | 場地圖本地化 + PWA + Vercel 部署 + Capacitor 設定 |
+| What have I learned? | Capacitor iOS 打包流程、PWA 設定、Vercel 部署、iOS 圖標尺寸 |
+| What have I done? | 場地圖本地化 + PWA + Vercel 部署 + Capacitor 設定 + App Icon 生成 |
 
 ---
 
