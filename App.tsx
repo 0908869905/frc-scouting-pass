@@ -4,7 +4,7 @@ import { PreMatchTab, AutonTab, TeleopTab, PostMatchTab } from './components/Tab
 import { QRCodeTab } from './components/QRCodeTab';
 import { HistoryModal } from './components/HistoryModal';
 import { Button } from './components/ui/Button';
-import { APP_CONFIG } from './constants';
+import { APP_CONFIG, STARTING_ZONE_WIDTH, STARTING_ZONE_OFFSET } from './constants';
 import { ChevronRight, ChevronLeft, Settings, X, History as HistoryIcon, Globe } from 'lucide-react';
 import { getUnsyncedCount } from './services/storage';
 import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
@@ -58,10 +58,6 @@ function AppContent() {
   const updateData = (fields: Partial<ScoutingData>) => {
     setData(prev => ({ ...prev, ...fields }));
   };
-
-  // Starting zone validation constants (must match FieldCanvas.tsx)
-  const STARTING_ZONE_WIDTH = 20;
-  const STARTING_ZONE_OFFSET = 40;
 
   const validateRequiredFields = (notify: boolean = true): boolean => {
     const errors: string[] = [];

@@ -12,6 +12,13 @@ interface TabProps {
   handedness?: Handedness;
 }
 
+// Team number validation helper (valid range: 1-9999)
+function isTeamNumberInvalid(teamNumber: string): boolean {
+  if (!teamNumber) return false;
+  const num = parseInt(teamNumber, 10);
+  return isNaN(num) || num < 1 || num > 9999;
+}
+
 // -----------------------------------------------------------------------------
 // Helper Components - Ergonomic Design
 // -----------------------------------------------------------------------------
@@ -254,7 +261,7 @@ export const PreMatchTab: FC<TabProps> = ({ data, update }) => {
         <input
           type="number"
           className={`w-full bg-gradient-to-b from-slate-800 to-slate-900 border-2 rounded-2xl p-5 text-5xl font-display font-black text-center text-white focus:ring-2 outline-none transition-all placeholder:text-slate-700 tracking-wider ${
-            data.teamNumber && (isNaN(parseInt(data.teamNumber, 10)) || parseInt(data.teamNumber, 10) < 1 || parseInt(data.teamNumber, 10) > 9999)
+            isTeamNumberInvalid(data.teamNumber)
               ? 'border-red-500 focus:ring-red-500 focus:border-red-500'
               : 'border-slate-600 focus:ring-brand-500 focus:border-brand-500'
           }`}
@@ -264,7 +271,7 @@ export const PreMatchTab: FC<TabProps> = ({ data, update }) => {
           onFocus={e => e.target.select()}
         />
         {/* Validation error message */}
-        {data.teamNumber && (isNaN(parseInt(data.teamNumber, 10)) || parseInt(data.teamNumber, 10) < 1 || parseInt(data.teamNumber, 10) > 9999) && (
+        {isTeamNumberInvalid(data.teamNumber) && (
           <p className="text-red-400 text-xs font-medium">{t('teamNumberInvalid')}</p>
         )}
       </div>

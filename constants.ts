@@ -1,5 +1,11 @@
 import { MatchLevel, RobotPosition, EndGameStatus } from './types';
 
+// Starting zone configuration for auto path validation
+// Width = 20%, offset from edge = 40% (2 * width)
+// Both alliances: starting zone is X = 40-60%
+export const STARTING_ZONE_WIDTH = 20;
+export const STARTING_ZONE_OFFSET = 40;
+
 export const APP_CONFIG = {
   teamName: "6998",
   appName: "Scouting PASS",

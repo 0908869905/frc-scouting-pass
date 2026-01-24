@@ -3,6 +3,7 @@ import type { FC } from 'react';
 import { Trash2, Undo2, Share2, AlertTriangle } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { PathPoint } from '../types';
+import { STARTING_ZONE_WIDTH, STARTING_ZONE_OFFSET } from '../constants';
 import fieldRed from '../field-red.png';
 import fieldBlue from '../field-blue.png';
 
@@ -13,14 +14,7 @@ interface FieldCanvasProps {
 }
 
 // Half-field aspect ratio (height/width) - based on provided field images
-const HALF_FIELD_ASPECT_RATIO = 1.0; // Square aspect ratio
-
-// Starting zone configuration
-// Width = 20%, offset from edge = 2 * width = 40%
-// Red alliance: starting zone is X = 40-60% (moved 2 widths left from right edge)
-// Blue alliance: starting zone is X = 40-60% (moved 2 widths right from left edge)
-const STARTING_ZONE_WIDTH = 20;
-const STARTING_ZONE_OFFSET = 40; // 2 * STARTING_ZONE_WIDTH
+const HALF_FIELD_ASPECT_RATIO = 1.0;
 
 export const FieldCanvas: FC<FieldCanvasProps> = ({ path, onPathChange, alliance }) => {
   const { t } = useLanguage();
@@ -161,7 +155,7 @@ export const FieldCanvas: FC<FieldCanvasProps> = ({ path, onPathChange, alliance
     ctx.strokeStyle = '#991b1b';
     ctx.lineWidth = 2;
     ctx.stroke();
-  }, [path, currentStroke, canvasSize, alliance]);
+  }, [path, currentStroke, canvasSize]);
 
   // Convert pointer event to percentage coordinates
   const getPointFromEvent = useCallback((e: PointerEvent): PathPoint => {
