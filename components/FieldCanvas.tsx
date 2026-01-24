@@ -1,6 +1,6 @@
-import { useRef, useEffect, useState, useCallback, PointerEvent } from 'react';
+import { useRef, useEffect, useState, useCallback, PointerEvent, useMemo } from 'react';
 import type { FC } from 'react';
-import { Trash2, Undo2, Share2 } from 'lucide-react';
+import { Trash2, Undo2, Share2, AlertTriangle } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { PathPoint } from '../types';
 import fieldRed from '../field-red.png';
@@ -15,6 +15,13 @@ interface FieldCanvasProps {
 // Half-field aspect ratio (height/width) - based on provided field images
 const HALF_FIELD_ASPECT_RATIO = 1.0; // Square aspect ratio
 
+// Starting zone configuration
+// Width = 20%, offset from edge = 2 * width = 40%
+// Red alliance: starting zone is X = 40-60% (moved 2 widths left from right edge)
+// Blue alliance: starting zone is X = 40-60% (moved 2 widths right from left edge)
+const STARTING_ZONE_WIDTH = 20;
+const STARTING_ZONE_OFFSET = 40; // 2 * STARTING_ZONE_WIDTH
+
 export const FieldCanvas: FC<FieldCanvasProps> = ({ path, onPathChange, alliance }) => {
   const { t } = useLanguage();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -23,6 +30,16 @@ export const FieldCanvas: FC<FieldCanvasProps> = ({ path, onPathChange, alliance
   const [currentStroke, setCurrentStroke] = useState<PathPoint[]>([]);
   const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
   const [fieldImage, setFieldImage] = useState<HTMLImageElement | null>(null);
+
+  // Check if the first point is in the starting zone
+  // Both alliances: starting zone is X = 40-60% (after offset adjustment)
+  const isStartInValidZone = useMemo(() => {
+    if (path.length === 0) return true; // No path yet, no warning
+    const firstPoint = path[0];
+    const zoneStart = STARTING_ZONE_OFFSET;
+    const zoneEnd = STARTING_ZONE_OFFSET + STARTING_ZONE_WIDTH;
+    return firstPoint.x >= zoneStart && firstPoint.x <= zoneEnd;
+  }, [path]);
 
   // Load field image based on alliance
   useEffect(() => {
@@ -59,6 +76,26 @@ export const FieldCanvas: FC<FieldCanvasProps> = ({ path, onPathChange, alliance
 
     // Clear canvas
     ctx.clearRect(0, 0, canvasSize.width, canvasSize.height);
+
+    // Draw starting zone indicator
+    // Both alliances: starting zone at X = 40-60% (offset from edges)
+    const zoneStartX = (STARTING_ZONE_OFFSET / 100) * canvasSize.width;
+    const zoneWidth = (STARTING_ZONE_WIDTH / 100) * canvasSize.width;
+
+    ctx.fillStyle = 'rgba(34, 197, 94, 0.15)'; // Green tint
+    ctx.fillRect(zoneStartX, 0, zoneWidth, canvasSize.height);
+
+    // Draw border lines on both sides
+    ctx.strokeStyle = 'rgba(34, 197, 94, 0.5)';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([8, 4]);
+    ctx.beginPath();
+    ctx.moveTo(zoneStartX, 0);
+    ctx.lineTo(zoneStartX, canvasSize.height);
+    ctx.moveTo(zoneStartX + zoneWidth, 0);
+    ctx.lineTo(zoneStartX + zoneWidth, canvasSize.height);
+    ctx.stroke();
+    ctx.setLineDash([]); // Reset line dash
 
     const allPoints = [...path, ...currentStroke];
     if (allPoints.length < 2) {
@@ -124,7 +161,7 @@ export const FieldCanvas: FC<FieldCanvasProps> = ({ path, onPathChange, alliance
     ctx.strokeStyle = '#991b1b';
     ctx.lineWidth = 2;
     ctx.stroke();
-  }, [path, currentStroke, canvasSize]);
+  }, [path, currentStroke, canvasSize, alliance]);
 
   // Convert pointer event to percentage coordinates
   const getPointFromEvent = useCallback((e: PointerEvent): PathPoint => {
@@ -287,7 +324,23 @@ export const FieldCanvas: FC<FieldCanvasProps> = ({ path, onPathChange, alliance
             </span>
           </div>
         )}
+
+        {/* Starting zone label - centered in the zone area (40-60%) */}
+        <div
+          className="absolute top-2 px-2 py-1 rounded text-xs font-medium bg-green-500/20 text-green-400 pointer-events-none z-20"
+          style={{ left: '50%', transform: 'translateX(-50%)' }}
+        >
+          {t('startingZone')}
+        </div>
       </div>
+
+      {/* Warning when start point is outside starting zone */}
+      {!isStartInValidZone && (
+        <div className="flex items-center gap-2 p-3 rounded-xl bg-orange-500/20 border border-orange-500/50 text-orange-400">
+          <AlertTriangle size={18} className="flex-shrink-0" />
+          <span className="text-sm font-medium">{t('autoStartWarning')}</span>
+        </div>
+      )}
 
       {/* Control Buttons */}
       <div className="flex gap-2">

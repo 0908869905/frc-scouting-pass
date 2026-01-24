@@ -72,6 +72,11 @@ const translations = {
     prev: "Prev",
     scanFinish: "Scan to Finish",
     match: "Match",
+
+    // Validation
+    teamNumberInvalid: "Team number must be 1-9999",
+    autoStartWarning: "Path should start in the Starting Zone (bottom area)",
+    startingZone: "Starting Zone",
     
     // Enums
     "Practice": "Practice", 
@@ -157,6 +162,11 @@ const translations = {
     prev: "上一步",
     scanFinish: "掃描完成",
     match: "場次",
+
+    // Validation
+    teamNumberInvalid: "隊伍編號必須是 1-9999",
+    autoStartWarning: "路徑應從起始區域開始（底部區域）",
+    startingZone: "起始區域",
 
     // Enums
     "Practice": "練習賽", 

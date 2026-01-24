@@ -33,6 +33,7 @@
 | Capacitor (非 React Native) | 現有程式碼不需重寫，直接打包成 iOS App |
 | PWA | 支援「加入主畫面」，離線快取 |
 | Vercel 部署 | 免費、自動 CI/CD、全球 CDN |
+| 防呆驗證 | 阻止無效資料進入下一階段，減少 scouting 錯誤 |
 
 ---
 

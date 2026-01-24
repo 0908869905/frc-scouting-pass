@@ -760,4 +760,56 @@ npx cap open ios
 - App Store Connect: https://appstoreconnect.apple.com
 
 ---
+
+### Phase 14: 防呆驗證功能
+- **Status:** ✅ complete
+- **Completed:** 2026-01-24
+
+#### Task 14.1: 團隊號碼驗證
+- **Status:** ✅ complete
+- 驗證規則：必須是 1-9999 的整數
+- 即時顯示紅色邊框和錯誤訊息（輸入無效值時）
+- 阻止進入下一階段
+
+**Files Modified:**
+- `App.tsx` - 新增 `validateRequiredFields` 團隊號碼格式檢查
+- `components/TabViews.tsx` - PreMatchTab 即時驗證 UI
+
+#### Task 14.2: Auto 起始位置驗證
+- **Status:** ✅ complete
+- 驗證規則：路徑起點必須在起始區域 (X = 40-60%)
+- 視覺提示：半透明綠色區域 + 虛線邊界
+- 警告訊息：橘色提示框
+- 強制驗證：阻止進入下一階段
+
+**起始區域位置：**
+- 起始區域寬度: 20%
+- 偏移量: 40% (從左邊緣)
+- 有效範圍: X = 40% ~ 60%
+
+**Files Modified:**
+- `App.tsx` - 新增 `validateAutoStartPosition` 函數
+- `components/FieldCanvas.tsx` - 起始區域視覺化 + 驗證邏輯
+- `contexts/LanguageContext.tsx` - 新增翻譯鍵 (teamNumberInvalid, autoStartWarning, startingZone)
+
+#### 驗證流程總覽
+
+| 階段轉換 | 驗證項目 | 不通過時 |
+|---------|---------|---------|
+| PreMatch → Auton | 必填欄位 + 隊號格式 (1-9999) | 顯示錯誤，停留 PreMatch |
+| Auton → Teleop | 起始位置 (如有路徑) | 顯示警告，停留 Auton |
+| 進入 QRCode | 全部驗證 | 跳回對應階段 |
+
+---
+
+## 5-Question Reboot Check (Updated)
+| Question | Answer |
+|----------|--------|
+| Where am I? | 防呆驗證完成，Windows 全部完成 |
+| Where am I going? | Mac: iOS 打包上架 |
+| What's the goal? | 可靠的 scouting app，減少人為輸入錯誤 |
+| What have I learned? | 表單驗證流程、Canvas 繪圖、起始區域視覺化 |
+| What have I done? | 團隊號碼 + 起始位置驗證，強制阻擋無效資料 |
+
+---
 *Last updated: 2026-01-24*

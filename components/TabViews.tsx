@@ -248,17 +248,25 @@ export const PreMatchTab: FC<TabProps> = ({ data, update }) => {
         </div>
       </div>
 
-      {/* Team Number - Large & Prominent */}
+      {/* Team Number - Large & Prominent with Validation */}
       <div className="space-y-2">
         <label className="text-xs font-bold text-slate-500 uppercase">{t('teamNumber')}</label>
         <input
           type="number"
-          className="w-full bg-gradient-to-b from-slate-800 to-slate-900 border-2 border-slate-600 rounded-2xl p-5 text-5xl font-display font-black text-center text-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-all placeholder:text-slate-700 tracking-wider"
+          className={`w-full bg-gradient-to-b from-slate-800 to-slate-900 border-2 rounded-2xl p-5 text-5xl font-display font-black text-center text-white focus:ring-2 outline-none transition-all placeholder:text-slate-700 tracking-wider ${
+            data.teamNumber && (isNaN(parseInt(data.teamNumber, 10)) || parseInt(data.teamNumber, 10) < 1 || parseInt(data.teamNumber, 10) > 9999)
+              ? 'border-red-500 focus:ring-red-500 focus:border-red-500'
+              : 'border-slate-600 focus:ring-brand-500 focus:border-brand-500'
+          }`}
           placeholder="0000"
           value={data.teamNumber}
           onChange={e => update({ teamNumber: e.target.value })}
           onFocus={e => e.target.select()}
         />
+        {/* Validation error message */}
+        {data.teamNumber && (isNaN(parseInt(data.teamNumber, 10)) || parseInt(data.teamNumber, 10) < 1 || parseInt(data.teamNumber, 10) > 9999) && (
+          <p className="text-red-400 text-xs font-medium">{t('teamNumberInvalid')}</p>
+        )}
       </div>
     </div>
   );

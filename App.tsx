@@ -59,11 +59,23 @@ function AppContent() {
     setData(prev => ({ ...prev, ...fields }));
   };
 
+  // Starting zone validation constants (must match FieldCanvas.tsx)
+  const STARTING_ZONE_WIDTH = 20;
+  const STARTING_ZONE_OFFSET = 40;
+
   const validateRequiredFields = (notify: boolean = true): boolean => {
     const errors: string[] = [];
     if (!data.scouterName.trim()) errors.push(t('scouterName'));
     if (!data.eventCode.trim()) errors.push(t('eventCode'));
-    if (!data.teamNumber.trim()) errors.push(t('teamNumber'));
+    if (!data.teamNumber.trim()) {
+      errors.push(t('teamNumber'));
+    } else {
+      // Validate team number format (1-9999)
+      const teamNum = parseInt(data.teamNumber, 10);
+      if (isNaN(teamNum) || teamNum < 1 || teamNum > 9999) {
+        errors.push(t('teamNumberInvalid'));
+      }
+    }
     if (!data.matchNumber || data.matchNumber < 1) errors.push(t('matchNumber'));
 
     if (errors.length > 0) {
@@ -75,6 +87,21 @@ function AppContent() {
     return true;
   };
 
+  const validateAutoStartPosition = (notify: boolean = true): boolean => {
+    // If no path drawn, it's valid (path is optional)
+    if (data.autoPath.length === 0) return true;
+
+    const firstPoint = data.autoPath[0];
+    const zoneStart = STARTING_ZONE_OFFSET;
+    const zoneEnd = STARTING_ZONE_OFFSET + STARTING_ZONE_WIDTH;
+    const isValid = firstPoint.x >= zoneStart && firstPoint.x <= zoneEnd;
+
+    if (!isValid && notify) {
+      alert(t('autoStartWarning'));
+    }
+    return isValid;
+  };
+
   const handleNext = () => {
     const idx = phases.indexOf(currentPhase);
     const nextPhase = phases[idx + 1];
@@ -83,9 +110,17 @@ function AppContent() {
       if (!validateRequiredFields()) return;
     }
 
+    if (currentPhase === 'Auton') {
+      if (!validateAutoStartPosition()) return;
+    }
+
     if (nextPhase === 'QRCode') {
       if (!validateRequiredFields()) {
         setCurrentPhase('PreMatch');
+        return;
+      }
+      if (!validateAutoStartPosition()) {
+        setCurrentPhase('Auton');
         return;
       }
     }
@@ -198,16 +233,26 @@ function AppContent() {
            </button>
            <div className="hidden md:flex gap-1">
               {phases.map(p => (
-                <div 
-                  key={p} 
+                <div
+                  key={p}
                   onClick={() => {
                      const targetIdx = phases.indexOf(p);
                      const currentIdx = phases.indexOf(currentPhase);
                      if (targetIdx > currentIdx) {
+                        // Validate PreMatch fields when leaving PreMatch
                         if (currentIdx === 0 && !validateRequiredFields()) return;
-                        if (p === 'QRCode' && !validateRequiredFields()) {
-                            setCurrentPhase('PreMatch'); 
-                            return;
+                        // Validate Auto start position when leaving Auton
+                        if (currentIdx === 1 && !validateAutoStartPosition()) return;
+                        // Validate all when going to QRCode
+                        if (p === 'QRCode') {
+                            if (!validateRequiredFields()) {
+                                setCurrentPhase('PreMatch');
+                                return;
+                            }
+                            if (!validateAutoStartPosition()) {
+                                setCurrentPhase('Auton');
+                                return;
+                            }
                         }
                      }
                      setCurrentPhase(p);

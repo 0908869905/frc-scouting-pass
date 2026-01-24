@@ -42,10 +42,25 @@ App icons are pre-generated in `ios-icons/` directory.
 
 ### Data Flow
 1. User fills form phases: PreMatch → Auton → Teleop → PostMatch
-2. Required fields validated before advancing
+2. **Validation at each phase transition:**
+   - PreMatch → Auton: Required fields + Team number format (1-9999)
+   - Auton → Teleop: Auto path starting position (must be in starting zone)
 3. QR code generated with LZ-String compressed data
 4. TSV export for copying or Google Sheets upload
 5. Offline queue persists to localStorage for later sync
+
+### Validation Rules (防呆機制)
+| Field | Rule | Location |
+|-------|------|----------|
+| Team Number | 1-9999 integer | `App.tsx`, `TabViews.tsx` |
+| Auto Path Start | X = 40-60% (starting zone) | `App.tsx`, `FieldCanvas.tsx` |
+
+**Starting Zone Constants** (must match in both files):
+```typescript
+const STARTING_ZONE_WIDTH = 20;   // 20% width
+const STARTING_ZONE_OFFSET = 40;  // 40% from left edge
+// Valid zone: X = 40% ~ 60%
+```
 
 ### Key Files
 - `App.tsx` - Main container, phase navigation, form state management
@@ -94,6 +109,7 @@ All form tabs use `TabProps` interface: `{ data: ScoutingData, updateData: (upda
 - ⚠️ **Event listener 匿名函數**: 必須用具名函數才能正確 removeEventListener
 - ⚠️ **未使用的 imports/functions**: 定期執行 `/simplify` 清理死碼
 - ⚠️ **iOS 打包前**: 必須先執行 `npm run build`，再執行 `npx cap sync`
+- ⚠️ **起始區域常數**: `STARTING_ZONE_WIDTH` 和 `STARTING_ZONE_OFFSET` 必須在 `App.tsx` 和 `FieldCanvas.tsx` 保持一致
 
 ## Before Committing
 
