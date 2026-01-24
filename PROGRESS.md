@@ -615,7 +615,8 @@ Auto Path Drawing 功能開發 - 在 Auton 頁籤添加場地圖路徑繪製功�
 ---
 
 ### Phase 12: iOS App 打包準備
-- **Status:** 🔄 進行中 (Windows 部分完成，待 Mac 繼續)
+- **Status:** ✅ complete (待付費開發者帳號上架)
+- **Completed:** 2026-01-24
 
 #### Task 12.1: Capacitor 設定 (Windows)
 - **Status:** ✅ complete
@@ -646,12 +647,16 @@ Auto Path Drawing 功能開發 - 在 Auton 頁籤添加場地圖路徑繪製功�
 - `public/icons/icon-512.png` (PWA)
 
 #### Task 12.3: iOS 專案建立 (Mac)
-- **Status:** ⏳ 待執行
-- 需要在 Mac 上執行
+- **Status:** ✅ complete
+- **Completed:** 2026-01-24
+- 執行 `npx cap add ios` 和 `npx cap sync`
+- 複製 App Icon 到 iOS 專案
+- Xcode 專案已成功打開
 
 #### Task 12.4: Xcode 設定與打包 (Mac)
-- **Status:** ⏳ 待執行
-- 需要在 Mac 上執行
+- **Status:** ⏳ 待付費開發者帳號
+- Apple Developer Program ($99/年) 尚未加入
+- iOS 專案已準備好，待付費後即可上架
 
 ---
 
@@ -805,11 +810,34 @@ npx cap open ios
 ## 5-Question Reboot Check (Updated)
 | Question | Answer |
 |----------|--------|
-| Where am I? | 防呆驗證完成，Windows 全部完成 |
-| Where am I going? | Mac: iOS 打包上架 |
-| What's the goal? | 可靠的 scouting app，減少人為輸入錯誤 |
-| What have I learned? | 表單驗證流程、Canvas 繪圖、起始區域視覺化 |
-| What have I done? | 團隊號碼 + 起始位置驗證，強制阻擋無效資料 |
+| Where am I? | 全部功能完成，iOS 專案已建立，待上架 |
+| Where am I going? | 付費 Apple Developer → 上架 App Store |
+| What's the goal? | FRC 6998 比賽 scouting 應用 |
+| What have I learned? | Capacitor iOS 打包、PWA、防呆驗證 |
+| What have I done? | Web App + PWA + iOS 專案 + 防呆驗證 |
+
+---
+
+## 目前可用的部署方式
+
+| 方式 | 狀態 | 網址/說明 |
+|------|------|----------|
+| Web App | ✅ 可用 | https://frc-ten.vercel.app |
+| PWA | ✅ 可用 | Safari → 分享 → 加入主畫面 |
+| iOS App Store | ⏳ 待付費 | 需 Apple Developer Program ($99/年) |
+
+---
+
+## 之後上架 App Store 步驟
+
+1. 加入 Apple Developer Program
+2. 在 Mac 執行：
+   ```bash
+   cd ~/Desktop/FRC
+   npx cap open ios
+   ```
+3. Xcode: Signing & Capabilities → 選付費帳號
+4. Product → Archive → Distribute App → App Store Connect
 
 ---
 *Last updated: 2026-01-24*
