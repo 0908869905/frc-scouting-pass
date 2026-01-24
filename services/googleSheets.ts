@@ -18,6 +18,12 @@ const ROBOT_POS_ABBREV: Record<string, string> = {
   'Blue 3': 'B3'
 };
 
+// Convert PathPoint array to compact string format: "x1,y1|x2,y2|..."
+const pathToString = (path: { x: number; y: number }[]): string => {
+  if (!path || path.length === 0) return 'None';
+  return path.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join('|');
+};
+
 // Helper to format comments
 // Returns the raw comment text. Supports Chinese and other Unicode characters.
 const formatComments = (data: ScoutingData): string => {
@@ -40,9 +46,13 @@ export const generateTSV = (data: ScoutingData): string => {
     // Custom formatted fields
     if (key === 'comments') {
         // Replace tabs and newlines to maintain TSV structure
-        // We DO NOT escape unicode here, as TSV is not JSON. 
+        // We DO NOT escape unicode here, as TSV is not JSON.
         // We want raw Chinese characters in the QR Code.
         return formatComments(data).replace(/\t/g, ' ').replace(/\n/g, ' ');
+    }
+
+    if (key === 'autoPath') {
+      return pathToString(data.autoPath);
     }
 
     const val = data[key as keyof ScoutingData];
@@ -94,6 +104,9 @@ export const uploadToGoogleSheets = async (data: ScoutingData): Promise<boolean>
 
   // Format Comments - Raw for uploadToGoogleSheets because safeJsonStringify handles escaping
   payload.comments = formatComments(data);
+
+  // Convert autoPath to string format
+  payload.autoPath = pathToString(data.autoPath);
 
   // Iterate over all keys to apply consistency rules
   Object.keys(payload).forEach(key => {

@@ -32,6 +32,12 @@ export enum EndGameStatus {
   Failed = 'Failed'
 }
 
+// Path point for autonomous route tracking (percentage-based coordinates 0-100)
+export interface PathPoint {
+  x: number;
+  y: number;
+}
+
 // The core data structure collected during a match or pit scouting
 export interface ScoutingData {
   mode: ScoutingMode;
@@ -50,7 +56,8 @@ export interface ScoutingData {
   autoLeave: boolean;
   autoFuel: number;        // Points: 1 per fuel in active hub
   autoTowerLevel1: boolean; // Points: 15 for Level 1 in Auto
-  
+  autoPath: PathPoint[];   // Auto Path Tracking
+
   // Teleop
   teleFuel: number;        // Points: 1 per fuel in active hub
   teleTower: EndGameStatus; // Points: L2=20, L3=30
@@ -98,6 +105,7 @@ export const INITIAL_DATA: ScoutingData = {
   autoLeave: false,
   autoFuel: 0,
   autoTowerLevel1: false,
+  autoPath: [],
 
   teleFuel: 0,
   teleTower: EndGameStatus.None,

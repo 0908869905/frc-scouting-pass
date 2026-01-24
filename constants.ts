@@ -22,7 +22,7 @@ export const ENDGAME_OPTIONS = Object.values(EndGameStatus);
 // This order dictates the TSV column order. MUST match the ScoutingData keys.
 export const TSV_SCHEMA_MATCH = [
   'scouterName', 'eventCode', 'matchLevel', 'matchNumber', 'robotPosition', 'teamNumber',
-  'autoLeave', 'autoFuel', 'autoTowerLevel1',
+  'autoLeave', 'autoFuel', 'autoTowerLevel1', 'autoPath',
   'teleFuel', 'teleTower',
   'defenseRating', 'driverRating', 'speedRating', 'defendedBy',
   'robotDied', 'tippedOver', 'comments'

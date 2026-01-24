@@ -19,7 +19,12 @@ const translations = {
     leaveZone: "Leave Starting Zone",
     autoFuel: "Fuel Scored (Active Hub)",
     towerLevel1: "Tower Level 1",
-    
+    autoPath: "Auto Path",
+    clearPath: "Clear",
+    undoPath: "Undo",
+    savePath: "Save Image",
+    drawPathHint: "Draw robot path with finger",
+
     // Teleop
     teleFuel: "Fuel Scored (Active Hub)",
     teleTower: "Tower Climb (End Game)",
@@ -99,6 +104,11 @@ const translations = {
     leaveZone: "離開起始區",
     autoFuel: "得分燃料 (活躍 Hub)",
     towerLevel1: "塔樓層級 1",
+    autoPath: "自動路徑",
+    clearPath: "清除",
+    undoPath: "撤銷",
+    savePath: "儲存圖片",
+    drawPathHint: "用手指繪製機器人路徑",
 
     // Teleop
     teleFuel: "得分燃料 (活躍 Hub)",

@@ -5,6 +5,7 @@ import { Button } from './ui/Button';
 import { useLanguage } from '../contexts/LanguageContext';
 import { Plus, Minus, Check, Zap } from 'lucide-react';
 import { MATCH_LEVEL_OPTIONS, ROBOT_POSITION_OPTIONS, ENDGAME_OPTIONS } from '../constants';
+import { FieldCanvas } from './FieldCanvas';
 
 interface TabProps {
   data: ScoutingData;
@@ -271,6 +272,9 @@ export const PreMatchTab: React.FC<TabProps> = ({ data, update }) => {
 export const AutonTab: React.FC<TabProps> = ({ data, update, handedness }) => {
   const { t } = useLanguage();
 
+  // Derive alliance from robot position
+  const alliance = data.robotPosition.startsWith('Red') ? 'red' : 'blue';
+
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-right-8 duration-500">
       {/* Phase Header */}
@@ -279,6 +283,13 @@ export const AutonTab: React.FC<TabProps> = ({ data, update, handedness }) => {
         <h2 className="text-2xl font-display font-bold text-brand-400">{t('autoHeader')}</h2>
         <Zap className="text-brand-500" size={20} />
       </div>
+
+      {/* Field Canvas for Path Drawing */}
+      <FieldCanvas
+        path={data.autoPath}
+        onPathChange={(path) => update({ autoPath: path })}
+        alliance={alliance as 'red' | 'blue'}
+      />
 
       {/* Main Content */}
       <div className="grid grid-cols-1 gap-5">
