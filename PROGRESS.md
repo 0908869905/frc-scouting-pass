@@ -840,4 +840,78 @@ npx cap open ios
 4. Product → Archive → Distribute App → App Store Connect
 
 ---
-*Last updated: 2026-01-24*
+
+## Session: 2026-01-25
+
+### Overview
+2026 REBUILT 遊戲規則全面重構 - 更新表單欄位以符合新賽季規則。
+
+---
+
+### Phase 15: 2026 REBUILT 表單重構
+- **Status:** ✅ complete
+- **Completed:** 2026-01-25
+
+#### Task 15.1: 類型定義更新 (types.ts)
+- 新增 `Alliance` 類型: `'Red' | 'Blue'`
+- 新增 `AutoClimbStatus` enum: `None | Level1 | Failed`
+- 新增 `TeleClimbStatus` enum: `None | Level1 | Level2 | Level3 | Failed`
+- 更新 `ScoutingData` 介面，新增/移除欄位
+- 更新 `INITIAL_DATA` 預設值
+
+#### Task 15.2: 常數更新 (constants.ts)
+- 更新 `TSV_SCHEMA_MATCH` 欄位 (移除 autoPath)
+- 新增 `TSV_SCHEMA_PATH` (路徑專用 schema)
+- 新增 `ALLIANCE_OPTIONS`, `AUTO_CLIMB_OPTIONS`, `TELE_CLIMB_OPTIONS`
+
+#### Task 15.3: 翻譯更新 (LanguageContext.tsx)
+- 新增所有新欄位的翻譯鍵 (英文/繁體中文)
+- 新增 Stopwatch 相關翻譯
+
+#### Task 15.4: 表單組件更新 (TabViews.tsx)
+- PreMatchTab: `robotPosition` (6選項) → `alliance` (2選項)
+- AutonTab: 新增 autoClimbStatus 選擇器 + Stopwatch
+- TeleopTab: 新增 teleClimbStatus, bumpTrenchCount, fuelDroppedOnBump + Stopwatch
+- 新增 PenaltyTab 組件
+- PostMatchTab: 新增 almostTipped, ridingOnBall, subjectiveNotes
+
+#### Task 15.5: Stopwatch 組件
+- 建立 Stopwatch 組件 (碼表 UI)
+- 精度: 0.01 秒 (小數點後兩位)
+- 功能: Start/Stop/Reset
+- 支援 accentColor prop
+
+#### Task 15.6: QR Code 分離 (QRCodeTab.tsx)
+- Match Data QR (青色) - 所有比賽數據，不含路徑
+- Auto Path QR (琥珀色) - eventCode, matchNumber, teamNumber, autoPath
+- 各自有「顯示標籤」和「複製 TSV」功能
+
+#### Task 15.7: TSV 生成更新 (googleSheets.ts)
+- 新增 `generatePathTSV()` 函數
+- 更新 `generateTSV()` 排除 autoPath
+
+**移除的欄位:**
+- `robotPosition` → `alliance`
+- `autoLeave`, `autoTowerLevel1`, `teleTower`
+- `tippedOver` → `almostTipped`
+- `defendedBy`, `tags`
+
+**新增的欄位:**
+- `alliance`, `autoClimbStatus`, `autoClimbTime`
+- `teleClimbStatus`, `teleClimbTime`, `bumpTrenchCount`, `fuelDroppedOnBump`
+- `penaltyCount`, `yellowCard`, `redCard`
+- `almostTipped`, `ridingOnBall`, `subjectiveNotes`
+
+---
+
+## 5-Question Reboot Check (Updated)
+| Question | Answer |
+|----------|--------|
+| Where am I? | 2026 REBUILT 重構完成，雙 QR Code 功能實作完畢 |
+| Where am I going? | 測試所有新功能、部署更新版本 |
+| What's the goal? | FRC 6998 Scouting PASS - 2026 REBUILT 賽季 |
+| What have I learned? | 分離 QR Code 減少複雜度、Stopwatch 組件設計 |
+| What have I done? | 7 個任務完成，表單全面重構 |
+
+---
+*Last updated: 2026-01-25*

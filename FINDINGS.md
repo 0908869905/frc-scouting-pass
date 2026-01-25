@@ -12,10 +12,10 @@
 
 ## Requirements (Scouting PASS)
 
-- FRC 6998 比賽 scouting 應用 (2026 Reefscape)
-- 支援 PreMatch → Auton → Teleop → PostMatch 流程
-- QR Code 生成 + TSV 匯出
-- Google Sheets 自動上傳
+- FRC 6998 比賽 scouting 應用 (2026 REBUILT)
+- 支援 PreMatch → Auton → Teleop → **Penalty** → PostMatch 流程
+- **雙 QR Code**: Match Data + Auto Path 分離
+- TSV 匯出 + Google Sheets 自動上傳
 - 離線優先 (localStorage)
 - 雙語支援 (English/繁體中文)
 
@@ -34,6 +34,20 @@
 | PWA | 支援「加入主畫面」，離線快取 |
 | Vercel 部署 | 免費、自動 CI/CD、全球 CDN |
 | 防呆驗證 | 阻止無效資料進入下一階段，減少 scouting 錯誤 |
+
+---
+
+## 2026 REBUILT 重構決策 (2026-01-25)
+
+| Decision | Rationale |
+|----------|-----------|
+| `robotPosition` → `alliance` | 簡化為 Red/Blue 2 選項，隊號改為手動輸入 |
+| 新增 Penalty 階段 | 犯規資訊獨立追蹤 (penaltyCount, yellowCard, redCard) |
+| Stopwatch 組件 | 攀爬時間需要精確計時，提供碼表 UI (精度: 0.01 秒) |
+| 分離 Auto Path QR | 路徑座標資料量大，獨立 QR 避免主 QR 過於複雜 |
+| `TSV_SCHEMA_PATH` | 路徑 QR 僅包含 eventCode, matchNumber, teamNumber, autoPath |
+| autoClimbStatus/teleClimbStatus | 明確區分 Auto (Level1/Failed/None) 和 Teleop (Level1-3/Failed/None) |
+| almostTipped (取代 tippedOver) | 更精確描述「差點翻車」vs「已翻車」|
 
 ---
 
@@ -84,5 +98,5 @@
 - LZ-String: https://github.com/pieroxy/lz-string
 
 ---
-*Last updated: 2026-01-24*
+*Last updated: 2026-01-25*
 *Note: Video Analyzer 相關內容已移至獨立專案*

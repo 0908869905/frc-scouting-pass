@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-FRC 6998 Scouting PASS - A React TypeScript scouting application for FIRST Robotics Competition Team 6998 (2026 Reefscape season).
+FRC 6998 Scouting PASS - A React TypeScript scouting application for FIRST Robotics Competition Team 6998 (2026 REBUILT season).
 
 - **Web App**: https://frc-ten.vercel.app
 - **GitHub**: https://github.com/0908869905/FRC
@@ -41,11 +41,13 @@ App icons are pre-generated in `ios-icons/` directory.
 ## Architecture
 
 ### Data Flow
-1. User fills form phases: PreMatch → Auton → Teleop → PostMatch
+1. User fills form phases: PreMatch → Auton → Teleop → **Penalty** → PostMatch
 2. **Validation at each phase transition:**
    - PreMatch → Auton: Required fields + Team number format (1-9999)
    - Auton → Teleop: Auto path starting position (must be in starting zone)
-3. QR code generated with LZ-String compressed data
+3. **Two QR codes** generated with LZ-String compressed data:
+   - Match Data QR (cyan) - all scouting data except path
+   - Auto Path QR (amber) - eventCode, matchNumber, teamNumber, autoPath
 4. TSV export for copying or Google Sheets upload
 5. Offline queue persists to localStorage for later sync
 
@@ -73,7 +75,16 @@ const STARTING_ZONE_OFFSET = 40;  // 40% from left edge
 - `components/QRCodeTab.tsx` - QR generation & export functionality
 
 ### Component Pattern
-All form tabs use `TabProps` interface: `{ data: ScoutingData, updateData: (updates) => void, handedness: Handedness }`
+All form tabs use `TabProps` interface: `{ data: ScoutingData, update: (updates) => void, handedness: Handedness }`
+
+### 2026 REBUILT Form Structure
+| Phase | Key Fields |
+|-------|-----------|
+| PreMatch | scouterName, eventCode, matchLevel, matchNumber, **alliance** (Red/Blue), teamNumber |
+| Auton | autoPath (FieldCanvas), autoFuel, autoClimbStatus, autoClimbTime (Stopwatch) |
+| Teleop | teleFuel, teleClimbStatus, teleClimbTime (Stopwatch), bumpTrenchCount, fuelDroppedOnBump |
+| Penalty | penaltyCount, yellowCard, redCard |
+| PostMatch | robotDied, almostTipped, ridingOnBall, defenseRating, driverSkill, speedRating, comments, subjectiveNotes |
 
 ### Adding New Form Fields
 1. Add field to `ScoutingData` interface in `types.ts`

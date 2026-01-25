@@ -1,6 +1,6 @@
 
 import { ScoutingData } from '../types';
-import { TSV_SCHEMA_MATCH, TSV_SCHEMA_PIT, APP_CONFIG } from '../constants';
+import { TSV_SCHEMA_MATCH, TSV_SCHEMA_PIT, TSV_SCHEMA_PATH, APP_CONFIG } from '../constants';
 
 const MATCH_LEVEL_ABBREV: Record<string, string> = {
   'Practice': 'P',
@@ -38,6 +38,17 @@ function safeJsonStringify(obj: Record<string, unknown>): string {
     return '\\u' + ('0000' + c.charCodeAt(0).toString(16)).slice(-4);
   });
 }
+
+// Generate TSV for path-only QR code (includes match identifier)
+export const generatePathTSV = (data: ScoutingData): string => {
+  return TSV_SCHEMA_PATH.map(key => {
+    if (key === 'autoPath') {
+      return pathToString(data.autoPath);
+    }
+    const val = data[key as keyof ScoutingData];
+    return String(val ?? 'None');
+  }).join('\t');
+};
 
 export const generateTSV = (data: ScoutingData): string => {
   const schema = data.mode === 'Pit' ? TSV_SCHEMA_PIT : TSV_SCHEMA_MATCH;

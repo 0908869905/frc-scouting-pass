@@ -1,11 +1,14 @@
 
-export type MatchPhase = 
-  | 'PreMatch' | 'Auton' | 'Teleop' | 'PostMatch' 
+export type MatchPhase =
+  | 'PreMatch' | 'Auton' | 'Teleop' | 'Penalty' | 'PostMatch'
   | 'PitInfo' | 'PitRobot' | 'PitSpecs' // Pit phases
   | 'QRCode';
 
 export type ScoutingMode = 'Match' | 'Pit';
 export type Handedness = 'right' | 'left';
+
+// 2026 REBUILT - Alliance (Red/Blue only, no position)
+export type Alliance = 'Red' | 'Blue';
 
 export enum MatchLevel {
   Practice = 'Practice',
@@ -14,21 +17,19 @@ export enum MatchLevel {
   Test = 'Test'
 }
 
-export enum RobotPosition {
-  Red1 = 'Red 1',
-  Red2 = 'Red 2',
-  Red3 = 'Red 3',
-  Blue1 = 'Blue 1',
-  Blue2 = 'Blue 2',
-  Blue3 = 'Blue 3'
+// 2026 REBUILT - Auto Climb Status (only Level 1 available in Auto)
+export enum AutoClimbStatus {
+  None = 'None',
+  Level1 = 'Level1',
+  Failed = 'Failed'
 }
 
-export enum EndGameStatus {
+// 2026 REBUILT - Teleop Climb Status (3 levels available)
+export enum TeleClimbStatus {
   None = 'None',
-  Parked = 'Parked',
-  Level1 = 'Level 1',
-  Level2 = 'Level 2',
-  Level3 = 'Level 3',
+  Level1 = 'Level1',
+  Level2 = 'Level2',
+  Level3 = 'Level3',
   Failed = 'Failed'
 }
 
@@ -42,42 +43,48 @@ export interface PathPoint {
 export interface ScoutingData {
   mode: ScoutingMode;
 
-  // --- Common ---
+  // --- PreMatch (Common) ---
   scouterName: string;
   eventCode: string;
   teamNumber: string;
-
-  // --- Match Scouting Fields ---
   matchLevel: MatchLevel;
   matchNumber: number;
-  robotPosition: RobotPosition;
-  
-  // Auton
-  autoLeave: boolean;
-  autoFuel: number;        // Points: 1 per fuel in active hub
-  autoTowerLevel1: boolean; // Points: 15 for Level 1 in Auto
-  autoPath: PathPoint[];   // Auto Path Tracking
+  alliance: Alliance; // 2026: Red or Blue only
 
-  // Teleop
-  teleFuel: number;        // Points: 1 per fuel in active hub
-  teleTower: EndGameStatus; // Points: L2=20, L3=30
+  // --- Auto (20 seconds) ---
+  autoPath: PathPoint[];         // Auto Path Tracking (preserved)
+  autoFuel: number;              // Fuel scored count
+  autoClimbStatus: AutoClimbStatus; // Level1/Failed/None
+  autoClimbTime: number;         // Seconds to climb
 
-  // Post Match
-  defenseRating: number; // 0-5
-  driverRating: number; // 0-5
-  speedRating: number; // 0-5
-  defendedBy: string;
-  robotDied: boolean;
-  tippedOver: boolean;
-  comments: string;
-  tags: string[]; // Strategy Tags
+  // --- Teleop (2:20) ---
+  teleFuel: number;              // Fuel scored count
+  teleClimbStatus: TeleClimbStatus; // Level1-3/Failed/None
+  teleClimbTime: number;         // Seconds to climb
+  bumpTrenchCount: number;       // Times crossed Bump & Trench
+  fuelDroppedOnBump: boolean;    // Dropped fuel on Bump crossing
+
+  // --- Penalty ---
+  penaltyCount: number;          // Penalty count
+  yellowCard: boolean;           // Yellow card received
+  redCard: boolean;              // Red card received
+
+  // --- PostMatch (Other + Subjective) ---
+  robotDied: boolean;            // Robot died/disabled (incl. tipped)
+  almostTipped: boolean;         // Almost tipped (near miss)
+  ridingOnBall: boolean;         // Riding on ball
+  comments: string;              // Comments
+  defenseRating: number;         // Defense rating 0-5
+  driverSkill: number;           // Driver skill 0-5 (renamed from driverRating)
+  speedRating: number;           // Speed rating 0-5
+  subjectiveNotes: string;       // Subjective notes
 
   // --- Pit Scouting Fields ---
   pitDriveTrain: string;
   pitMotorType: string;
-  pitLength: number; // inches or cm
+  pitLength: number;
   pitWidth: number;
-  pitWeight: number; // lbs or kg
+  pitWeight: number;
   pitCanFuel: boolean;
   pitCanTowerL1: boolean;
   pitCanTowerL2: boolean;
@@ -99,25 +106,36 @@ export const INITIAL_DATA: ScoutingData = {
   eventCode: '2026MSLR',
   matchLevel: MatchLevel.Quals,
   matchNumber: 1,
-  robotPosition: RobotPosition.Red1,
+  alliance: 'Red',
   teamNumber: '',
 
-  autoLeave: false,
-  autoFuel: 0,
-  autoTowerLevel1: false,
+  // Auto
   autoPath: [],
+  autoFuel: 0,
+  autoClimbStatus: AutoClimbStatus.None,
+  autoClimbTime: 0,
 
+  // Teleop
   teleFuel: 0,
-  teleTower: EndGameStatus.None,
+  teleClimbStatus: TeleClimbStatus.None,
+  teleClimbTime: 0,
+  bumpTrenchCount: 0,
+  fuelDroppedOnBump: false,
 
-  defenseRating: 0,
-  driverRating: 0,
-  speedRating: 0,
-  defendedBy: '',
+  // Penalty
+  penaltyCount: 0,
+  yellowCard: false,
+  redCard: false,
+
+  // PostMatch
   robotDied: false,
-  tippedOver: false,
+  almostTipped: false,
+  ridingOnBall: false,
   comments: '',
-  tags: [],
+  defenseRating: 0,
+  driverSkill: 0,
+  speedRating: 0,
+  subjectiveNotes: '',
 
   // Pit defaults
   pitDriveTrain: 'Swerve',

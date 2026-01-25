@@ -10,34 +10,46 @@ const translations = {
     eventCode: "Event Code",
     matchLevel: "Match Level",
     matchNumber: "Match Number",
-    robotPosition: "Robot Position",
+    alliance: "Alliance",
     teamNumber: "Team Number",
     autoHeader: "[Auto]",
     teleopHeader: "[Teleop]",
-    
+    penaltyHeader: "[Penalty]",
+    postMatchHeader: "Post Match",
+
     // Auto
-    leaveZone: "Leave Starting Zone",
-    autoFuel: "Fuel Scored (Active Hub)",
-    towerLevel1: "Tower Level 1",
+    autoFuel: "Fuel Scored",
     autoPath: "Auto Path",
     clearPath: "Clear",
     undoPath: "Undo",
     savePath: "Save Image",
     drawPathHint: "Draw robot path with finger",
+    autoClimbStatus: "Climb Status",
+    autoClimbTime: "Climb Time (sec)",
 
     // Teleop
-    teleFuel: "Fuel Scored (Active Hub)",
-    teleTower: "Tower Climb (End Game)",
+    teleFuel: "Fuel Scored",
+    teleClimbStatus: "Climb Status (End Game)",
+    teleClimbTime: "Climb Time (sec)",
+    bumpTrenchCount: "Bump & Trench Crossings",
+    fuelDroppedOnBump: "Fuel Dropped on Bump",
+
+    // Penalty
+    penaltyCount: "Penalty Count",
+    yellowCard: "Yellow Card",
+    redCard: "Red Card",
 
     // Post Match
     defenseRating: "Defense Rating (0-5)",
-    driverRating: "Driver Skill (0-5)",
+    driverSkill: "Driver Skill (0-5)",
     speedRating: "Speed Rating (0-5)",
-    defendedBy: "Defended By (Team #)",
     robotDied: "Robot Died/Disabled",
-    tippedOver: "Tipped Over",
+    almostTipped: "Almost Tipped",
+    ridingOnBall: "Riding on Ball",
     comments: "Comments",
     commentsPlaceholder: "Strategy, strengths, weaknesses...",
+    subjectiveNotes: "Subjective Notes",
+    subjectiveNotesPlaceholder: "Personal observations, team dynamics...",
 
     // QR & Common
     saveSubmit: "Save & Submit",
@@ -66,7 +78,7 @@ const translations = {
     syncing: "Syncing...",
     retry: "Retry",
     records: "records",
-    
+
     // UI
     next: "Next",
     prev: "Prev",
@@ -75,23 +87,29 @@ const translations = {
 
     // Validation
     teamNumberInvalid: "Team number must be 1-9999",
-    autoStartWarning: "Path should start in the Starting Zone (bottom area)",
+    autoStartWarning: "Path should start in the Starting Zone (center area)",
     startingZone: "Starting Zone",
-    
-    // Enums
-    "Practice": "Practice", 
-    "Quals": "Quals", 
-    "Playoffs": "Playoffs", 
+
+    // Match Level Enums
+    "Practice": "Practice",
+    "Quals": "Quals",
+    "Playoffs": "Playoffs",
     "Test": "Test",
-    
-    "Red 1": "Red 1", "Red 2": "Red 2", "Red 3": "Red 3",
-    "Blue 1": "Blue 1", "Blue 2": "Blue 2", "Blue 3": "Blue 3",
-    
-    "None": "None", 
-    "Parked": "Parked", 
-    "Level 1": "Level 1",
-    "Level 2": "Level 2",
-    "Level 3": "Level 3",
+
+    // Alliance
+    "Red": "Red",
+    "Blue": "Blue",
+
+    // Auto Climb Status
+    "autoNone": "None",
+    "autoLevel1": "Level 1",
+    "autoFailed": "Failed",
+
+    // Teleop Climb Status
+    "None": "None",
+    "Level1": "Level 1",
+    "Level2": "Level 2",
+    "Level3": "Level 3",
     "Failed": "Failed"
   },
   zh: {
@@ -100,34 +118,46 @@ const translations = {
     eventCode: "賽事代碼",
     matchLevel: "比賽層級",
     matchNumber: "場次",
-    robotPosition: "機器人位置",
+    alliance: "聯盟",
     teamNumber: "隊伍編號",
     autoHeader: "[自動階段]",
     teleopHeader: "[手動階段]",
-    
+    penaltyHeader: "[犯規]",
+    postMatchHeader: "賽後",
+
     // Auto
-    leaveZone: "離開起始區",
-    autoFuel: "得分燃料 (活躍 Hub)",
-    towerLevel1: "塔樓層級 1",
+    autoFuel: "進球燃料數",
     autoPath: "自動路徑",
     clearPath: "清除",
     undoPath: "撤銷",
     savePath: "儲存圖片",
     drawPathHint: "用手指繪製機器人路徑",
+    autoClimbStatus: "攀爬狀態",
+    autoClimbTime: "攀爬時間 (秒)",
 
     // Teleop
-    teleFuel: "得分燃料 (活躍 Hub)",
-    teleTower: "攀爬塔樓 (終局)",
+    teleFuel: "進球燃料數",
+    teleClimbStatus: "攀爬狀態 (終局)",
+    teleClimbTime: "攀爬時間 (秒)",
+    bumpTrenchCount: "穿越 Bump & Trench 次數",
+    fuelDroppedOnBump: "穿越 Bump 時 Fuel 掉落",
+
+    // Penalty
+    penaltyCount: "犯規次數",
+    yellowCard: "黃牌",
+    redCard: "紅牌",
 
     // Post Match
     defenseRating: "防守評分 (0-5)",
-    driverRating: "駕駛技術 (0-5)",
+    driverSkill: "駕駛技術 (0-5)",
     speedRating: "速度評分 (0-5)",
-    defendedBy: "被誰防守 (隊伍號碼)",
     robotDied: "機器人死亡/失效",
-    tippedOver: "翻倒",
+    almostTipped: "差點翻車",
+    ridingOnBall: "騎在球上",
     comments: "備註",
     commentsPlaceholder: "策略、優勢、劣勢...",
+    subjectiveNotes: "主觀備註",
+    subjectiveNotesPlaceholder: "個人觀察、團隊互動...",
 
     // QR & Common
     saveSubmit: "儲存並提交",
@@ -165,23 +195,29 @@ const translations = {
 
     // Validation
     teamNumberInvalid: "隊伍編號必須是 1-9999",
-    autoStartWarning: "路徑應從起始區域開始（底部區域）",
+    autoStartWarning: "路徑應從起始區域開始（中間區域）",
     startingZone: "起始區域",
 
-    // Enums
-    "Practice": "練習賽", 
-    "Quals": "資格賽", 
-    "Playoffs": "季後賽", 
+    // Match Level Enums
+    "Practice": "練習賽",
+    "Quals": "資格賽",
+    "Playoffs": "季後賽",
     "Test": "測試",
-    
-    "Red 1": "紅 1", "Red 2": "紅 2", "Red 3": "紅 3",
-    "Blue 1": "藍 1", "Blue 2": "藍 2", "Blue 3": "藍 3",
-    
-    "None": "無", 
-    "Parked": "停泊", 
-    "Level 1": "層級 1",
-    "Level 2": "層級 2",
-    "Level 3": "層級 3",
+
+    // Alliance
+    "Red": "紅",
+    "Blue": "藍",
+
+    // Auto Climb Status
+    "autoNone": "無",
+    "autoLevel1": "層級 1",
+    "autoFailed": "失敗",
+
+    // Teleop Climb Status
+    "None": "無",
+    "Level1": "層級 1",
+    "Level2": "層級 2",
+    "Level3": "層級 3",
     "Failed": "失敗"
   }
 };

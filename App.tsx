@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { MatchPhase, ScoutingData, INITIAL_DATA, MatchLevel, Handedness } from './types';
-import { PreMatchTab, AutonTab, TeleopTab, PostMatchTab } from './components/TabViews';
+import { PreMatchTab, AutonTab, TeleopTab, PenaltyTab, PostMatchTab } from './components/TabViews';
 import { QRCodeTab } from './components/QRCodeTab';
 import { HistoryModal } from './components/HistoryModal';
 import { Button } from './components/ui/Button';
@@ -9,7 +9,8 @@ import { ChevronRight, ChevronLeft, Settings, X, History as HistoryIcon, Globe }
 import { getUnsyncedCount } from './services/storage';
 import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
 
-const phases: MatchPhase[] = ['PreMatch', 'Auton', 'Teleop', 'PostMatch', 'QRCode'];
+// 2026 REBUILT: Added Penalty phase between Teleop and PostMatch
+const phases: MatchPhase[] = ['PreMatch', 'Auton', 'Teleop', 'Penalty', 'PostMatch', 'QRCode'];
 
 function AppContent() {
   const { t, lang, setLang } = useLanguage();
@@ -19,7 +20,7 @@ function AppContent() {
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        // Merge with INITIAL_DATA to ensure new fields (e.g. autoFuel) exist
+        // Merge with INITIAL_DATA to ensure new fields exist
         return { ...INITIAL_DATA, ...parsed };
       } catch (e) {
         console.error("Failed to parse saved data", e);
@@ -28,7 +29,7 @@ function AppContent() {
     }
     return INITIAL_DATA;
   });
-  
+
   // Settings & History State
   const [showSettings, setShowSettings] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
@@ -36,16 +37,16 @@ function AppContent() {
     return (localStorage.getItem('handedness') as Handedness) || 'right';
   });
 
-  // Simple poller to update unsynced badge on header (optional but nice)
+  // Simple poller to update unsynced badge on header
   const [unsyncedCount, setUnsyncedCount] = useState(0);
 
   useEffect(() => {
     setUnsyncedCount(getUnsyncedCount());
     const interval = setInterval(() => {
-        setUnsyncedCount(getUnsyncedCount());
+      setUnsyncedCount(getUnsyncedCount());
     }, 5000);
     return () => clearInterval(interval);
-  }, [showHistory]); // Update when history closes/opens
+  }, [showHistory]);
 
   useEffect(() => {
     localStorage.setItem('scoutingData', JSON.stringify(data));
@@ -98,30 +99,39 @@ function AppContent() {
     return isValid;
   };
 
+  // Validates and navigates to target phase, returns true if navigation succeeded
+  const navigateToPhase = (targetPhase: MatchPhase, fromPhase: MatchPhase): boolean => {
+    const targetIdx = phases.indexOf(targetPhase);
+    const fromIdx = phases.indexOf(fromPhase);
+
+    // Only validate when moving forward
+    if (targetIdx > fromIdx) {
+      // Validate PreMatch when leaving it
+      if (fromIdx === 0 && !validateRequiredFields()) return false;
+      // Validate Auto path when leaving Auton
+      if (fromIdx === 1 && !validateAutoStartPosition()) return false;
+      // Full validation when going to QRCode
+      if (targetPhase === 'QRCode') {
+        if (!validateRequiredFields()) {
+          setCurrentPhase('PreMatch');
+          return false;
+        }
+        if (!validateAutoStartPosition()) {
+          setCurrentPhase('Auton');
+          return false;
+        }
+      }
+    }
+
+    setCurrentPhase(targetPhase);
+    return true;
+  };
+
   const handleNext = () => {
     const idx = phases.indexOf(currentPhase);
-    const nextPhase = phases[idx + 1];
-
-    if (currentPhase === 'PreMatch') {
-      if (!validateRequiredFields()) return;
+    if (idx < phases.length - 1) {
+      navigateToPhase(phases[idx + 1], currentPhase);
     }
-
-    if (currentPhase === 'Auton') {
-      if (!validateAutoStartPosition()) return;
-    }
-
-    if (nextPhase === 'QRCode') {
-      if (!validateRequiredFields()) {
-        setCurrentPhase('PreMatch');
-        return;
-      }
-      if (!validateAutoStartPosition()) {
-        setCurrentPhase('Auton');
-        return;
-      }
-    }
-
-    if (idx < phases.length - 1) setCurrentPhase(nextPhase);
   };
 
   const handlePrev = () => {
@@ -131,13 +141,13 @@ function AppContent() {
 
   const handleReset = () => {
     const nextMatchNum = data.matchLevel === MatchLevel.Quals ? data.matchNumber + 1 : data.matchNumber;
-    
+
     setData({
       ...INITIAL_DATA,
       scouterName: data.scouterName,
       eventCode: data.eventCode,
       matchLevel: data.matchLevel,
-      robotPosition: data.robotPosition,
+      alliance: data.alliance, // 2026: preserve alliance
       matchNumber: nextMatchNum
     });
     setCurrentPhase('PreMatch');
@@ -164,18 +174,18 @@ function AppContent() {
                 <X size={24} />
               </button>
             </div>
-            
+
             <div className="space-y-6">
               <div>
                 <label className="block text-sm text-slate-400 font-bold uppercase mb-3">{t('oneHanded')}</label>
                 <div className="grid grid-cols-2 gap-3">
-                  <button 
+                  <button
                     onClick={() => setHandedness('left')}
                     className={`p-4 rounded-xl border-2 transition-all font-medium ${handedness === 'left' ? 'border-brand-500 bg-brand-900/20 text-white' : 'border-slate-700 bg-slate-800 text-slate-400'}`}
                   >
                     {t('leftHanded')}
                   </button>
-                  <button 
+                  <button
                     onClick={() => setHandedness('right')}
                     className={`p-4 rounded-xl border-2 transition-all font-medium ${handedness === 'right' ? 'border-brand-500 bg-brand-900/20 text-white' : 'border-slate-700 bg-slate-800 text-slate-400'}`}
                   >
@@ -184,7 +194,7 @@ function AppContent() {
                 </div>
               </div>
             </div>
-            
+
             <div className="mt-8">
               <Button fullWidth onClick={() => setShowSettings(false)}>{t('done')}</Button>
             </div>
@@ -199,67 +209,46 @@ function AppContent() {
             {APP_CONFIG.teamName} <span className="text-slate-500 text-sm font-sans tracking-wide">| {APP_CONFIG.appName}</span>
           </h1>
           <div className="text-xs text-slate-500 font-mono mt-1">
-             {t('match')} {data.matchNumber} • {t(data.robotPosition) || data.robotPosition}
+            {t('match')} {data.matchNumber} • <span className={data.alliance === 'Red' ? 'text-red-400' : 'text-blue-400'}>{t(data.alliance)}</span>
           </div>
         </div>
         <div className="flex items-center gap-3">
-           <button 
-             onClick={toggleLang}
-             className="p-2 rounded-full hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"
-             title={lang === 'en' ? 'Switch to Traditional Chinese' : '切換至英文'}
-           >
-             <Globe size={20} />
-             <span className="sr-only">Language</span>
-           </button>
+          <button
+            onClick={toggleLang}
+            className="p-2 rounded-full hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"
+            title={lang === 'en' ? 'Switch to Traditional Chinese' : '切換至英文'}
+          >
+            <Globe size={20} />
+            <span className="sr-only">Language</span>
+          </button>
 
-           <button 
-             onClick={() => setShowHistory(true)}
-             className="p-2 rounded-full hover:bg-slate-800 text-slate-400 hover:text-white transition-colors relative"
-           >
-             <HistoryIcon size={20} />
-             {unsyncedCount > 0 && (
-                 <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-orange-500 rounded-full border border-slate-900"></span>
-             )}
-           </button>
-           <button 
-             onClick={() => setShowSettings(true)}
-             className="p-2 rounded-full hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"
-           >
-             <Settings size={20} />
-           </button>
-           <div className="hidden md:flex gap-1">
-              {phases.map(p => (
-                <div
-                  key={p}
-                  onClick={() => {
-                     const targetIdx = phases.indexOf(p);
-                     const currentIdx = phases.indexOf(currentPhase);
-                     if (targetIdx > currentIdx) {
-                        // Validate PreMatch fields when leaving PreMatch
-                        if (currentIdx === 0 && !validateRequiredFields()) return;
-                        // Validate Auto start position when leaving Auton
-                        if (currentIdx === 1 && !validateAutoStartPosition()) return;
-                        // Validate all when going to QRCode
-                        if (p === 'QRCode') {
-                            if (!validateRequiredFields()) {
-                                setCurrentPhase('PreMatch');
-                                return;
-                            }
-                            if (!validateAutoStartPosition()) {
-                                setCurrentPhase('Auton');
-                                return;
-                            }
-                        }
-                     }
-                     setCurrentPhase(p);
-                  }}
-                  className={`cursor-pointer h-2 w-8 rounded-full transition-all ${p === currentPhase ? 'bg-brand-500' : 'bg-slate-800 hover:bg-slate-700'}`}
-                />
-              ))}
-           </div>
+          <button
+            onClick={() => setShowHistory(true)}
+            className="p-2 rounded-full hover:bg-slate-800 text-slate-400 hover:text-white transition-colors relative"
+          >
+            <HistoryIcon size={20} />
+            {unsyncedCount > 0 && (
+              <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-orange-500 rounded-full border border-slate-900"></span>
+            )}
+          </button>
+          <button
+            onClick={() => setShowSettings(true)}
+            className="p-2 rounded-full hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"
+          >
+            <Settings size={20} />
+          </button>
+          <div className="hidden md:flex gap-1">
+            {phases.map(p => (
+              <div
+                key={p}
+                onClick={() => navigateToPhase(p, currentPhase)}
+                className={`cursor-pointer h-2 w-8 rounded-full transition-all ${p === currentPhase ? 'bg-brand-500' : 'bg-slate-800 hover:bg-slate-700'}`}
+              />
+            ))}
+          </div>
         </div>
       </header>
-      
+
       {/* Progress Bar */}
       <div className="w-full bg-slate-900 h-1">
         <div className="h-full bg-brand-500 transition-all duration-300 ease-out" style={{ width: `${progress}%` }}></div>
@@ -270,25 +259,26 @@ function AppContent() {
         {currentPhase === 'PreMatch' && <PreMatchTab data={data} update={updateData} handedness={handedness} />}
         {currentPhase === 'Auton' && <AutonTab data={data} update={updateData} handedness={handedness} />}
         {currentPhase === 'Teleop' && <TeleopTab data={data} update={updateData} handedness={handedness} />}
+        {currentPhase === 'Penalty' && <PenaltyTab data={data} update={updateData} handedness={handedness} />}
         {currentPhase === 'PostMatch' && <PostMatchTab data={data} update={updateData} handedness={handedness} />}
         {currentPhase === 'QRCode' && <QRCodeTab data={data} onReset={handleReset} />}
       </main>
 
       {/* Bottom Navigation */}
       <footer className="flex-none bg-slate-900 border-t border-slate-800 p-3 flex gap-4 z-10">
-        <Button 
-          variant="secondary" 
-          onClick={handlePrev} 
+        <Button
+          variant="secondary"
+          onClick={handlePrev}
           disabled={phaseIndex === 0}
           className="flex-1"
         >
           <ChevronLeft className="mr-1" /> {t('prev')}
         </Button>
-        
+
         {currentPhase !== 'QRCode' ? (
-           <Button 
-            variant="primary" 
-            onClick={handleNext} 
+          <Button
+            variant="primary"
+            onClick={handleNext}
             className="flex-[2]"
           >
             {t('next')} <ChevronRight className="ml-1" />
