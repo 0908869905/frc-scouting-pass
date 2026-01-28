@@ -1,9 +1,9 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import type { FC } from 'react';
-import { ScoutingData, Handedness, AutoClimbStatus, TeleClimbStatus, Alliance } from '../types';
+import { ScoutingData, Handedness, AutoClimbStatus, TeleClimbStatus, Alliance, ClimbSide } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
 import { Plus, Minus, Check, Zap, AlertTriangle, Play, Square, RotateCcw } from 'lucide-react';
-import { MATCH_LEVEL_OPTIONS, ALLIANCE_OPTIONS, AUTO_CLIMB_OPTIONS, TELE_CLIMB_OPTIONS } from '../constants';
+import { MATCH_LEVEL_OPTIONS, ALLIANCE_OPTIONS, AUTO_CLIMB_OPTIONS, TELE_CLIMB_OPTIONS, CLIMB_SIDE_OPTIONS } from '../constants';
 import { FieldCanvas } from './FieldCanvas';
 
 interface TabProps {
@@ -363,18 +363,18 @@ export const PreMatchTab: FC<TabProps> = ({ data, update }) => {
         </div>
       </div>
 
-      {/* Alliance Selection - 2026 REBUILT: Red or Blue only */}
+      {/* Alliance Selection - 2026 REBUILT: R1/R2/R3/B1/B2/B3 */}
       <div className="space-y-2">
         <label className="text-xs font-bold text-slate-500 uppercase">{t('alliance')}</label>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-3 gap-2">
           {ALLIANCE_OPTIONS.map((alliance: Alliance) => {
             const isSelected = data.alliance === alliance;
-            const isRed = alliance === 'Red';
+            const isRed = alliance.startsWith('R');
             return (
               <button
                 key={alliance}
                 onClick={() => update({ alliance })}
-                className={`p-6 rounded-2xl text-2xl font-bold border-2 transition-all active:scale-[0.97] ${
+                className={`p-4 rounded-xl text-xl font-bold border-2 transition-all active:scale-[0.97] ${
                   isSelected
                     ? isRed
                       ? 'bg-red-500/25 border-red-500 text-red-400 shadow-[0_0_30px_rgba(239,68,68,0.3)]'
@@ -384,7 +384,7 @@ export const PreMatchTab: FC<TabProps> = ({ data, update }) => {
                       : 'bg-slate-900 border-slate-700 text-slate-400 hover:border-blue-500/50 hover:text-blue-400'
                 }`}
               >
-                {t(alliance)}
+                {alliance}
               </button>
             );
           })}
@@ -421,7 +421,7 @@ export const PreMatchTab: FC<TabProps> = ({ data, update }) => {
 export const AutonTab: FC<TabProps> = ({ data, update, handedness }) => {
   const { t } = useLanguage();
 
-  const alliance: 'red' | 'blue' = data.alliance === 'Red' ? 'red' : 'blue';
+  const alliance: 'red' | 'blue' = data.alliance.startsWith('R') ? 'red' : 'blue';
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-right-8 duration-500">
@@ -441,15 +441,6 @@ export const AutonTab: FC<TabProps> = ({ data, update, handedness }) => {
 
       {/* Main Content */}
       <div className="grid grid-cols-1 gap-5">
-        {/* Fuel Counter */}
-        <Counter
-          label={t('autoFuel')}
-          value={data.autoFuel}
-          onChange={val => update({ autoFuel: val })}
-          handedness={handedness}
-          accentColor="brand"
-        />
-
         {/* Auto Climb Status Selection */}
         <div className="space-y-2">
           <label className="text-xs font-bold text-slate-400 uppercase">{t('autoClimbStatus')}</label>
@@ -474,14 +465,39 @@ export const AutonTab: FC<TabProps> = ({ data, update, handedness }) => {
           </div>
         </div>
 
-        {/* Auto Climb Time Stopwatch - Only show if climbing */}
-        {data.autoClimbStatus === AutoClimbStatus.Level1 && (
+        {/* Auto Climb Time Stopwatch - Always show when status is not None */}
+        {data.autoClimbStatus !== AutoClimbStatus.None && (
           <Stopwatch
             label={t('autoClimbTime')}
             value={data.autoClimbTime}
             onChange={val => update({ autoClimbTime: val })}
             accentColor="amber"
           />
+        )}
+
+        {/* Auto Climb Side Selection - Show when status is not None */}
+        {data.autoClimbStatus !== AutoClimbStatus.None && (
+          <div className="space-y-2">
+            <label className="text-xs font-bold text-slate-400 uppercase">{t('climbSide')}</label>
+            <div className="grid grid-cols-4 gap-2">
+              {CLIMB_SIDE_OPTIONS.map(side => {
+                const isSelected = data.autoClimbSide === side;
+                return (
+                  <button
+                    key={side}
+                    onClick={() => update({ autoClimbSide: side as ClimbSide })}
+                    className={`p-3 rounded-xl text-sm font-bold border-2 transition-all active:scale-[0.97] ${
+                      isSelected
+                        ? 'bg-amber-500/20 border-amber-500 text-amber-400 shadow-lg'
+                        : 'bg-slate-900 border-slate-700 text-slate-400 hover:border-slate-600'
+                    }`}
+                  >
+                    {t(side)}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         )}
       </div>
     </div>
@@ -505,15 +521,6 @@ export const TeleopTab: FC<TabProps> = ({ data, update, handedness }) => {
 
       {/* Main Content */}
       <div className="grid grid-cols-1 gap-5">
-        {/* Fuel Counter */}
-        <Counter
-          label={t('teleFuel')}
-          value={data.teleFuel}
-          onChange={val => update({ teleFuel: val })}
-          handedness={handedness}
-          accentColor="blue"
-        />
-
         {/* Teleop Climb Status Selection */}
         <div className="space-y-2">
           <label className="text-xs font-bold text-slate-400 uppercase">{t('teleClimbStatus')}</label>
@@ -538,15 +545,39 @@ export const TeleopTab: FC<TabProps> = ({ data, update, handedness }) => {
           </div>
         </div>
 
-        {/* Teleop Climb Time Stopwatch - Only show if climbing */}
-        {data.teleClimbStatus !== TeleClimbStatus.None &&
-          data.teleClimbStatus !== TeleClimbStatus.Failed && (
+        {/* Teleop Climb Time Stopwatch - Always show when status is not None */}
+        {data.teleClimbStatus !== TeleClimbStatus.None && (
           <Stopwatch
             label={t('teleClimbTime')}
             value={data.teleClimbTime}
             onChange={val => update({ teleClimbTime: val })}
             accentColor="amber"
           />
+        )}
+
+        {/* Teleop Climb Side Selection - Show when status is not None */}
+        {data.teleClimbStatus !== TeleClimbStatus.None && (
+          <div className="space-y-2">
+            <label className="text-xs font-bold text-slate-400 uppercase">{t('climbSide')}</label>
+            <div className="grid grid-cols-4 gap-2">
+              {CLIMB_SIDE_OPTIONS.map(side => {
+                const isSelected = data.teleClimbSide === side;
+                return (
+                  <button
+                    key={side}
+                    onClick={() => update({ teleClimbSide: side as ClimbSide })}
+                    className={`p-3 rounded-xl text-sm font-bold border-2 transition-all active:scale-[0.97] ${
+                      isSelected
+                        ? 'bg-amber-500/20 border-amber-500 text-amber-400 shadow-lg'
+                        : 'bg-slate-900 border-slate-700 text-slate-400 hover:border-slate-600'
+                    }`}
+                  >
+                    {t(side)}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         )}
 
         {/* Bump & Trench Section */}
@@ -559,36 +590,25 @@ export const TeleopTab: FC<TabProps> = ({ data, update, handedness }) => {
           max={20}
         />
 
-        <Toggle
+        {/* Fuel Dropped on Bump - Changed to Counter */}
+        <Counter
           label={t('fuelDroppedOnBump')}
-          checked={data.fuelDroppedOnBump}
-          onChange={val => update({ fuelDroppedOnBump: val })}
-          size="large"
-          variant="warning"
+          value={data.fuelDroppedOnBumpCount}
+          onChange={val => update({ fuelDroppedOnBumpCount: val })}
+          handedness={handedness}
+          accentColor="orange"
+          max={20}
         />
       </div>
-    </div>
-  );
-};
 
-// -----------------------------------------------------------------------------
-// Penalty Tab - Red Theme (NEW)
-// -----------------------------------------------------------------------------
+      {/* Penalty Section - Merged into Teleop */}
+      <div className="space-y-4 pt-4 border-t border-red-500/30">
+        <div className="flex items-center gap-3">
+          <div className="w-3 h-3 rounded-full bg-red-500"></div>
+          <h3 className="text-xl font-display font-bold text-red-400">{t('penaltyHeader')}</h3>
+          <AlertTriangle className="text-red-500" size={18} />
+        </div>
 
-export const PenaltyTab: FC<TabProps> = ({ data, update, handedness }) => {
-  const { t } = useLanguage();
-
-  return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-right-8 duration-500">
-      {/* Phase Header */}
-      <div className="flex items-center gap-3 pb-2 border-b border-red-500/30">
-        <div className="w-3 h-3 rounded-full bg-red-500"></div>
-        <h2 className="text-2xl font-display font-bold text-red-400">{t('penaltyHeader')}</h2>
-        <AlertTriangle className="text-red-500" size={20} />
-      </div>
-
-      {/* Main Content */}
-      <div className="grid grid-cols-1 gap-5">
         {/* Penalty Counter */}
         <Counter
           label={t('penaltyCount')}
@@ -599,19 +619,19 @@ export const PenaltyTab: FC<TabProps> = ({ data, update, handedness }) => {
           max={20}
         />
 
-        {/* Cards */}
+        {/* Minor/Major Penalties */}
         <div className="grid grid-cols-2 gap-3">
           <Toggle
-            label={t('yellowCard')}
-            checked={data.yellowCard}
-            onChange={val => update({ yellowCard: val })}
+            label={t('minorPenalty')}
+            checked={data.minorPenalty}
+            onChange={val => update({ minorPenalty: val })}
             size="large"
             variant="warning"
           />
           <Toggle
-            label={t('redCard')}
-            checked={data.redCard}
-            onChange={val => update({ redCard: val })}
+            label={t('majorPenalty')}
+            checked={data.majorPenalty}
+            onChange={val => update({ majorPenalty: val })}
             size="large"
             variant="danger"
           />
@@ -677,25 +697,14 @@ export const PostMatchTab: FC<TabProps> = ({ data, update }) => {
         <Toggle label={t('ridingOnBall')} checked={data.ridingOnBall} onChange={v => update({ ridingOnBall: v })} variant="warning" />
       </div>
 
-      {/* Comments */}
+      {/* Comments - Single field */}
       <div className="space-y-1.5">
         <label className="text-xs font-bold text-slate-400 uppercase">{t('comments')}</label>
         <textarea
-          className="w-full h-24 bg-slate-900 border-2 border-slate-700 rounded-xl p-3.5 text-white focus:ring-2 focus:ring-orange-500 outline-none resize-none"
+          className="w-full h-32 bg-slate-900 border-2 border-slate-700 rounded-xl p-3.5 text-white focus:ring-2 focus:ring-orange-500 outline-none resize-none"
           placeholder={t('commentsPlaceholder')}
           value={data.comments}
           onChange={e => update({ comments: e.target.value })}
-        />
-      </div>
-
-      {/* Subjective Notes */}
-      <div className="space-y-1.5">
-        <label className="text-xs font-bold text-slate-400 uppercase">{t('subjectiveNotes')}</label>
-        <textarea
-          className="w-full h-24 bg-slate-900 border-2 border-slate-700 rounded-xl p-3.5 text-white focus:ring-2 focus:ring-orange-500 outline-none resize-none"
-          placeholder={t('subjectiveNotesPlaceholder')}
-          value={data.subjectiveNotes}
-          onChange={e => update({ subjectiveNotes: e.target.value })}
         />
       </div>
     </div>

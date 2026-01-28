@@ -1,14 +1,14 @@
 
 export type MatchPhase =
-  | 'PreMatch' | 'Auton' | 'Teleop' | 'Penalty' | 'PostMatch'
+  | 'PreMatch' | 'Auton' | 'Teleop' | 'PostMatch'
   | 'PitInfo' | 'PitRobot' | 'PitSpecs' // Pit phases
   | 'QRCode';
 
 export type ScoutingMode = 'Match' | 'Pit';
 export type Handedness = 'right' | 'left';
 
-// 2026 REBUILT - Alliance (Red/Blue only, no position)
-export type Alliance = 'Red' | 'Blue';
+// 2026 REBUILT - Alliance with position (R1/R2/R3/B1/B2/B3)
+export type Alliance = 'R1' | 'R2' | 'R3' | 'B1' | 'B2' | 'B3';
 
 export enum MatchLevel {
   Practice = 'Practice',
@@ -33,6 +33,9 @@ export enum TeleClimbStatus {
   Failed = 'Failed'
 }
 
+// Climb side options
+export type ClimbSide = 'None' | 'Left' | 'Center' | 'Right';
+
 // Path point for autonomous route tracking (percentage-based coordinates 0-100)
 export interface PathPoint {
   x: number;
@@ -53,31 +56,30 @@ export interface ScoutingData {
 
   // --- Auto (20 seconds) ---
   autoPath: PathPoint[];         // Auto Path Tracking (preserved)
-  autoFuel: number;              // Fuel scored count
   autoClimbStatus: AutoClimbStatus; // Level1/Failed/None
   autoClimbTime: number;         // Seconds to climb
+  autoClimbSide: ClimbSide;      // Left/Center/Right side
 
   // --- Teleop (2:20) ---
-  teleFuel: number;              // Fuel scored count
   teleClimbStatus: TeleClimbStatus; // Level1-3/Failed/None
   teleClimbTime: number;         // Seconds to climb
+  teleClimbSide: ClimbSide;      // Left/Center/Right side
   bumpTrenchCount: number;       // Times crossed Bump & Trench
-  fuelDroppedOnBump: boolean;    // Dropped fuel on Bump crossing
+  fuelDroppedOnBumpCount: number; // Times dropped fuel on Bump crossing
 
-  // --- Penalty ---
+  // --- Penalty (within Teleop) ---
   penaltyCount: number;          // Penalty count
-  yellowCard: boolean;           // Yellow card received
-  redCard: boolean;              // Red card received
+  minorPenalty: boolean;         // Minor penalty received
+  majorPenalty: boolean;         // Major penalty received
 
   // --- PostMatch (Other + Subjective) ---
   robotDied: boolean;            // Robot died/disabled (incl. tipped)
   almostTipped: boolean;         // Almost tipped (near miss)
   ridingOnBall: boolean;         // Riding on ball
-  comments: string;              // Comments
+  comments: string;              // Comments (single field, combined from previous two)
   defenseRating: number;         // Defense rating 0-5
   driverSkill: number;           // Driver skill 0-5 (renamed from driverRating)
   speedRating: number;           // Speed rating 0-5
-  subjectiveNotes: string;       // Subjective notes
 
   // --- Pit Scouting Fields ---
   pitDriveTrain: string;
@@ -106,26 +108,26 @@ export const INITIAL_DATA: ScoutingData = {
   eventCode: '2026MSLR',
   matchLevel: MatchLevel.Quals,
   matchNumber: 1,
-  alliance: 'Red',
+  alliance: 'R1',
   teamNumber: '',
 
   // Auto
   autoPath: [],
-  autoFuel: 0,
   autoClimbStatus: AutoClimbStatus.None,
   autoClimbTime: 0,
+  autoClimbSide: 'None',
 
   // Teleop
-  teleFuel: 0,
   teleClimbStatus: TeleClimbStatus.None,
   teleClimbTime: 0,
+  teleClimbSide: 'None',
   bumpTrenchCount: 0,
-  fuelDroppedOnBump: false,
+  fuelDroppedOnBumpCount: 0,
 
-  // Penalty
+  // Penalty (within Teleop)
   penaltyCount: 0,
-  yellowCard: false,
-  redCard: false,
+  minorPenalty: false,
+  majorPenalty: false,
 
   // PostMatch
   robotDied: false,
@@ -135,7 +137,6 @@ export const INITIAL_DATA: ScoutingData = {
   defenseRating: 0,
   driverSkill: 0,
   speedRating: 0,
-  subjectiveNotes: '',
 
   // Pit defaults
   pitDriveTrain: 'Swerve',

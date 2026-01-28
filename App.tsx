@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { MatchPhase, ScoutingData, INITIAL_DATA, MatchLevel, Handedness } from './types';
-import { PreMatchTab, AutonTab, TeleopTab, PenaltyTab, PostMatchTab } from './components/TabViews';
+import { PreMatchTab, AutonTab, TeleopTab, PostMatchTab } from './components/TabViews';
 import { QRCodeTab } from './components/QRCodeTab';
 import { HistoryModal } from './components/HistoryModal';
 import { Button } from './components/ui/Button';
@@ -9,8 +9,8 @@ import { ChevronRight, ChevronLeft, Settings, X, History as HistoryIcon, Globe }
 import { getUnsyncedCount } from './services/storage';
 import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
 
-// 2026 REBUILT: Added Penalty phase between Teleop and PostMatch
-const phases: MatchPhase[] = ['PreMatch', 'Auton', 'Teleop', 'Penalty', 'PostMatch', 'QRCode'];
+// 2026 REBUILT: Penalty merged into Teleop
+const phases: MatchPhase[] = ['PreMatch', 'Auton', 'Teleop', 'PostMatch', 'QRCode'];
 
 function AppContent() {
   const { t, lang, setLang } = useLanguage();
@@ -147,7 +147,7 @@ function AppContent() {
       scouterName: data.scouterName,
       eventCode: data.eventCode,
       matchLevel: data.matchLevel,
-      alliance: data.alliance, // 2026: preserve alliance
+      alliance: data.alliance // 2026: preserve alliance
       matchNumber: nextMatchNum
     });
     setCurrentPhase('PreMatch');
@@ -259,7 +259,6 @@ function AppContent() {
         {currentPhase === 'PreMatch' && <PreMatchTab data={data} update={updateData} handedness={handedness} />}
         {currentPhase === 'Auton' && <AutonTab data={data} update={updateData} handedness={handedness} />}
         {currentPhase === 'Teleop' && <TeleopTab data={data} update={updateData} handedness={handedness} />}
-        {currentPhase === 'Penalty' && <PenaltyTab data={data} update={updateData} handedness={handedness} />}
         {currentPhase === 'PostMatch' && <PostMatchTab data={data} update={updateData} handedness={handedness} />}
         {currentPhase === 'QRCode' && <QRCodeTab data={data} onReset={handleReset} />}
       </main>

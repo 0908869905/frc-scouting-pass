@@ -1,4 +1,4 @@
-import { MatchLevel, AutoClimbStatus, TeleClimbStatus, Alliance } from './types';
+import { MatchLevel, AutoClimbStatus, TeleClimbStatus, Alliance, ClimbSide } from './types';
 
 // Starting zone configuration for auto path validation
 // Width = 20%, offset from edge = 40% (2 * width)
@@ -16,8 +16,8 @@ export const APP_CONFIG = {
 
 export const MATCH_LEVEL_OPTIONS = Object.values(MatchLevel);
 
-// 2026 REBUILT - Alliance options (Red/Blue only)
-export const ALLIANCE_OPTIONS: Alliance[] = ['Red', 'Blue'];
+// 2026 REBUILT - Alliance options with position (R1/R2/R3/B1/B2/B3)
+export const ALLIANCE_OPTIONS: Alliance[] = ['R1', 'R2', 'R3', 'B1', 'B2', 'B3'];
 
 // 2026 REBUILT - Auto Climb options (only Level 1 in auto)
 export const AUTO_CLIMB_OPTIONS = Object.values(AutoClimbStatus);
@@ -25,21 +25,24 @@ export const AUTO_CLIMB_OPTIONS = Object.values(AutoClimbStatus);
 // 2026 REBUILT - Teleop Climb options (3 levels)
 export const TELE_CLIMB_OPTIONS = Object.values(TeleClimbStatus);
 
+// Climb side options (Left/Center/Right)
+export const CLIMB_SIDE_OPTIONS: ClimbSide[] = ['None', 'Left', 'Center', 'Right'];
+
 // TSV column order for Match scouting - MUST match ScoutingData keys
 // Note: autoPath is excluded - it goes in a separate QR code
 export const TSV_SCHEMA_MATCH = [
   // PreMatch
   'scouterName', 'eventCode', 'matchLevel', 'matchNumber', 'alliance', 'teamNumber',
   // Auto
-  'autoFuel', 'autoClimbStatus', 'autoClimbTime',
+  'autoClimbStatus', 'autoClimbTime', 'autoClimbSide',
   // Teleop
-  'teleFuel', 'teleClimbStatus', 'teleClimbTime', 'bumpTrenchCount', 'fuelDroppedOnBump',
-  // Penalty
-  'penaltyCount', 'yellowCard', 'redCard',
+  'teleClimbStatus', 'teleClimbTime', 'teleClimbSide', 'bumpTrenchCount', 'fuelDroppedOnBumpCount',
+  // Penalty (within Teleop)
+  'penaltyCount', 'minorPenalty', 'majorPenalty',
   // PostMatch
   'robotDied', 'almostTipped', 'ridingOnBall',
   'defenseRating', 'driverSkill', 'speedRating',
-  'comments', 'subjectiveNotes'
+  'comments'
 ];
 
 // Schema for path-only QR code (identifier + path data)

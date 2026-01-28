@@ -36,8 +36,8 @@ const translations = {
 
     // Penalty
     penaltyCount: "Penalty Count",
-    yellowCard: "Yellow Card",
-    redCard: "Red Card",
+    minorPenalty: "Minor",
+    majorPenalty: "Major",
 
     // Post Match
     defenseRating: "Defense Rating (0-5)",
@@ -48,8 +48,11 @@ const translations = {
     ridingOnBall: "Riding on Ball",
     comments: "Comments",
     commentsPlaceholder: "Strategy, strengths, weaknesses...",
-    subjectiveNotes: "Subjective Notes",
-    subjectiveNotesPlaceholder: "Personal observations, team dynamics...",
+    // Climb Side
+    climbSide: "Climb Side",
+    Left: "Left",
+    Center: "Center",
+    Right: "Right",
 
     // QR & Common
     saveSubmit: "Save & Submit",
@@ -144,8 +147,8 @@ const translations = {
 
     // Penalty
     penaltyCount: "犯規次數",
-    yellowCard: "黃牌",
-    redCard: "紅牌",
+    minorPenalty: "輕微犯規",
+    majorPenalty: "重大犯規",
 
     // Post Match
     defenseRating: "防守評分 (0-5)",
@@ -156,8 +159,11 @@ const translations = {
     ridingOnBall: "騎在球上",
     comments: "備註",
     commentsPlaceholder: "策略、優勢、劣勢...",
-    subjectiveNotes: "主觀備註",
-    subjectiveNotesPlaceholder: "個人觀察、團隊互動...",
+    // Climb Side
+    climbSide: "攀爬側",
+    Left: "左側",
+    Center: "中間",
+    Right: "右側",
 
     // QR & Common
     saveSubmit: "儲存並提交",
