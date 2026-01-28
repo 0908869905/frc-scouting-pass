@@ -40,7 +40,7 @@ Scouting PASS 在每場比賽結束後會產生 **兩個 QR Code**：
 
 **識別方式**：
 - 顏色：青色背景白色前景
-- 欄位數量：21 個欄位（Match 模式）
+- 欄位數量：21 個欄位（Match 模式，索引 0-20）
 
 ### 2. Auto Path QR（路徑資料）
 
@@ -143,7 +143,7 @@ x1,y1|x2,y2|x3,y3|...
 
 ### Match Data QR（TSV_SCHEMA_MATCH）
 
-共 21 個欄位，按以下順序排列：
+共 18 個欄位，按以下順序排列：
 
 | 索引 | 欄位名稱 | 類型 | 說明 | 範例值 |
 |------|----------|------|------|--------|
@@ -167,10 +167,7 @@ x1,y1|x2,y2|x3,y3|...
 | 17 | `robotDied` | boolean | 機器人故障/倒下 | `1` 或 `0` |
 | 18 | `almostTipped` | boolean | 差點傾倒 | `1` 或 `0` |
 | 19 | `ridingOnBall` | boolean | 騎在球上 | `1` 或 `0` |
-| 20 | `defenseRating` | number | 防守評分 (0-5) | `3` |
-| 21 | `driverSkill` | number | 駕駛技術評分 (0-5) | `4` |
-| 22 | `speedRating` | number | 速度評分 (0-5) | `4` |
-| 23 | `comments` | string | 備註 | `"Very fast robot"` |
+| 20 | `comments` | string | 備註 | `"Very fast robot"` |
 
 ### Auto Path QR（TSV_SCHEMA_PATH）
 
@@ -246,7 +243,6 @@ const TSV_SCHEMA_MATCH = [
   'teleClimbStatus', 'teleClimbTime', 'teleClimbSide', 'bumpTrenchCount', 'fuelDroppedOnBumpCount',
   'penaltyCount', 'minorPenalty', 'majorPenalty',
   'robotDied', 'almostTipped', 'ridingOnBall',
-  'defenseRating', 'driverSkill', 'speedRating',
   'comments'
 ];
 
@@ -321,7 +317,6 @@ TSV_SCHEMA_MATCH = [
     'teleClimbStatus', 'teleClimbTime', 'teleClimbSide', 'bumpTrenchCount', 'fuelDroppedOnBumpCount',
     'penaltyCount', 'minorPenalty', 'majorPenalty',
     'robotDied', 'almostTipped', 'ridingOnBall',
-    'defenseRating', 'driverSkill', 'speedRating',
     'comments'
 ]
 
@@ -385,7 +380,6 @@ let TSV_SCHEMA_MATCH = [
     "teleClimbStatus", "teleClimbTime", "teleClimbSide", "bumpTrenchCount", "fuelDroppedOnBumpCount",
     "penaltyCount", "minorPenalty", "majorPenalty",
     "robotDied", "almostTipped", "ridingOnBall",
-    "defenseRating", "driverSkill", "speedRating",
     "comments"
 ]
 
@@ -441,7 +435,7 @@ A: 因為 autoPath 資料可能很長（幾百個座標點），如果包含在�
 A: 解壓縮後計算欄位數量：
 - 4 個欄位 → Auto Path QR
 - 13 個欄位 → Pit Scouting QR
-- 21+ 個欄位 → Match Data QR
+- 21 個欄位 → Match Data QR
 
 或者檢查第一個欄位：
 - 如果第一個欄位是 `eventCode` 開頭的賽事代碼（如 `2026MSLR`）→ 可能是 Path QR
@@ -490,6 +484,7 @@ A: 攀爬側記錄機器人攀爬時的位置（左/中/右），用於分析攀
 
 | 版本 | 日期 | 變更內容 |
 |------|------|----------|
+| 1.2.0 | 2026-01-28 | 移除 defenseRating/driverSkill/speedRating 欄位、Climb Time 碼錶在所有狀態下都顯示 |
 | 1.1.0 | 2026-01-28 | **重大變更**：移除 autoFuel/teleFuel 欄位、alliance 改為 R1-R3/B1-B3 格式、新增 autoClimbSide/teleClimbSide 欄位、fuelDroppedOnBump 改為 fuelDroppedOnBumpCount (次數)、yellowCard/redCard 改為 minorPenalty/majorPenalty、移除 subjectiveNotes 欄位、Climb Time 改為持續計時 |
 | 1.0.0 | 2026-01-26 | 初始版本，支援 Match/Pit/Path 三種 QR Code |
 

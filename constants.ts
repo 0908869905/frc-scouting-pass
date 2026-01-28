@@ -42,7 +42,6 @@ export const TSV_SCHEMA_MATCH = [
   'penaltyCount', 'minorPenalty', 'majorPenalty',
   // PostMatch
   'robotDied', 'almostTipped', 'ridingOnBall',
-  'defenseRating', 'driverSkill', 'speedRating',
   'comments'
 ];
 

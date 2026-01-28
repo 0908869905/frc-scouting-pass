@@ -465,15 +465,13 @@ export const AutonTab: FC<TabProps> = ({ data, update, handedness }) => {
           </div>
         </div>
 
-        {/* Auto Climb Time Stopwatch - Always show when status is not None */}
-        {data.autoClimbStatus !== AutoClimbStatus.None && (
-          <Stopwatch
-            label={t('autoClimbTime')}
-            value={data.autoClimbTime}
-            onChange={val => update({ autoClimbTime: val })}
-            accentColor="amber"
-          />
-        )}
+        {/* Auto Climb Time Stopwatch - Always show */}
+        <Stopwatch
+          label={t('autoClimbTime')}
+          value={data.autoClimbTime}
+          onChange={val => update({ autoClimbTime: val })}
+          accentColor="amber"
+        />
 
         {/* Auto Climb Side Selection - Show when status is not None */}
         {data.autoClimbStatus !== AutoClimbStatus.None && (
@@ -545,15 +543,13 @@ export const TeleopTab: FC<TabProps> = ({ data, update, handedness }) => {
           </div>
         </div>
 
-        {/* Teleop Climb Time Stopwatch - Always show when status is not None */}
-        {data.teleClimbStatus !== TeleClimbStatus.None && (
-          <Stopwatch
-            label={t('teleClimbTime')}
-            value={data.teleClimbTime}
-            onChange={val => update({ teleClimbTime: val })}
-            accentColor="amber"
-          />
-        )}
+        {/* Teleop Climb Time Stopwatch - Always show */}
+        <Stopwatch
+          label={t('teleClimbTime')}
+          value={data.teleClimbTime}
+          onChange={val => update({ teleClimbTime: val })}
+          accentColor="amber"
+        />
 
         {/* Teleop Climb Side Selection - Show when status is not None */}
         {data.teleClimbStatus !== TeleClimbStatus.None && (
@@ -648,46 +644,12 @@ export const TeleopTab: FC<TabProps> = ({ data, update, handedness }) => {
 export const PostMatchTab: FC<TabProps> = ({ data, update }) => {
   const { t } = useLanguage();
 
-  // Inline Rating Component
-  const Rating: FC<{ label: string; value: number; onChange: (v: number) => void }> = ({ label, value, onChange }) => (
-    <div className="space-y-2">
-      <div className="flex justify-between items-center">
-        <label className="text-xs font-bold text-slate-400 uppercase">{label}</label>
-        <span className={`text-base font-black tabular-nums ${value >= 4 ? 'text-green-400' : value >= 3 ? 'text-blue-400' : value >= 1 ? 'text-orange-400' : 'text-slate-600'}`}>
-          {value}/5
-        </span>
-      </div>
-      <div className="flex gap-1.5 h-14">
-        {[1, 2, 3, 4, 5].map(v => (
-          <button
-            key={v}
-            onClick={() => onChange(v)}
-            className={`flex-1 rounded-xl transition-all active:scale-95 font-bold text-lg ${
-              v <= value
-                ? v >= 4 ? 'bg-green-500/80 text-green-950' : v >= 3 ? 'bg-blue-500/80 text-blue-950' : 'bg-orange-500/80 text-orange-950'
-                : 'bg-slate-800 hover:bg-slate-700 text-slate-600'
-            }`}
-          >
-            {v}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-
   return (
     <div className="space-y-5 animate-in fade-in slide-in-from-right-8 duration-500 pb-20">
       {/* Phase Header */}
       <div className="flex items-center gap-3 pb-2 border-b border-orange-500/30">
         <div className="w-3 h-3 rounded-full bg-orange-500"></div>
         <h2 className="text-2xl font-display font-bold text-orange-400">{t('postMatchHeader')}</h2>
-      </div>
-
-      {/* Ratings */}
-      <div className="space-y-4">
-        <Rating label={t('driverSkill')} value={data.driverSkill} onChange={v => update({ driverSkill: v })} />
-        <Rating label={t('defenseRating')} value={data.defenseRating} onChange={v => update({ defenseRating: v })} />
-        <Rating label={t('speedRating')} value={data.speedRating} onChange={v => update({ speedRating: v })} />
       </div>
 
       {/* Quick Flags */}

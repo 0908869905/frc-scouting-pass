@@ -76,10 +76,7 @@ export interface ScoutingData {
   robotDied: boolean;            // Robot died/disabled (incl. tipped)
   almostTipped: boolean;         // Almost tipped (near miss)
   ridingOnBall: boolean;         // Riding on ball
-  comments: string;              // Comments (single field, combined from previous two)
-  defenseRating: number;         // Defense rating 0-5
-  driverSkill: number;           // Driver skill 0-5 (renamed from driverRating)
-  speedRating: number;           // Speed rating 0-5
+  comments: string;              // Comments (single field)
 
   // --- Pit Scouting Fields ---
   pitDriveTrain: string;
@@ -134,9 +131,6 @@ export const INITIAL_DATA: ScoutingData = {
   almostTipped: false,
   ridingOnBall: false,
   comments: '',
-  defenseRating: 0,
-  driverSkill: 0,
-  speedRating: 0,
 
   // Pit defaults
   pitDriveTrain: 'Swerve',
