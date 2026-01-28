@@ -1,9 +1,9 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import type { FC } from 'react';
-import { ScoutingData, Handedness, AutoClimbStatus, TeleClimbStatus, Alliance, ClimbSide, ClimbPosition } from '../types';
+import { ScoutingData, Handedness, AutoClimbStatus, TeleClimbStatus, Alliance, ClimbPosition } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
 import { Plus, Minus, Check, Zap, AlertTriangle, Play, Square, RotateCcw } from 'lucide-react';
-import { MATCH_LEVEL_OPTIONS, ALLIANCE_OPTIONS, AUTO_CLIMB_OPTIONS, TELE_CLIMB_OPTIONS, CLIMB_SIDE_OPTIONS, CLIMB_POSITION_OPTIONS } from '../constants';
+import { MATCH_LEVEL_OPTIONS, ALLIANCE_OPTIONS, AUTO_CLIMB_OPTIONS, TELE_CLIMB_OPTIONS, CLIMB_POSITION_OPTIONS } from '../constants';
 import { FieldCanvas } from './FieldCanvas';
 
 interface TabProps {
@@ -473,52 +473,29 @@ export const AutonTab: FC<TabProps> = ({ data, update, handedness }) => {
           accentColor="amber"
         />
 
-        {/* Auto Climb Side Selection - Show when status is not None */}
+        {/* Auto Climb Position Selection - Show when status is not None */}
         {data.autoClimbStatus !== AutoClimbStatus.None && (
-          <>
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-slate-400 uppercase">{t('climbSide')}</label>
-              <div className="grid grid-cols-3 gap-2">
-                {CLIMB_SIDE_OPTIONS.map(side => {
-                  const isSelected = data.autoClimbSide === side;
-                  return (
-                    <button
-                      key={side}
-                      onClick={() => update({ autoClimbSide: side as ClimbSide })}
-                      className={`p-3 rounded-xl text-sm font-bold border-2 transition-all active:scale-[0.97] ${
-                        isSelected
-                          ? 'bg-amber-500/20 border-amber-500 text-amber-400 shadow-lg'
-                          : 'bg-slate-900 border-slate-700 text-slate-400 hover:border-slate-600'
-                      }`}
-                    >
-                      {t(side)}
-                    </button>
-                  );
-                })}
-              </div>
+          <div className="space-y-2">
+            <label className="text-xs font-bold text-slate-400 uppercase">{t('climbPosition')}</label>
+            <div className="grid grid-cols-3 gap-2">
+              {CLIMB_POSITION_OPTIONS.map(pos => {
+                const isSelected = data.autoClimbPosition === pos;
+                return (
+                  <button
+                    key={pos}
+                    onClick={() => update({ autoClimbPosition: pos as ClimbPosition })}
+                    className={`p-3 rounded-xl text-sm font-bold border-2 transition-all active:scale-[0.97] ${
+                      isSelected
+                        ? 'bg-purple-500/20 border-purple-500 text-purple-400 shadow-lg'
+                        : 'bg-slate-900 border-slate-700 text-slate-400 hover:border-slate-600'
+                    }`}
+                  >
+                    {t(pos)}
+                  </button>
+                );
+              })}
             </div>
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-slate-400 uppercase">{t('climbPosition')}</label>
-              <div className="grid grid-cols-4 gap-2">
-                {CLIMB_POSITION_OPTIONS.map(pos => {
-                  const isSelected = data.autoClimbPosition === pos;
-                  return (
-                    <button
-                      key={pos}
-                      onClick={() => update({ autoClimbPosition: pos as ClimbPosition })}
-                      className={`p-3 rounded-xl text-sm font-bold border-2 transition-all active:scale-[0.97] ${
-                        isSelected
-                          ? 'bg-purple-500/20 border-purple-500 text-purple-400 shadow-lg'
-                          : 'bg-slate-900 border-slate-700 text-slate-400 hover:border-slate-600'
-                      }`}
-                    >
-                      {t(pos)}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          </>
+          </div>
         )}
       </div>
     </div>
@@ -628,52 +605,29 @@ export const TeleopTab: FC<TabProps> = ({ data, update, handedness }) => {
           accentColor="amber"
         />
 
-        {/* Teleop Climb Side & Position Selection - Show when status is not None */}
+        {/* Teleop Climb Position Selection - Show when status is not None */}
         {data.teleClimbStatus !== TeleClimbStatus.None && (
-          <>
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-slate-400 uppercase">{t('climbSide')}</label>
-              <div className="grid grid-cols-3 gap-2">
-                {CLIMB_SIDE_OPTIONS.map(side => {
-                  const isSelected = data.teleClimbSide === side;
-                  return (
-                    <button
-                      key={side}
-                      onClick={() => update({ teleClimbSide: side as ClimbSide })}
-                      className={`p-3 rounded-xl text-sm font-bold border-2 transition-all active:scale-[0.97] ${
-                        isSelected
-                          ? 'bg-amber-500/20 border-amber-500 text-amber-400 shadow-lg'
-                          : 'bg-slate-900 border-slate-700 text-slate-400 hover:border-slate-600'
-                      }`}
-                    >
-                      {t(side)}
-                    </button>
-                  );
-                })}
-              </div>
+          <div className="space-y-2">
+            <label className="text-xs font-bold text-slate-400 uppercase">{t('climbPosition')}</label>
+            <div className="grid grid-cols-3 gap-2">
+              {CLIMB_POSITION_OPTIONS.map(pos => {
+                const isSelected = data.teleClimbPosition === pos;
+                return (
+                  <button
+                    key={pos}
+                    onClick={() => update({ teleClimbPosition: pos as ClimbPosition })}
+                    className={`p-3 rounded-xl text-sm font-bold border-2 transition-all active:scale-[0.97] ${
+                      isSelected
+                        ? 'bg-purple-500/20 border-purple-500 text-purple-400 shadow-lg'
+                        : 'bg-slate-900 border-slate-700 text-slate-400 hover:border-slate-600'
+                    }`}
+                  >
+                    {t(pos)}
+                  </button>
+                );
+              })}
             </div>
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-slate-400 uppercase">{t('climbPosition')}</label>
-              <div className="grid grid-cols-4 gap-2">
-                {CLIMB_POSITION_OPTIONS.map(pos => {
-                  const isSelected = data.teleClimbPosition === pos;
-                  return (
-                    <button
-                      key={pos}
-                      onClick={() => update({ teleClimbPosition: pos as ClimbPosition })}
-                      className={`p-3 rounded-xl text-sm font-bold border-2 transition-all active:scale-[0.97] ${
-                        isSelected
-                          ? 'bg-purple-500/20 border-purple-500 text-purple-400 shadow-lg'
-                          : 'bg-slate-900 border-slate-700 text-slate-400 hover:border-slate-600'
-                      }`}
-                    >
-                      {t(pos)}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          </>
+          </div>
         )}
       </div>
     </div>

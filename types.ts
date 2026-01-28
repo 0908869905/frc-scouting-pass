@@ -33,11 +33,8 @@ export enum TeleClimbStatus {
   Failed = 'Failed'
 }
 
-// Climb side options (which side the robot approaches from)
-export type ClimbSide = 'None' | 'Left' | 'Right';
-
-// Climb position options (which of the 3 bars)
-export type ClimbPosition = 'None' | 'Left' | 'Center' | 'Right';
+// Climb position options (5 positions)
+export type ClimbPosition = 'LeftSide' | 'Left' | 'Center' | 'Right' | 'RightSide';
 
 // Path point for autonomous route tracking (percentage-based coordinates 0-100)
 export interface PathPoint {
@@ -61,14 +58,12 @@ export interface ScoutingData {
   autoPath: PathPoint[];         // Auto Path Tracking (preserved)
   autoClimbStatus: AutoClimbStatus; // Level1/Failed/None
   autoClimbTime: number;         // Seconds to climb
-  autoClimbSide: ClimbSide;      // Left/Right side (approach direction)
-  autoClimbPosition: ClimbPosition; // Left/Center/Right bar
+  autoClimbPosition: ClimbPosition; // 5 positions
 
   // --- Teleop (2:20) ---
   teleClimbStatus: TeleClimbStatus; // Level1-3/Failed/None
   teleClimbTime: number;         // Seconds to climb
-  teleClimbSide: ClimbSide;      // Left/Right side (approach direction)
-  teleClimbPosition: ClimbPosition; // Left/Center/Right bar
+  teleClimbPosition: ClimbPosition; // 5 positions
   bumpTrenchCount: number;       // Times crossed Bump & Trench
   fuelDroppedOnBumpCount: number; // Times dropped fuel on Bump crossing
 
@@ -116,14 +111,12 @@ export const INITIAL_DATA: ScoutingData = {
   autoPath: [],
   autoClimbStatus: AutoClimbStatus.None,
   autoClimbTime: 0,
-  autoClimbSide: 'None',
-  autoClimbPosition: 'None',
+  autoClimbPosition: 'Center',
 
   // Teleop
   teleClimbStatus: TeleClimbStatus.None,
   teleClimbTime: 0,
-  teleClimbSide: 'None',
-  teleClimbPosition: 'None',
+  teleClimbPosition: 'Center',
   bumpTrenchCount: 0,
   fuelDroppedOnBumpCount: 0,
 

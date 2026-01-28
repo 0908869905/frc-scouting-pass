@@ -48,13 +48,13 @@ const translations = {
     ridingOnBall: "Riding on Ball",
     comments: "Comments",
     commentsPlaceholder: "Strategy, strengths, weaknesses...",
-    // Climb Side (approach direction)
-    climbSide: "Climb Side",
-    // Climb Position (which bar)
+    // Climb Position (5 positions)
     climbPosition: "Climb Position",
+    LeftSide: "Left Side",
     Left: "Left",
     Center: "Center",
     Right: "Right",
+    RightSide: "Right Side",
 
     // QR & Common
     saveSubmit: "Save & Submit",
@@ -161,13 +161,13 @@ const translations = {
     ridingOnBall: "騎在球上",
     comments: "備註",
     commentsPlaceholder: "策略、優勢、劣勢...",
-    // Climb Side (approach direction)
-    climbSide: "攀爬側（進入方向）",
-    // Climb Position (which bar)
-    climbPosition: "攀爬位置（哪根管子）",
-    Left: "左側",
-    Center: "中間",
-    Right: "右側",
+    // Climb Position (5 positions)
+    climbPosition: "攀爬位置",
+    LeftSide: "左側",
+    Left: "左",
+    Center: "中",
+    Right: "右",
+    RightSide: "右側",
 
     // QR & Common
     saveSubmit: "儲存並提交",

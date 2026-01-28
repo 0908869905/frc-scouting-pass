@@ -1,4 +1,4 @@
-import { MatchLevel, AutoClimbStatus, TeleClimbStatus, Alliance, ClimbSide, ClimbPosition } from './types';
+import { MatchLevel, AutoClimbStatus, TeleClimbStatus, Alliance, ClimbPosition } from './types';
 
 // Starting zone configuration for auto path validation
 // Width = 7%, different offsets for red and blue alliances
@@ -26,11 +26,8 @@ export const AUTO_CLIMB_OPTIONS = Object.values(AutoClimbStatus);
 // 2026 REBUILT - Teleop Climb options (3 levels)
 export const TELE_CLIMB_OPTIONS = Object.values(TeleClimbStatus);
 
-// Climb side options (approach direction: Left/Right)
-export const CLIMB_SIDE_OPTIONS: ClimbSide[] = ['None', 'Left', 'Right'];
-
-// Climb position options (which bar: Left/Center/Right)
-export const CLIMB_POSITION_OPTIONS: ClimbPosition[] = ['None', 'Left', 'Center', 'Right'];
+// Climb position options (5 positions: LeftSide, Left, Center, Right, RightSide)
+export const CLIMB_POSITION_OPTIONS: ClimbPosition[] = ['LeftSide', 'Left', 'Center', 'Right', 'RightSide'];
 
 // TSV column order for Match scouting - MUST match ScoutingData keys
 // Note: autoPath is excluded - it goes in a separate QR code
@@ -38,13 +35,13 @@ export const TSV_SCHEMA_MATCH = [
   // PreMatch
   'scouterName', 'eventCode', 'matchLevel', 'matchNumber', 'alliance', 'teamNumber',
   // Auto
-  'autoClimbStatus', 'autoClimbTime', 'autoClimbSide', 'autoClimbPosition',
+  'autoClimbStatus', 'autoClimbTime', 'autoClimbPosition',
   // Teleop
   'bumpTrenchCount', 'fuelDroppedOnBumpCount',
   // Penalty (within Teleop)
   'minorPenalty', 'majorPenalty',
   // Climb (end of Teleop)
-  'teleClimbStatus', 'teleClimbTime', 'teleClimbSide', 'teleClimbPosition',
+  'teleClimbStatus', 'teleClimbTime', 'teleClimbPosition',
   // PostMatch
   'robotDied', 'almostTipped', 'ridingOnBall',
   'comments'
