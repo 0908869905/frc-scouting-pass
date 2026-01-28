@@ -1,11 +1,11 @@
 import { MatchLevel, AutoClimbStatus, TeleClimbStatus, Alliance, ClimbSide } from './types';
 
 // Starting zone configuration for auto path validation
-// Width = 20%, different offsets for red and blue alliances
-// Red: left side (15-35%), Blue: right side (65-85%)
-export const STARTING_ZONE_WIDTH = 20;
-export const RED_STARTING_ZONE_OFFSET = 15;  // Red zone: X = 15-35%
-export const BLUE_STARTING_ZONE_OFFSET = 65; // Blue zone: X = 65-85%
+// Width = 7%, different offsets for red and blue alliances
+// Red: left side (15-22%), Blue: right side (78-85%)
+export const STARTING_ZONE_WIDTH = 7;
+export const RED_STARTING_ZONE_OFFSET = 15;  // Red zone: X = 15-22%
+export const BLUE_STARTING_ZONE_OFFSET = 78; // Blue zone: X = 78-85%
 
 export const APP_CONFIG = {
   teamName: "6998",
