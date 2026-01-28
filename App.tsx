@@ -147,7 +147,7 @@ function AppContent() {
       scouterName: data.scouterName,
       eventCode: data.eventCode,
       matchLevel: data.matchLevel,
-      alliance: data.alliance // 2026: preserve alliance
+      alliance: data.alliance, // 2026: preserve alliance
       matchNumber: nextMatchNum
     });
     setCurrentPhase('PreMatch');
