@@ -40,7 +40,7 @@ Scouting PASS 在每場比賽結束後會產生 **兩個 QR Code**：
 
 **識別方式**：
 - 顏色：青色背景白色前景
-- 欄位數量：21 個欄位（Match 模式，索引 0-20）
+- 欄位數量：**21 個欄位**（索引 0-20）
 
 ### 2. Auto Path QR（路徑資料）
 
@@ -48,7 +48,7 @@ Scouting PASS 在每場比賽結束後會產生 **兩個 QR Code**：
 
 **識別方式**：
 - 顏色：琥珀色背景白色前景
-- 欄位數量：4 個欄位
+- 欄位數量：**4 個欄位**（索引 0-3）
 - 只有在使用者有繪製路徑時才會產生
 
 ---
@@ -106,6 +106,7 @@ const values = tsvData.split('\t');
 // values[0] = scouterName
 // values[1] = eventCode
 // ...
+// values[20] = comments
 ```
 
 ### 資料類型轉換規則
@@ -143,7 +144,7 @@ x1,y1|x2,y2|x3,y3|...
 
 ### Match Data QR（TSV_SCHEMA_MATCH）
 
-共 18 個欄位，按以下順序排列：
+**共 21 個欄位**，按以下順序排列（索引 0-20）：
 
 | 索引 | 欄位名稱 | 類型 | 說明 | 範例值 |
 |------|----------|------|------|--------|
@@ -171,7 +172,7 @@ x1,y1|x2,y2|x3,y3|...
 
 ### Auto Path QR（TSV_SCHEMA_PATH）
 
-共 4 個欄位：
+**共 4 個欄位**（索引 0-3）：
 
 | 索引 | 欄位名稱 | 類型 | 說明 | 範例值 |
 |------|----------|------|------|--------|
@@ -182,7 +183,7 @@ x1,y1|x2,y2|x3,y3|...
 
 ### Pit Scouting QR（TSV_SCHEMA_PIT）
 
-Pit 偵察使用不同的 schema，共 13 個欄位：
+Pit 偵察使用不同的 schema，**共 13 個欄位**（索引 0-12）：
 
 | 索引 | 欄位名稱 | 類型 | 說明 |
 |------|----------|------|------|
@@ -237,6 +238,7 @@ Pit 偵察使用不同的 schema，共 13 個欄位：
 import LZString from 'lz-string';
 
 // TSV Schema 定義（必須與 Scouting PASS 一致）
+// 共 21 個欄位（索引 0-20）
 const TSV_SCHEMA_MATCH = [
   'scouterName', 'eventCode', 'matchLevel', 'matchNumber', 'alliance', 'teamNumber',
   'autoClimbStatus', 'autoClimbTime', 'autoClimbSide',
@@ -257,6 +259,11 @@ function decodeMatchQR(qrContent: string): Record<string, string> {
 
   // 2. 分割 TSV
   const values = tsvData.split('\t');
+
+  // 驗證欄位數量
+  if (values.length !== 21) {
+    console.warn(`Expected 21 fields, got ${values.length}`);
+  }
 
   // 3. 建立物件
   const result: Record<string, string> = {};
@@ -299,7 +306,7 @@ const matchData = decodeMatchQR(scannedQRContent);
 console.log(matchData.teamNumber);       // "6998"
 console.log(matchData.alliance);         // "R1"
 console.log(matchData.autoClimbSide);    // "Left"
-console.log(matchData.teleClimbSide);    // "Center"
+console.log(matchData.comments);         // "Very fast robot"
 
 const pathData = decodePathQR(scannedPathQRContent);
 const pathPoints = parsePath(pathData.autoPath);
@@ -311,6 +318,7 @@ console.log(pathPoints);  // [{x: 40.5, y: 50.0}, {x: 42.3, y: 48.2}, ...]
 ```python
 import lzstring
 
+# 共 21 個欄位（索引 0-20）
 TSV_SCHEMA_MATCH = [
     'scouterName', 'eventCode', 'matchLevel', 'matchNumber', 'alliance', 'teamNumber',
     'autoClimbStatus', 'autoClimbTime', 'autoClimbSide',
@@ -331,6 +339,11 @@ def decode_match_qr(qr_content: str) -> dict:
         raise ValueError("Failed to decompress QR data")
 
     values = tsv_data.split('\t')
+
+    # 驗證欄位數量
+    if len(values) != 21:
+        print(f"Warning: Expected 21 fields, got {len(values)}")
+
     return {key: values[i] if i < len(values) else 'None'
             for i, key in enumerate(TSV_SCHEMA_MATCH)}
 
@@ -362,7 +375,7 @@ match_data = decode_match_qr(scanned_qr_content)
 print(match_data['teamNumber'])       # "6998"
 print(match_data['alliance'])         # "R1"
 print(match_data['autoClimbSide'])    # "Left"
-print(match_data['teleClimbSide'])    # "Center"
+print(match_data['comments'])         # "Very fast robot"
 
 path_data = decode_path_qr(scanned_path_qr_content)
 path_points = parse_path(path_data['autoPath'])
@@ -374,6 +387,7 @@ print(path_points)  # [{'x': 40.5, 'y': 50.0}, {'x': 42.3, 'y': 48.2}, ...]
 ```swift
 import LZString
 
+// 共 21 個欄位（索引 0-20）
 let TSV_SCHEMA_MATCH = [
     "scouterName", "eventCode", "matchLevel", "matchNumber", "alliance", "teamNumber",
     "autoClimbStatus", "autoClimbTime", "autoClimbSide",
@@ -391,6 +405,12 @@ func decodeMatchQR(_ qrContent: String) -> [String: String]? {
     }
 
     let values = tsvData.components(separatedBy: "\t")
+
+    // 驗證欄位數量
+    if values.count != 21 {
+        print("Warning: Expected 21 fields, got \(values.count)")
+    }
+
     var result: [String: String] = [:]
 
     for (index, key) in TSV_SCHEMA_MATCH.enumerated() {
@@ -433,12 +453,12 @@ A: 因為 autoPath 資料可能很長（幾百個座標點），如果包含在�
 ### Q2: 如何判斷 QR Code 類型？
 
 A: 解壓縮後計算欄位數量：
-- 4 個欄位 → Auto Path QR
-- 13 個欄位 → Pit Scouting QR
-- 21 個欄位 → Match Data QR
+- **4 個欄位** → Auto Path QR
+- **13 個欄位** → Pit Scouting QR
+- **21 個欄位** → Match Data QR
 
 或者檢查第一個欄位：
-- 如果第一個欄位是 `eventCode` 開頭的賽事代碼（如 `2026MSLR`）→ 可能是 Path QR
+- 如果第一個欄位是賽事代碼格式（如 `2026MSLR`）→ 可能是 Path QR
 - 如果第一個欄位是人名 → 可能是 Match/Pit QR
 
 ### Q3: 壓縮後的字串長度大約多少？
@@ -478,14 +498,22 @@ A: 攀爬側記錄機器人攀爬時的位置（左/中/右），用於分析攀
 - `Center` - 中間攀爬
 - `Right` - 右側攀爬
 
+### Q9: 資料不完整怎麼辦？
+
+A: 請確認：
+1. 使用 `decompressFromBase64`（不是 `decompress`）
+2. 使用 Tab (`\t`) 分隔符號解析
+3. Schema 是否與本文件一致（共 21 個欄位）
+4. 檢查是否有 URL 編碼問題
+
 ---
 
 ## 版本歷史
 
 | 版本 | 日期 | 變更內容 |
 |------|------|----------|
-| 1.2.0 | 2026-01-28 | 移除 defenseRating/driverSkill/speedRating 欄位、Climb Time 碼錶在所有狀態下都顯示 |
-| 1.1.0 | 2026-01-28 | **重大變更**：移除 autoFuel/teleFuel 欄位、alliance 改為 R1-R3/B1-B3 格式、新增 autoClimbSide/teleClimbSide 欄位、fuelDroppedOnBump 改為 fuelDroppedOnBumpCount (次數)、yellowCard/redCard 改為 minorPenalty/majorPenalty、移除 subjectiveNotes 欄位、Climb Time 改為持續計時 |
+| 1.2.0 | 2026-01-28 | 移除 defenseRating/driverSkill/speedRating 欄位（21 欄位）、Climb Time 碼錶在所有狀態下都顯示 |
+| 1.1.0 | 2026-01-28 | 移除 autoFuel/teleFuel 欄位、alliance 改為 R1-R3/B1-B3 格式、新增 autoClimbSide/teleClimbSide 欄位、fuelDroppedOnBump 改為 fuelDroppedOnBumpCount (次數)、yellowCard/redCard 改為 minorPenalty/majorPenalty、移除 subjectiveNotes 欄位 |
 | 1.0.0 | 2026-01-26 | 初始版本，支援 Match/Pit/Path 三種 QR Code |
 
 ---
