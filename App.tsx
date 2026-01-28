@@ -4,7 +4,7 @@ import { PreMatchTab, AutonTab, TeleopTab, PostMatchTab } from './components/Tab
 import { QRCodeTab } from './components/QRCodeTab';
 import { HistoryModal } from './components/HistoryModal';
 import { Button } from './components/ui/Button';
-import { APP_CONFIG, STARTING_ZONE_WIDTH, STARTING_ZONE_OFFSET } from './constants';
+import { APP_CONFIG, STARTING_ZONE_WIDTH, RED_STARTING_ZONE_OFFSET, BLUE_STARTING_ZONE_OFFSET } from './constants';
 import { ChevronRight, ChevronLeft, Settings, X, History as HistoryIcon, Globe } from 'lucide-react';
 import { getUnsyncedCount } from './services/storage';
 import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
@@ -89,8 +89,10 @@ function AppContent() {
     if (data.autoPath.length === 0) return true;
 
     const firstPoint = data.autoPath[0];
-    const zoneStart = STARTING_ZONE_OFFSET;
-    const zoneEnd = STARTING_ZONE_OFFSET + STARTING_ZONE_WIDTH;
+    // Use alliance-specific starting zone offset
+    const zoneOffset = data.alliance.startsWith('R') ? RED_STARTING_ZONE_OFFSET : BLUE_STARTING_ZONE_OFFSET;
+    const zoneStart = zoneOffset;
+    const zoneEnd = zoneOffset + STARTING_ZONE_WIDTH;
     const isValid = firstPoint.x >= zoneStart && firstPoint.x <= zoneEnd;
 
     if (!isValid && notify) {

@@ -3,9 +3,8 @@ import type { FC } from 'react';
 import { Trash2, Undo2, Share2, AlertTriangle } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { PathPoint } from '../types';
-import { STARTING_ZONE_WIDTH, STARTING_ZONE_OFFSET } from '../constants';
-import fieldRed from '../field-red.png';
-import fieldBlue from '../field-blue.png';
+import { STARTING_ZONE_WIDTH, RED_STARTING_ZONE_OFFSET, BLUE_STARTING_ZONE_OFFSET } from '../constants';
+import fieldImage from '../field26.png';
 
 interface FieldCanvasProps {
   path: PathPoint[];
@@ -13,8 +12,8 @@ interface FieldCanvasProps {
   alliance: 'red' | 'blue';
 }
 
-// Half-field aspect ratio (height/width) - based on provided field images
-const HALF_FIELD_ASPECT_RATIO = 1.0;
+// Full-field aspect ratio (height/width) - based on field26.png image
+const FIELD_ASPECT_RATIO = 0.5;
 
 export const FieldCanvas: FC<FieldCanvasProps> = ({ path, onPathChange, alliance }) => {
   const { t } = useLanguage();
@@ -23,24 +22,27 @@ export const FieldCanvas: FC<FieldCanvasProps> = ({ path, onPathChange, alliance
   const [isDrawing, setIsDrawing] = useState(false);
   const [currentStroke, setCurrentStroke] = useState<PathPoint[]>([]);
   const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
-  const [fieldImage, setFieldImage] = useState<HTMLImageElement | null>(null);
+  const [loadedFieldImage, setLoadedFieldImage] = useState<HTMLImageElement | null>(null);
+
+  // Get alliance-specific starting zone offset
+  const startingZoneOffset = alliance === 'red' ? RED_STARTING_ZONE_OFFSET : BLUE_STARTING_ZONE_OFFSET;
 
   // Check if the first point is in the starting zone
-  // Both alliances: starting zone is X = 40-60% (after offset adjustment)
+  // Red: X = 50-70%, Blue: X = 30-50%
   const isStartInValidZone = useMemo(() => {
     if (path.length === 0) return true; // No path yet, no warning
     const firstPoint = path[0];
-    const zoneStart = STARTING_ZONE_OFFSET;
-    const zoneEnd = STARTING_ZONE_OFFSET + STARTING_ZONE_WIDTH;
+    const zoneStart = startingZoneOffset;
+    const zoneEnd = startingZoneOffset + STARTING_ZONE_WIDTH;
     return firstPoint.x >= zoneStart && firstPoint.x <= zoneEnd;
-  }, [path]);
+  }, [path, startingZoneOffset]);
 
-  // Load field image based on alliance
+  // Load field image (same for both alliances)
   useEffect(() => {
     const img = new Image();
-    img.onload = () => setFieldImage(img);
-    img.src = alliance === 'red' ? fieldRed : fieldBlue;
-  }, [alliance]);
+    img.onload = () => setLoadedFieldImage(img);
+    img.src = fieldImage;
+  }, []);
 
   // Resize observer to handle responsive sizing
   useEffect(() => {
@@ -49,7 +51,7 @@ export const FieldCanvas: FC<FieldCanvasProps> = ({ path, onPathChange, alliance
 
     const updateSize = () => {
       const width = container.clientWidth;
-      const height = Math.round(width * HALF_FIELD_ASPECT_RATIO);
+      const height = Math.round(width * FIELD_ASPECT_RATIO);
       setCanvasSize({ width, height });
     };
 
@@ -72,8 +74,8 @@ export const FieldCanvas: FC<FieldCanvasProps> = ({ path, onPathChange, alliance
     ctx.clearRect(0, 0, canvasSize.width, canvasSize.height);
 
     // Draw starting zone indicator
-    // Both alliances: starting zone at X = 40-60% (offset from edges)
-    const zoneStartX = (STARTING_ZONE_OFFSET / 100) * canvasSize.width;
+    // Red: X = 50-70%, Blue: X = 30-50%
+    const zoneStartX = (startingZoneOffset / 100) * canvasSize.width;
     const zoneWidth = (STARTING_ZONE_WIDTH / 100) * canvasSize.width;
 
     ctx.fillStyle = 'rgba(34, 197, 94, 0.15)'; // Green tint
@@ -155,7 +157,7 @@ export const FieldCanvas: FC<FieldCanvasProps> = ({ path, onPathChange, alliance
     ctx.strokeStyle = '#991b1b';
     ctx.lineWidth = 2;
     ctx.stroke();
-  }, [path, currentStroke, canvasSize]);
+  }, [path, currentStroke, canvasSize, startingZoneOffset]);
 
   // Convert pointer event to percentage coordinates
   const getPointFromEvent = useCallback((e: PointerEvent): PathPoint => {
@@ -232,8 +234,8 @@ export const FieldCanvas: FC<FieldCanvasProps> = ({ path, onPathChange, alliance
     ctx.scale(2, 2);
 
     // Draw field background image if loaded, otherwise use fallback color
-    if (fieldImage) {
-      ctx.drawImage(fieldImage, 0, 0, canvasSize.width, canvasSize.height);
+    if (loadedFieldImage) {
+      ctx.drawImage(loadedFieldImage, 0, 0, canvasSize.width, canvasSize.height);
     } else {
       ctx.fillStyle = '#1e1e2e';
       ctx.fillRect(0, 0, canvasSize.width, canvasSize.height);
@@ -263,7 +265,7 @@ export const FieldCanvas: FC<FieldCanvasProps> = ({ path, onPathChange, alliance
         downloadImage(blob);
       }
     }, 'image/png');
-  }, [canvasSize, fieldImage]);
+  }, [canvasSize, loadedFieldImage]);
 
   const downloadImage = (blob: Blob) => {
     const url = URL.createObjectURL(blob);
@@ -284,7 +286,7 @@ export const FieldCanvas: FC<FieldCanvasProps> = ({ path, onPathChange, alliance
       >
         {/* Field Background Image */}
         <img
-          src={alliance === 'red' ? fieldRed : fieldBlue}
+          src={fieldImage}
           alt="FRC Field"
           className="absolute inset-0 w-full h-full object-cover pointer-events-none"
           draggable={false}
@@ -319,10 +321,10 @@ export const FieldCanvas: FC<FieldCanvasProps> = ({ path, onPathChange, alliance
           </div>
         )}
 
-        {/* Starting zone label - centered in the zone area (40-60%) */}
+        {/* Starting zone label - centered in the alliance-specific zone */}
         <div
           className="absolute top-2 px-2 py-1 rounded text-xs font-medium bg-green-500/20 text-green-400 pointer-events-none z-20"
-          style={{ left: '50%', transform: 'translateX(-50%)' }}
+          style={{ left: `${startingZoneOffset + STARTING_ZONE_WIDTH / 2}%`, transform: 'translateX(-50%)' }}
         >
           {t('startingZone')}
         </div>
