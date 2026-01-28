@@ -48,8 +48,10 @@ const translations = {
     ridingOnBall: "Riding on Ball",
     comments: "Comments",
     commentsPlaceholder: "Strategy, strengths, weaknesses...",
-    // Climb Side
+    // Climb Side (approach direction)
     climbSide: "Climb Side",
+    // Climb Position (which bar)
+    climbPosition: "Climb Position",
     Left: "Left",
     Center: "Center",
     Right: "Right",
@@ -159,8 +161,10 @@ const translations = {
     ridingOnBall: "騎在球上",
     comments: "備註",
     commentsPlaceholder: "策略、優勢、劣勢...",
-    // Climb Side
-    climbSide: "攀爬側",
+    // Climb Side (approach direction)
+    climbSide: "攀爬側（進入方向）",
+    // Climb Position (which bar)
+    climbPosition: "攀爬位置（哪根管子）",
     Left: "左側",
     Center: "中間",
     Right: "右側",

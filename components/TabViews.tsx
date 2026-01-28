@@ -1,9 +1,9 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import type { FC } from 'react';
-import { ScoutingData, Handedness, AutoClimbStatus, TeleClimbStatus, Alliance, ClimbSide } from '../types';
+import { ScoutingData, Handedness, AutoClimbStatus, TeleClimbStatus, Alliance, ClimbSide, ClimbPosition } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
 import { Plus, Minus, Check, Zap, AlertTriangle, Play, Square, RotateCcw } from 'lucide-react';
-import { MATCH_LEVEL_OPTIONS, ALLIANCE_OPTIONS, AUTO_CLIMB_OPTIONS, TELE_CLIMB_OPTIONS, CLIMB_SIDE_OPTIONS } from '../constants';
+import { MATCH_LEVEL_OPTIONS, ALLIANCE_OPTIONS, AUTO_CLIMB_OPTIONS, TELE_CLIMB_OPTIONS, CLIMB_SIDE_OPTIONS, CLIMB_POSITION_OPTIONS } from '../constants';
 import { FieldCanvas } from './FieldCanvas';
 
 interface TabProps {
@@ -475,27 +475,50 @@ export const AutonTab: FC<TabProps> = ({ data, update, handedness }) => {
 
         {/* Auto Climb Side Selection - Show when status is not None */}
         {data.autoClimbStatus !== AutoClimbStatus.None && (
-          <div className="space-y-2">
-            <label className="text-xs font-bold text-slate-400 uppercase">{t('climbSide')}</label>
-            <div className="grid grid-cols-4 gap-2">
-              {CLIMB_SIDE_OPTIONS.map(side => {
-                const isSelected = data.autoClimbSide === side;
-                return (
-                  <button
-                    key={side}
-                    onClick={() => update({ autoClimbSide: side as ClimbSide })}
-                    className={`p-3 rounded-xl text-sm font-bold border-2 transition-all active:scale-[0.97] ${
-                      isSelected
-                        ? 'bg-amber-500/20 border-amber-500 text-amber-400 shadow-lg'
-                        : 'bg-slate-900 border-slate-700 text-slate-400 hover:border-slate-600'
-                    }`}
-                  >
-                    {t(side)}
-                  </button>
-                );
-              })}
+          <>
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-400 uppercase">{t('climbSide')}</label>
+              <div className="grid grid-cols-3 gap-2">
+                {CLIMB_SIDE_OPTIONS.map(side => {
+                  const isSelected = data.autoClimbSide === side;
+                  return (
+                    <button
+                      key={side}
+                      onClick={() => update({ autoClimbSide: side as ClimbSide })}
+                      className={`p-3 rounded-xl text-sm font-bold border-2 transition-all active:scale-[0.97] ${
+                        isSelected
+                          ? 'bg-amber-500/20 border-amber-500 text-amber-400 shadow-lg'
+                          : 'bg-slate-900 border-slate-700 text-slate-400 hover:border-slate-600'
+                      }`}
+                    >
+                      {t(side)}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-          </div>
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-400 uppercase">{t('climbPosition')}</label>
+              <div className="grid grid-cols-4 gap-2">
+                {CLIMB_POSITION_OPTIONS.map(pos => {
+                  const isSelected = data.autoClimbPosition === pos;
+                  return (
+                    <button
+                      key={pos}
+                      onClick={() => update({ autoClimbPosition: pos as ClimbPosition })}
+                      className={`p-3 rounded-xl text-sm font-bold border-2 transition-all active:scale-[0.97] ${
+                        isSelected
+                          ? 'bg-purple-500/20 border-purple-500 text-purple-400 shadow-lg'
+                          : 'bg-slate-900 border-slate-700 text-slate-400 hover:border-slate-600'
+                      }`}
+                    >
+                      {t(pos)}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </>
         )}
       </div>
     </div>
@@ -519,63 +542,6 @@ export const TeleopTab: FC<TabProps> = ({ data, update, handedness }) => {
 
       {/* Main Content */}
       <div className="grid grid-cols-1 gap-5">
-        {/* Teleop Climb Status Selection */}
-        <div className="space-y-2">
-          <label className="text-xs font-bold text-slate-400 uppercase">{t('teleClimbStatus')}</label>
-          <div className="grid grid-cols-3 gap-2">
-            {TELE_CLIMB_OPTIONS.map(status => {
-              const isSelected = data.teleClimbStatus === status;
-              const selectedClass = getClimbButtonClass(status, 'tele');
-              return (
-                <button
-                  key={status}
-                  onClick={() => update({ teleClimbStatus: status as TeleClimbStatus })}
-                  className={`p-4 rounded-xl text-sm font-bold border-2 transition-all active:scale-[0.97] ${
-                    isSelected
-                      ? selectedClass
-                      : 'bg-slate-900 border-slate-700 text-slate-400 hover:border-slate-600'
-                  }`}
-                >
-                  {t(status)}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Teleop Climb Time Stopwatch - Always show */}
-        <Stopwatch
-          label={t('teleClimbTime')}
-          value={data.teleClimbTime}
-          onChange={val => update({ teleClimbTime: val })}
-          accentColor="amber"
-        />
-
-        {/* Teleop Climb Side Selection - Show when status is not None */}
-        {data.teleClimbStatus !== TeleClimbStatus.None && (
-          <div className="space-y-2">
-            <label className="text-xs font-bold text-slate-400 uppercase">{t('climbSide')}</label>
-            <div className="grid grid-cols-4 gap-2">
-              {CLIMB_SIDE_OPTIONS.map(side => {
-                const isSelected = data.teleClimbSide === side;
-                return (
-                  <button
-                    key={side}
-                    onClick={() => update({ teleClimbSide: side as ClimbSide })}
-                    className={`p-3 rounded-xl text-sm font-bold border-2 transition-all active:scale-[0.97] ${
-                      isSelected
-                        ? 'bg-amber-500/20 border-amber-500 text-amber-400 shadow-lg'
-                        : 'bg-slate-900 border-slate-700 text-slate-400 hover:border-slate-600'
-                    }`}
-                  >
-                    {t(side)}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
         {/* Bump & Trench Section */}
         <Counter
           label={t('bumpTrenchCount')}
@@ -586,7 +552,7 @@ export const TeleopTab: FC<TabProps> = ({ data, update, handedness }) => {
           max={20}
         />
 
-        {/* Fuel Dropped on Bump - Changed to Counter */}
+        {/* Fuel Dropped on Bump */}
         <Counter
           label={t('fuelDroppedOnBump')}
           value={data.fuelDroppedOnBumpCount}
@@ -605,33 +571,110 @@ export const TeleopTab: FC<TabProps> = ({ data, update, handedness }) => {
           <AlertTriangle className="text-red-500" size={18} />
         </div>
 
-        {/* Penalty Counter */}
-        <Counter
-          label={t('penaltyCount')}
-          value={data.penaltyCount}
-          onChange={val => update({ penaltyCount: val })}
-          handedness={handedness}
-          accentColor="red"
-          max={20}
-        />
-
-        {/* Minor/Major Penalties */}
+        {/* Minor/Major Penalties - Changed to Counters */}
         <div className="grid grid-cols-2 gap-3">
-          <Toggle
+          <Counter
             label={t('minorPenalty')}
-            checked={data.minorPenalty}
+            value={data.minorPenalty}
             onChange={val => update({ minorPenalty: val })}
-            size="large"
-            variant="warning"
+            handedness={handedness}
+            accentColor="orange"
+            max={20}
           />
-          <Toggle
+          <Counter
             label={t('majorPenalty')}
-            checked={data.majorPenalty}
+            value={data.majorPenalty}
             onChange={val => update({ majorPenalty: val })}
-            size="large"
-            variant="danger"
+            handedness={handedness}
+            accentColor="red"
+            max={20}
           />
         </div>
+      </div>
+
+      {/* Teleop Climb Section - Moved to end */}
+      <div className="space-y-4 pt-4 border-t border-amber-500/30">
+        <div className="flex items-center gap-3">
+          <div className="w-3 h-3 rounded-full bg-amber-500"></div>
+          <h3 className="text-xl font-display font-bold text-amber-400">{t('teleClimbStatus')}</h3>
+        </div>
+
+        {/* Teleop Climb Status Selection */}
+        <div className="grid grid-cols-3 gap-2">
+          {TELE_CLIMB_OPTIONS.map(status => {
+            const isSelected = data.teleClimbStatus === status;
+            const selectedClass = getClimbButtonClass(status, 'tele');
+            return (
+              <button
+                key={status}
+                onClick={() => update({ teleClimbStatus: status as TeleClimbStatus })}
+                className={`p-4 rounded-xl text-sm font-bold border-2 transition-all active:scale-[0.97] ${
+                  isSelected
+                    ? selectedClass
+                    : 'bg-slate-900 border-slate-700 text-slate-400 hover:border-slate-600'
+                }`}
+              >
+                {t(status)}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Teleop Climb Time Stopwatch - Always show */}
+        <Stopwatch
+          label={t('teleClimbTime')}
+          value={data.teleClimbTime}
+          onChange={val => update({ teleClimbTime: val })}
+          accentColor="amber"
+        />
+
+        {/* Teleop Climb Side & Position Selection - Show when status is not None */}
+        {data.teleClimbStatus !== TeleClimbStatus.None && (
+          <>
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-400 uppercase">{t('climbSide')}</label>
+              <div className="grid grid-cols-3 gap-2">
+                {CLIMB_SIDE_OPTIONS.map(side => {
+                  const isSelected = data.teleClimbSide === side;
+                  return (
+                    <button
+                      key={side}
+                      onClick={() => update({ teleClimbSide: side as ClimbSide })}
+                      className={`p-3 rounded-xl text-sm font-bold border-2 transition-all active:scale-[0.97] ${
+                        isSelected
+                          ? 'bg-amber-500/20 border-amber-500 text-amber-400 shadow-lg'
+                          : 'bg-slate-900 border-slate-700 text-slate-400 hover:border-slate-600'
+                      }`}
+                    >
+                      {t(side)}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-400 uppercase">{t('climbPosition')}</label>
+              <div className="grid grid-cols-4 gap-2">
+                {CLIMB_POSITION_OPTIONS.map(pos => {
+                  const isSelected = data.teleClimbPosition === pos;
+                  return (
+                    <button
+                      key={pos}
+                      onClick={() => update({ teleClimbPosition: pos as ClimbPosition })}
+                      className={`p-3 rounded-xl text-sm font-bold border-2 transition-all active:scale-[0.97] ${
+                        isSelected
+                          ? 'bg-purple-500/20 border-purple-500 text-purple-400 shadow-lg'
+                          : 'bg-slate-900 border-slate-700 text-slate-400 hover:border-slate-600'
+                      }`}
+                    >
+                      {t(pos)}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

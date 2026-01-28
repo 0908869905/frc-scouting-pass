@@ -33,8 +33,11 @@ export enum TeleClimbStatus {
   Failed = 'Failed'
 }
 
-// Climb side options
-export type ClimbSide = 'None' | 'Left' | 'Center' | 'Right';
+// Climb side options (which side the robot approaches from)
+export type ClimbSide = 'None' | 'Left' | 'Right';
+
+// Climb position options (which of the 3 bars)
+export type ClimbPosition = 'None' | 'Left' | 'Center' | 'Right';
 
 // Path point for autonomous route tracking (percentage-based coordinates 0-100)
 export interface PathPoint {
@@ -58,19 +61,20 @@ export interface ScoutingData {
   autoPath: PathPoint[];         // Auto Path Tracking (preserved)
   autoClimbStatus: AutoClimbStatus; // Level1/Failed/None
   autoClimbTime: number;         // Seconds to climb
-  autoClimbSide: ClimbSide;      // Left/Center/Right side
+  autoClimbSide: ClimbSide;      // Left/Right side (approach direction)
+  autoClimbPosition: ClimbPosition; // Left/Center/Right bar
 
   // --- Teleop (2:20) ---
   teleClimbStatus: TeleClimbStatus; // Level1-3/Failed/None
   teleClimbTime: number;         // Seconds to climb
-  teleClimbSide: ClimbSide;      // Left/Center/Right side
+  teleClimbSide: ClimbSide;      // Left/Right side (approach direction)
+  teleClimbPosition: ClimbPosition; // Left/Center/Right bar
   bumpTrenchCount: number;       // Times crossed Bump & Trench
   fuelDroppedOnBumpCount: number; // Times dropped fuel on Bump crossing
 
   // --- Penalty (within Teleop) ---
-  penaltyCount: number;          // Penalty count
-  minorPenalty: boolean;         // Minor penalty received
-  majorPenalty: boolean;         // Major penalty received
+  minorPenalty: number;          // Minor penalty count
+  majorPenalty: number;          // Major penalty count
 
   // --- PostMatch (Other + Subjective) ---
   robotDied: boolean;            // Robot died/disabled (incl. tipped)
@@ -113,18 +117,19 @@ export const INITIAL_DATA: ScoutingData = {
   autoClimbStatus: AutoClimbStatus.None,
   autoClimbTime: 0,
   autoClimbSide: 'None',
+  autoClimbPosition: 'None',
 
   // Teleop
   teleClimbStatus: TeleClimbStatus.None,
   teleClimbTime: 0,
   teleClimbSide: 'None',
+  teleClimbPosition: 'None',
   bumpTrenchCount: 0,
   fuelDroppedOnBumpCount: 0,
 
   // Penalty (within Teleop)
-  penaltyCount: 0,
-  minorPenalty: false,
-  majorPenalty: false,
+  minorPenalty: 0,
+  majorPenalty: 0,
 
   // PostMatch
   robotDied: false,
