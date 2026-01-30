@@ -12,8 +12,19 @@ interface FieldCanvasProps {
   alliance: 'red' | 'blue';
 }
 
-// Full-field aspect ratio (height/width) - based on field26.png image
+// Full-field aspect ratio (height/width) - 2:1 matching scanner's aspectRatio: '2/1'
 const FIELD_ASPECT_RATIO = 0.5;
+
+// Path color (cyan - matches scanner palette)
+const PATH_COLOR = '#06b6d4';
+
+// Proportional sizes relative to canvas height (matching scanner SVG viewBox 200×100)
+// Scanner: strokeWidth=1.5 in 100-unit height → 1.5%
+// Scanner: circle r=2 → 2%, r=1 → 1%, strokeWidth=0.5 → 0.5%
+const LINE_WIDTH_RATIO = 0.015;
+const POINT_RADIUS_RATIO = 0.02;
+const POINT_STROKE_RATIO = 0.005;
+const MID_POINT_RADIUS_RATIO = 0.01;
 
 export const FieldCanvas: FC<FieldCanvasProps> = ({ path, onPathChange, alliance }) => {
   const { t } = useLanguage();
@@ -93,6 +104,13 @@ export const FieldCanvas: FC<FieldCanvasProps> = ({ path, onPathChange, alliance
     ctx.stroke();
     ctx.setLineDash([]); // Reset line dash
 
+    // Proportional sizes based on canvas height (matching scanner SVG viewBox)
+    const h = canvasSize.height;
+    const lineWidth = Math.max(1, h * LINE_WIDTH_RATIO);
+    const pointRadius = Math.max(2, h * POINT_RADIUS_RATIO);
+    const pointStroke = Math.max(0.5, h * POINT_STROKE_RATIO);
+    const midPointRadius = Math.max(1, h * MID_POINT_RADIUS_RATIO);
+
     const allPoints = [...path, ...currentStroke];
     if (allPoints.length < 2) {
       // Draw single point if exists
@@ -101,17 +119,21 @@ export const FieldCanvas: FC<FieldCanvasProps> = ({ path, onPathChange, alliance
         const x = (p.x / 100) * canvasSize.width;
         const y = (p.y / 100) * canvasSize.height;
         ctx.beginPath();
-        ctx.arc(x, y, 8, 0, Math.PI * 2);
-        ctx.fillStyle = '#22c55e';
+        ctx.arc(x, y, pointRadius, 0, Math.PI * 2);
+        ctx.fillStyle = PATH_COLOR;
         ctx.fill();
+        ctx.strokeStyle = 'white';
+        ctx.lineWidth = pointStroke;
+        ctx.stroke();
       }
       return;
     }
 
-    // Draw path line
+    // Draw path line (matching scanner: strokeWidth=1.5, opacity=0.9, round caps/joins)
+    ctx.globalAlpha = 0.9;
     ctx.beginPath();
-    ctx.strokeStyle = '#06b6d4';
-    ctx.lineWidth = 6;
+    ctx.strokeStyle = PATH_COLOR;
+    ctx.lineWidth = lineWidth;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
 
@@ -129,33 +151,51 @@ export const FieldCanvas: FC<FieldCanvasProps> = ({ path, onPathChange, alliance
       );
     }
     ctx.stroke();
+    ctx.globalAlpha = 1.0;
 
-    // Draw start point (green)
+    // Draw middle points (matching scanner: r=1, fill=color, opacity=0.7)
+    if (allPoints.length > 2) {
+      ctx.globalAlpha = 0.7;
+      for (let i = 1; i < allPoints.length - 1; i++) {
+        const p = allPoints[i];
+        ctx.beginPath();
+        ctx.arc(
+          (p.x / 100) * canvasSize.width,
+          (p.y / 100) * canvasSize.height,
+          midPointRadius, 0, Math.PI * 2
+        );
+        ctx.fillStyle = PATH_COLOR;
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1.0;
+    }
+
+    // Draw start point (matching scanner: fill=color, stroke=white, strokeWidth=0.5)
     const start = allPoints[0];
     ctx.beginPath();
     ctx.arc(
       (start.x / 100) * canvasSize.width,
       (start.y / 100) * canvasSize.height,
-      10, 0, Math.PI * 2
+      pointRadius, 0, Math.PI * 2
     );
-    ctx.fillStyle = '#22c55e';
+    ctx.fillStyle = PATH_COLOR;
     ctx.fill();
-    ctx.strokeStyle = '#166534';
-    ctx.lineWidth = 2;
+    ctx.strokeStyle = 'white';
+    ctx.lineWidth = pointStroke;
     ctx.stroke();
 
-    // Draw end point (red)
+    // Draw end point (matching scanner: fill=white, stroke=color, strokeWidth=0.5)
     const end = allPoints[allPoints.length - 1];
     ctx.beginPath();
     ctx.arc(
       (end.x / 100) * canvasSize.width,
       (end.y / 100) * canvasSize.height,
-      10, 0, Math.PI * 2
+      pointRadius, 0, Math.PI * 2
     );
-    ctx.fillStyle = '#ef4444';
+    ctx.fillStyle = 'white';
     ctx.fill();
-    ctx.strokeStyle = '#991b1b';
-    ctx.lineWidth = 2;
+    ctx.strokeStyle = PATH_COLOR;
+    ctx.lineWidth = pointStroke;
     ctx.stroke();
   }, [path, currentStroke, canvasSize, startingZoneOffset]);
 
@@ -288,7 +328,7 @@ export const FieldCanvas: FC<FieldCanvasProps> = ({ path, onPathChange, alliance
         <img
           src={fieldImage}
           alt="FRC Field"
-          className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+          className="absolute inset-0 w-full h-full object-fill pointer-events-none"
           draggable={false}
         />
 
