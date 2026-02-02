@@ -457,7 +457,11 @@ export const AutonTab: FC<TabProps> = ({ data, update, handedness }) => {
               return (
                 <button
                   key={status}
-                  onClick={() => update({ autoClimbStatus: status as AutoClimbStatus })}
+                  onClick={() => {
+                    const updates: Partial<ScoutingData> = { autoClimbStatus: status as AutoClimbStatus };
+                    if (status === 'None') { updates.autoClimbTime = 0; updates.autoClimbPosition = 'Center'; }
+                    update(updates);
+                  }}
                   className={`p-4 rounded-xl text-sm font-bold border-2 transition-all active:scale-[0.97] ${
                     isSelected
                       ? selectedClass
@@ -527,9 +531,17 @@ export const TeleopTab: FC<TabProps> = ({ data, update, handedness }) => {
       <div className="grid grid-cols-1 gap-5">
         {/* Bump & Trench Section */}
         <Counter
-          label={t('bumpTrenchCount')}
-          value={data.bumpTrenchCount}
-          onChange={val => update({ bumpTrenchCount: val })}
+          label={t('bumpCount')}
+          value={data.bumpCount}
+          onChange={val => update({ bumpCount: val })}
+          handedness={handedness}
+          accentColor="blue"
+          max={20}
+        />
+        <Counter
+          label={t('trenchCount')}
+          value={data.trenchCount}
+          onChange={val => update({ trenchCount: val })}
           handedness={handedness}
           accentColor="blue"
           max={20}
@@ -590,7 +602,11 @@ export const TeleopTab: FC<TabProps> = ({ data, update, handedness }) => {
             return (
               <button
                 key={status}
-                onClick={() => update({ teleClimbStatus: status as TeleClimbStatus })}
+                onClick={() => {
+                  const updates: Partial<ScoutingData> = { teleClimbStatus: status as TeleClimbStatus };
+                  if (status === 'None') { updates.teleClimbTime = 0; updates.teleClimbPosition = 'Center'; }
+                  update(updates);
+                }}
                 className={`p-4 rounded-xl text-sm font-bold border-2 transition-all active:scale-[0.97] ${
                   isSelected
                     ? selectedClass

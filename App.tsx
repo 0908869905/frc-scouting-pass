@@ -211,7 +211,7 @@ function AppContent() {
             {APP_CONFIG.teamName} <span className="text-slate-500 text-sm font-sans tracking-wide">| {APP_CONFIG.appName}</span>
           </h1>
           <div className="text-xs text-slate-500 font-mono mt-1">
-            {t('match')} {data.matchNumber} • <span className={data.alliance === 'Red' ? 'text-red-400' : 'text-blue-400'}>{t(data.alliance)}</span>
+            {data.teamNumber && <span className="text-white font-bold">#{data.teamNumber}</span>}{data.teamNumber && ' • '}{t('match')} {data.matchNumber} • <span className={data.alliance === 'Red' ? 'text-red-400' : 'text-blue-400'}>{t(data.alliance)}</span>
           </div>
         </div>
         <div className="flex items-center gap-3">

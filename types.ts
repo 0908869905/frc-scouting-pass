@@ -64,7 +64,8 @@ export interface ScoutingData {
   teleClimbStatus: TeleClimbStatus; // Level1-3/Failed/None
   teleClimbTime: number;         // Seconds to climb
   teleClimbPosition: ClimbPosition; // 5 positions
-  bumpTrenchCount: number;       // Times crossed Bump & Trench
+  bumpCount: number;             // Times crossed Bump
+  trenchCount: number;           // Times crossed Trench
   fuelDroppedOnBumpCount: number; // Times dropped fuel on Bump crossing
 
   // --- Penalty (within Teleop) ---
@@ -117,7 +118,8 @@ export const INITIAL_DATA: ScoutingData = {
   teleClimbStatus: TeleClimbStatus.None,
   teleClimbTime: 0,
   teleClimbPosition: 'Center',
-  bumpTrenchCount: 0,
+  bumpCount: 0,
+  trenchCount: 0,
   fuelDroppedOnBumpCount: 0,
 
   // Penalty (within Teleop)

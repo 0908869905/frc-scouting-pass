@@ -39,7 +39,7 @@ export const FieldCanvas: FC<FieldCanvasProps> = ({ path, onPathChange, alliance
   const startingZoneOffset = alliance === 'red' ? RED_STARTING_ZONE_OFFSET : BLUE_STARTING_ZONE_OFFSET;
 
   // Check if the first point is in the starting zone
-  // Red: X = 50-70%, Blue: X = 30-50%
+  // Red: X = 25-28.5%, Blue: X = 68-71.5%
   const isStartInValidZone = useMemo(() => {
     if (path.length === 0) return true; // No path yet, no warning
     const firstPoint = path[0];
@@ -85,7 +85,7 @@ export const FieldCanvas: FC<FieldCanvasProps> = ({ path, onPathChange, alliance
     ctx.clearRect(0, 0, canvasSize.width, canvasSize.height);
 
     // Draw starting zone indicator
-    // Red: X = 50-70%, Blue: X = 30-50%
+    // Red: X = 25-28.5%, Blue: X = 68-71.5%
     const zoneStartX = (startingZoneOffset / 100) * canvasSize.width;
     const zoneWidth = (STARTING_ZONE_WIDTH / 100) * canvasSize.width;
 

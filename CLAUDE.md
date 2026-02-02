@@ -58,14 +58,14 @@ App icons are pre-generated in `ios-icons/` directory.
 ### Validation Rules (防呆機制)
 | Field | Rule | Location |
 |-------|------|----------|
-| Team Number | 1-9999 integer | `App.tsx`, `TabViews.tsx` |
-| Auto Path Start | X = 40-60% (starting zone) | `App.tsx`, `FieldCanvas.tsx` |
+| Team Number | Positive integer | `App.tsx`, `TabViews.tsx` |
+| Auto Path Start | Red: X = 21-24.5%, Blue: X = 72-75.5% | `App.tsx`, `FieldCanvas.tsx` |
 
 **Starting Zone Constants** (must match in both files):
 ```typescript
-const STARTING_ZONE_WIDTH = 20;   // 20% width
-const STARTING_ZONE_OFFSET = 40;  // 40% from left edge
-// Valid zone: X = 40% ~ 60%
+const STARTING_ZONE_WIDTH = 3.5;          // 3.5% width
+const RED_STARTING_ZONE_OFFSET = 21;      // Red zone: X = 21-24.5%
+const BLUE_STARTING_ZONE_OFFSET = 72;     // Blue zone: X = 72-75.5%
 ```
 
 ### Key Files

@@ -31,7 +31,8 @@ const translations = {
     teleFuel: "Fuel Scored",
     teleClimbStatus: "Climb Status (End Game)",
     teleClimbTime: "Climb Time (sec)",
-    bumpTrenchCount: "Bump & Trench Crossings",
+    bumpCount: "Bump Crossings",
+    trenchCount: "Trench Crossings",
     fuelDroppedOnBump: "Fuel Dropped on Bump",
 
     // Penalty
@@ -45,7 +46,7 @@ const translations = {
     speedRating: "Speed Rating (0-5)",
     robotDied: "Robot Died/Disabled",
     almostTipped: "Almost Tipped",
-    ridingOnBall: "Riding on Ball",
+    ridingOnBall: "Riding on Fuel",
     comments: "Comments",
     commentsPlaceholder: "Strategy, strengths, weaknesses...",
     // Climb Position (5 positions)
@@ -144,7 +145,8 @@ const translations = {
     teleFuel: "進球燃料數",
     teleClimbStatus: "攀爬狀態 (終局)",
     teleClimbTime: "攀爬時間 (秒)",
-    bumpTrenchCount: "穿越 Bump & Trench 次數",
+    bumpCount: "穿越 Bump 次數",
+    trenchCount: "穿越 Trench 次數",
     fuelDroppedOnBump: "穿越 Bump 時 Fuel 掉落",
 
     // Penalty
@@ -158,7 +160,7 @@ const translations = {
     speedRating: "速度評分 (0-5)",
     robotDied: "機器人死亡/失效",
     almostTipped: "差點翻車",
-    ridingOnBall: "騎在球上",
+    ridingOnBall: "騎在 Fuel 上",
     comments: "備註",
     commentsPlaceholder: "策略、優勢、劣勢...",
     // Climb Position (5 positions)
