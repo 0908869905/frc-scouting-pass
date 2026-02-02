@@ -914,4 +914,257 @@ npx cap open ios
 | What have I done? | 7 個任務完成，表單全面重構 |
 
 ---
-*Last updated: 2026-01-25*
+
+## Session: 2026-01-28
+
+### Overview
+Teleop UI 優化 + 犯規機制調整 + 攀爬選項簡化
+
+---
+
+### Phase 16: Teleop 與攀爬欄位優化
+- **Status:** ✅ complete
+- **Completed:** 2026-01-28
+
+#### Task 16.1: Teleop 順序調整
+- 攀爬狀態移到最後：Bump → Fuel → Penalty → Climb
+- 更符合比賽實際順序（攀爬通常在最後進行）
+
+#### Task 16.2: 犯規計數器化
+- `minorPenalty`: boolean → number (Counter 組件)
+- `majorPenalty`: boolean → number (Counter 組件)
+- 移除 `penaltyCount` 欄位（用 minor + major 取代）
+
+#### Task 16.3: 攀爬選項簡化
+- **刪除 `ClimbSide` enum**（原: Left | Right | Center）
+- **更新 `ClimbPosition`**: 5 個選項
+  - LeftSide | Left | Center | Right | RightSide
+- **移除欄位**: `autoClimbSide`, `teleClimbSide`
+- 攀爬側資訊現整合於 ClimbPosition
+
+#### Task 16.4: TSV Schema 更新
+- 現為 **18 個欄位**（移除 penaltyCount、攀爬側相關欄位）
+
+**Files Modified:**
+- `types.ts` - 資料結構更新
+- `constants.ts` - TSV schema 更新
+- `components/TabViews.tsx` - UI 元件調整
+- `contexts/LanguageContext.tsx` - 新增翻譯鍵
+
+---
+
+### 完成項目
+- [x] Teleop 順序調整（攀爬移到最後）
+- [x] 犯規計數器化（minor/major 改為 number）
+- [x] 移除 penaltyCount（用 minor+major 取代）
+- [x] 簡化攀爬選項（刪除 ClimbSide，ClimbPosition 改為 5 選項）
+- [x] 移除 autoClimbSide 和 teleClimbSide 欄位
+- [x] TSV Schema 更新（18 欄位）
+
+### 修改檔案
+- `types.ts` - 資料結構（ClimbPosition enum、ScoutingData interface）
+- `constants.ts` - TSV_SCHEMA_MATCH（18 欄位）
+- `components/TabViews.tsx` - TeleopTab UI 順序與犯規計數器
+- `contexts/LanguageContext.tsx` - ClimbPosition 翻譯
+
+---
+
+## 5-Question Reboot Check
+
+1. **做什麼？** Teleop UI 優化、犯規機制調整、攀爬選項簡化
+2. **進度？** ✅ 全部完成
+3. **下一步？** 測試完整表單流程、部署更新版本
+4. **阻礙？** 無
+5. **檔案？** `types.ts`, `constants.ts`, `TabViews.tsx`, `LanguageContext.tsx`
+
+---
+*Last updated: 2026-01-28*
+
+---
+
+## Session: 2026-01-30
+
+### Overview
+場地圖更新 + FieldCanvas 路徑比例對齊 Scanner App
+
+---
+
+### Phase 17: 場地圖與路徑渲染優化
+- **Status:** ✅ complete
+- **Completed:** 2026-01-30
+
+#### Task 17.1: 場地圖更新
+- 將 `field26.png` 替換為官方 2026 REBUILT 場地圖
+- 來源：`C:\Users\USER\Downloads\FE-2026-_REBUILT_Playing_Field_With_Background.png`
+
+#### Task 17.2: FieldCanvas 路徑比例對齊 Scanner App
+- 研究了 `D:\frc-scout-scanner\src\pages\PathViewerPage.tsx` 的 SVG 渲染邏輯
+- Scanner 使用 SVG viewBox `0 0 200 100`，container `aspectRatio: '2/1'`，`object-fill`
+- 修改 `FieldCanvas.tsx` 使路徑繪製比例完全匹配 scanner：
+  - `object-cover` → `object-fill`（圖片拉伸填滿）
+  - 線寬：固定 6px → `height × 1.5%`（等比例）
+  - 線條透明度：1.0 → 0.9
+  - 起點：r=10 綠色 → r=`h×2%` 青色填充+白色邊框
+  - 終點：r=10 紅色 → r=`h×2%` 白色填充+青色邊框
+  - 新增中間點：r=`h×1%`，青色，opacity=0.7
+  - 邊框線寬：固定 2px → `h×0.5%`
+- 新增常數：`PATH_COLOR`, `LINE_WIDTH_RATIO`, `POINT_RADIUS_RATIO`, `POINT_STROKE_RATIO`, `MID_POINT_RADIUS_RATIO`
+
+**Files Modified:**
+- `FRC/components/FieldCanvas.tsx` - 路徑繪製比例對齊 scanner
+- `FRC/field26.png` - 替換為官方 2026 REBUILT 場地圖（紅/藍方各一張）
+
+---
+
+### 完成項目
+- [x] 替換場地圖為官方 2026 REBUILT 版本
+- [x] 研究 scanner app PathViewerPage.tsx 的渲染邏輯
+- [x] FieldCanvas 路徑繪製比例對齊 scanner app
+- [x] 新增路徑渲染常數（PATH_COLOR 等）
+- [x] 提交並推送兩個 commit
+
+### 修改檔案
+- `FRC/components/FieldCanvas.tsx` - 路徑繪製比例重構，對齊 scanner app
+- `FRC/field26.png` - 官方 2026 REBUILT 場地圖
+
+### Git Commits
+- `5e482cd` - `chore: update field image to official 2026 REBUILT playing field`
+- `640f851` - `fix: match FieldCanvas path proportions to scanner app`
+
+---
+
+## 5-Question Reboot Check
+
+1. **做什麼？** 場地圖更新 + FieldCanvas 路徑比例對齊 Scanner App
+2. **進度？** ✅ 全部完成
+3. **下一步？** 測試路徑繪製在不同螢幕尺寸的顯示效果、驗證 scanner 讀取後路徑一致
+4. **阻礙？** 無
+5. **檔案？** `FRC/components/FieldCanvas.tsx`, `D:\frc-scout-scanner\src\pages\PathViewerPage.tsx`
+
+---
+*Last updated: 2026-01-30*
+
+---
+
+## Session: 2026-02-01
+
+### Overview
+App Store 上架準備 Phase 1-5（Windows 端）— 移除所有 CDN 依賴，改為本地 build，強化 Capacitor native 體驗，新增 Privacy Policy。
+
+---
+
+### Phase 18: Tailwind CSS CDN → 本地 Build
+- **Status:** ✅ complete
+
+#### Task 18.1: Tailwind 本地化
+- 安裝 `tailwindcss` + `@tailwindcss/vite` (devDependencies)
+- 新增 `styles.css` — `@import "tailwindcss"` + `@theme` 品牌色定義 + 動畫類別 + `.no-scrollbar`
+- 修改 `vite.config.ts` — 加入 `tailwindcss()` plugin
+- 修改 `index.tsx` — `import './styles.css'`
+- 修改 `index.html` — 移除 Tailwind CDN script、tailwind.config、.no-scrollbar style、esm.sh importmap
+
+**Files Created:**
+- `FRC/styles.css`
+
+**Files Modified:**
+- `FRC/vite.config.ts` - 加入 tailwindcss() plugin
+- `FRC/index.tsx` - import styles.css
+- `FRC/index.html` - 移除所有 CDN 引用
+
+---
+
+### Phase 19: Google Fonts → 本地字體
+- **Status:** ✅ complete
+
+#### Task 19.1: 字體本地化
+- 安裝 `@fontsource/inter` + `@fontsource/orbitron`
+- 修改 `index.tsx` — 加入 6 個字體 weight CSS import
+- Google Fonts CDN 連結已在 Phase 18 一併清除
+
+**Files Modified:**
+- `FRC/index.tsx` - 加入 @fontsource import
+
+---
+
+### Phase 20: Capacitor Native 強化
+- **Status:** ✅ complete
+
+#### Task 20.1: Native 插件整合
+- 安裝 `@capacitor/splash-screen` + `@capacitor/status-bar` + `@capacitor/haptics`
+- 修改 `index.html` — SW 註冊加入 `!window.Capacitor` 判斷（避免 native app 重複註冊）
+- 修改 `capacitor.config.ts` — 加入 `plugins` 設定 (SplashScreen + StatusBar)
+- 修改 `components/TabViews.tsx` — Counter 遞增/遞減時觸發 `Haptics.impact()`
+
+**Files Modified:**
+- `FRC/index.html` - SW 註冊 Capacitor 判斷
+- `FRC/capacitor.config.ts` - plugins 設定
+- `FRC/components/TabViews.tsx` - Haptics 觸覺回饋
+
+---
+
+### Phase 21: Privacy Policy
+- **Status:** ✅ complete
+
+#### Task 21.1: 隱私政策頁面
+- 新增完整隱私政策頁面，符合 App Store 審核要求
+
+**Files Created:**
+- `FRC/public/privacy.html`
+
+---
+
+### Phase 22: 最終驗證
+- **Status:** ✅ complete
+
+#### Task 22.1: Build 驗證
+- `npm run build` 成功
+- `dist/index.html` 無任何 CDN 引用
+- CSS bundle: 52.69 KB
+- JS bundle: 231.81 KB
+- 字體檔案正確打包到 dist
+
+---
+
+### 完成項目
+- [x] Tailwind CSS CDN → 本地 build (`tailwindcss` + `@tailwindcss/vite`)
+- [x] Google Fonts CDN → 本地字體 (`@fontsource/inter` + `@fontsource/orbitron`)
+- [x] Capacitor native 強化 (SplashScreen + StatusBar + Haptics)
+- [x] Service Worker 加入 Capacitor 判斷
+- [x] Privacy Policy 頁面
+- [x] Build 驗證通過，零 CDN 依賴
+
+### 修改檔案
+- `FRC/styles.css` - 新增，Tailwind 主入口 + 品牌色 + 動畫
+- `FRC/vite.config.ts` - 加入 tailwindcss() plugin
+- `FRC/index.tsx` - import styles.css + @fontsource 字體
+- `FRC/index.html` - 移除所有 CDN、加入 Capacitor SW 判斷
+- `FRC/capacitor.config.ts` - plugins 設定 (SplashScreen + StatusBar)
+- `FRC/components/TabViews.tsx` - Haptics 觸覺回饋
+- `FRC/public/privacy.html` - 新增，隱私政策
+
+### 尚未完成
+- [ ] Git commit & push 今天的變更
+- [ ] Phase 6: Mac 端 iOS 建置與 App Store 提交
+
+---
+
+## 5-Question Reboot Check
+
+1. **做什麼？** App Store 上架準備 — 移除 CDN、本地 build、native 強化、Privacy Policy
+2. **進度？** Windows 端 Phase 1-5 全部完成，尚未 commit/push
+3. **下一步？** git commit & push → Mac 端 iOS 建置 → App Store 提交
+4. **阻礙？** Mac 端操作（iOS build + Xcode + App Store Connect）
+5. **檔案？** `styles.css`, `vite.config.ts`, `index.tsx`, `index.html`, `capacitor.config.ts`, `TabViews.tsx`, `public/privacy.html`
+
+---
+
+## 目前部署狀態
+
+| 方式 | 狀態 | 說明 |
+|------|------|------|
+| Web App | ✅ 可用 | https://frc-ten.vercel.app |
+| PWA | ✅ 可用 | Safari → 分享 → 加入主畫面 |
+| iOS App Store | 🔄 進行中 | Windows 端準備完成，待 Mac 端建置上架 |
+
+---
+*Last updated: 2026-02-01*

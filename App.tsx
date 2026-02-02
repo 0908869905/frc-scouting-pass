@@ -67,9 +67,9 @@ function AppContent() {
     if (!data.teamNumber.trim()) {
       errors.push(t('teamNumber'));
     } else {
-      // Validate team number format (1-9999)
+      // Validate team number format (positive integer)
       const teamNum = parseInt(data.teamNumber, 10);
-      if (isNaN(teamNum) || teamNum < 1 || teamNum > 9999) {
+      if (isNaN(teamNum) || teamNum < 1) {
         errors.push(t('teamNumberInvalid'));
       }
     }

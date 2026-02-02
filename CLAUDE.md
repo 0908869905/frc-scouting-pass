@@ -13,10 +13,14 @@ FRC 6998 Scouting PASS - A React TypeScript scouting application for FIRST Robot
 ## Tech Stack
 
 - React 18.2 + TypeScript 5.2 + Vite 5.0
-- Tailwind CSS (via CDN in index.html)
+- Tailwind CSS (local build via `@tailwindcss/vite` plugin, entry: `styles.css`)
+- Fonts: `@fontsource/inter` + `@fontsource/orbitron` (local, no CDN)
 - Lucide React (icons), React QR Code, LZ-String (compression)
 - Capacitor 8.0 for iOS App packaging
-- PWA enabled (service worker + manifest)
+  - `@capacitor/splash-screen` - App 啟動動畫
+  - `@capacitor/status-bar` - 狀態列外觀
+  - `@capacitor/haptics` - Counter 觸覺回饋
+- PWA enabled (service worker + manifest; SW disabled in Capacitor native environment)
 - No backend - localStorage for persistence, Google Apps Script for sync
 
 ## Build Commands
@@ -66,6 +70,7 @@ const STARTING_ZONE_OFFSET = 40;  // 40% from left edge
 
 ### Key Files
 - `App.tsx` - Main container, phase navigation, form state management
+- `styles.css` - Tailwind CSS entry point + @theme brand colors + animations
 - `types.ts` - Core interfaces (ScoutingData, MatchRecord, enums)
 - `constants.ts` - APP_CONFIG, TSV_SCHEMA definitions
 - `services/storage.ts` - localStorage for offline queue & history
@@ -82,9 +87,10 @@ All form tabs use `TabProps` interface: `{ data: ScoutingData, update: (updates)
 |-------|-----------|
 | PreMatch | scouterName, eventCode, matchLevel, matchNumber, **alliance** (Red/Blue), teamNumber |
 | Auton | autoPath (FieldCanvas), autoFuel, autoClimbStatus, autoClimbTime (Stopwatch) |
-| Teleop | teleFuel, teleClimbStatus, teleClimbTime (Stopwatch), bumpTrenchCount, fuelDroppedOnBump |
-| Penalty | penaltyCount, yellowCard, redCard |
+| Teleop | bumpTrenchCount, fuelDroppedOnBump, teleFuel, minorPenalty, majorPenalty, teleClimbStatus, teleClimbPosition, teleClimbTime (Stopwatch) |
 | PostMatch | robotDied, almostTipped, ridingOnBall, defenseRating, driverSkill, speedRating, comments, subjectiveNotes |
+
+**TSV Schema**: 18 欄位 (詳見 `constants.ts` 的 `TSV_SCHEMA_MATCH`)
 
 ### Adding New Form Fields
 1. Add field to `ScoutingData` interface in `types.ts`
@@ -95,10 +101,12 @@ All form tabs use `TabProps` interface: `{ data: ScoutingData, update: (updates)
 ## Configuration
 
 - `constants.ts` - Update `APP_CONFIG.googleScriptUrl` for real Google Apps Script
-- `index.html` - Tailwind config (brand colors: Cyan #06b6d4, dark theme slate-900/950)
+- `styles.css` - Tailwind entry + `@theme` brand colors (Cyan #06b6d4, dark theme slate-900/950) + animations + `.no-scrollbar`
+- `vite.config.ts` - Tailwind CSS Vite plugin configuration
 - `vercel.json` - SPA rewrite rules
-- `capacitor.config.ts` - iOS app configuration
+- `capacitor.config.ts` - iOS app configuration + native plugins (SplashScreen, StatusBar)
 - `public/manifest.json` - PWA metadata
+- `public/privacy.html` - Privacy Policy (App Store requirement)
 
 ## Development Notes
 

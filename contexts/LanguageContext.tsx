@@ -91,7 +91,7 @@ const translations = {
     match: "Match",
 
     // Validation
-    teamNumberInvalid: "Team number must be 1-9999",
+    teamNumberInvalid: "Team number must be a positive integer",
     autoStartWarning: "Path should start in the Starting Zone (center area)",
     startingZone: "Starting Zone",
 
@@ -204,7 +204,7 @@ const translations = {
     match: "場次",
 
     // Validation
-    teamNumberInvalid: "隊伍編號必須是 1-9999",
+    teamNumberInvalid: "隊伍編號必須是正整數",
     autoStartWarning: "路徑應從起始區域開始（中間區域）",
     startingZone: "起始區域",
 

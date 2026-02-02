@@ -5,6 +5,11 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { Plus, Minus, Check, Zap, AlertTriangle, Play, Square, RotateCcw } from 'lucide-react';
 import { MATCH_LEVEL_OPTIONS, ALLIANCE_OPTIONS, AUTO_CLIMB_OPTIONS, TELE_CLIMB_OPTIONS, CLIMB_POSITION_OPTIONS } from '../constants';
 import { FieldCanvas } from './FieldCanvas';
+import { Haptics, ImpactStyle } from '@capacitor/haptics';
+
+const triggerHaptic = () => {
+  Haptics.impact({ style: ImpactStyle.Light }).catch(() => {});
+};
 
 interface TabProps {
   data: ScoutingData;
@@ -12,11 +17,11 @@ interface TabProps {
   handedness?: Handedness;
 }
 
-// Team number validation helper (valid range: 1-9999)
+// Team number validation helper (must be positive integer)
 function isTeamNumberInvalid(teamNumber: string): boolean {
   if (!teamNumber) return false;
   const num = parseInt(teamNumber, 10);
-  return isNaN(num) || num < 1 || num > 9999;
+  return isNaN(num) || num < 1;
 }
 
 // Climb button style helper - eliminates nested ternaries
@@ -57,6 +62,7 @@ const Counter: FC<{
 
   const triggerPulse = useCallback(() => {
     setIsPulsing(true);
+    triggerHaptic();
     setTimeout(() => setIsPulsing(false), 150);
   }, []);
 

@@ -51,6 +51,20 @@
 
 ---
 
+## Teleop UI 與攀爬優化 (2026-01-28)
+
+| Decision | Rationale |
+|----------|-----------|
+| Teleop 順序：Bump → Fuel → Penalty → Climb | 攀爬通常在比賽最後進行，順序符合實際操作流程 |
+| 犯規計數器化 (minor/major → number) | 同一場比賽可能多次犯規，用計數器更精確 |
+| 移除 penaltyCount | 冗餘欄位，minor + major 即可計算總數 |
+| ClimbPosition 改為 5 選項 | LeftSide/Left/Center/Right/RightSide 整合位置與側邊資訊 |
+| 移除 ClimbSide enum | 與 ClimbPosition 重複，整合到單一欄位減少複雜度 |
+| 移除 autoClimbSide/teleClimbSide | 攀爬側資訊已整合於 ClimbPosition |
+| TSV Schema: 18 欄位 | 移除冗餘欄位後的精簡結構 |
+
+---
+
 ## Video Analyzer (已分離)
 
 以下內容已移至 `D:\frc-video-analyzer` 專案：
@@ -98,5 +112,60 @@
 - LZ-String: https://github.com/pieroxy/lz-string
 
 ---
-*Last updated: 2026-01-25*
+
+## FieldCanvas 與 Scanner App 路徑比例對齊 (2026-01-30)
+
+### 問題
+FieldCanvas 繪製的路徑在 scanner app (frc-scout-scanner) 中顯示比例不一致。
+
+### 原因
+兩邊的渲染邏輯不同：
+- **Scanner**: SVG viewBox `0 0 200 100`，container `aspectRatio: '2/1'`，`object-fill`
+- **FieldCanvas**: Canvas 繪製，`object-cover`，固定像素線寬/圓點大小
+
+### 解決方案
+將 FieldCanvas 的所有繪製參數改為基於 canvas 高度的比例值，匹配 scanner 的渲染行為：
+
+| 參數 | 修改前 | 修改後 |
+|------|--------|--------|
+| 圖片填充 | `object-cover` | `object-fill` |
+| 線寬 | 6px (固定) | `height × 1.5%` |
+| 起/終點半徑 | 10px (固定) | `height × 2%` |
+| 中間點半徑 | 無 | `height × 1%` |
+| 邊框線寬 | 2px (固定) | `height × 0.5%` |
+| 起點樣式 | 綠色填充 | 青色填充+白色邊框 |
+| 終點樣式 | 紅色填充 | 白色填充+青色邊框 |
+| 線條透明度 | 1.0 | 0.9 |
+
+### 選擇理由
+- 使用比例值而非固定像素，確保在不同螢幕尺寸下路徑視覺效果一致
+- 樣式統一為青色系（`#00CED1`），與 scanner app 的 SVG stroke 顏色匹配
+- 新增中間點顯示，讓路徑走向更清晰
+
+---
+
+## App Store 上架準備決策 (2026-02-01)
+
+### 問題：CDN 依賴阻擋 App Store 上架
+iOS App 透過 Capacitor 打包時，CDN 資源（Tailwind CSS、Google Fonts）無法在離線環境載入，且 App Store 審核要求所有資源本地化。
+
+### 解決方案
+
+| Decision | Rationale |
+|----------|-----------|
+| Tailwind CDN → `tailwindcss` + `@tailwindcss/vite` | 本地 build 消除運行時 CDN 依賴，CSS 打包到 dist (52.69 KB) |
+| `@theme` 品牌色定義在 `styles.css` | 取代 `index.html` 內的 `tailwind.config` script，Vite plugin 原生支援 |
+| Google Fonts → `@fontsource/inter` + `@fontsource/orbitron` | 字體檔案打包到 dist，離線完全可用 |
+| `@capacitor/haptics` 觸覺回饋 | Counter 遞增/遞減時觸發 impact，提升 native 體感 |
+| `@capacitor/splash-screen` + `@capacitor/status-bar` | App 啟動動畫 + 狀態列外觀控制，符合 iOS 原生 App 體驗 |
+| SW 註冊加入 `!window.Capacitor` 判斷 | 避免 native app 環境重複註冊 Service Worker，Capacitor 有自己的離線機制 |
+| `public/privacy.html` 隱私政策 | App Store 審核必要條件，說明資料收集與使用方式 |
+
+### 選擇理由
+- **零 CDN 依賴**：build 後 `dist/index.html` 完全自包含，適合 Capacitor 打包
+- **bundle 大小可控**：CSS 52.69 KB + JS 231.81 KB，行動端載入無壓力
+- **開發體驗不變**：`npm run dev` 仍然支援 HMR，Tailwind Vite plugin 編譯速度快
+
+---
+*Last updated: 2026-02-01*
 *Note: Video Analyzer 相關內容已移至獨立專案*
