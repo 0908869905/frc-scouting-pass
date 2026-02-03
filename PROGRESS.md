@@ -1168,3 +1168,117 @@ App Store 上架準備 Phase 1-5（Windows 端）— 移除所有 CDN 依賴，�
 
 ---
 *Last updated: 2026-02-01*
+
+---
+
+## Session: 2026-02-02
+
+### Overview
+Scouting Pass 表單欄位調整 + TSV Schema 更新 + 起始區域校準 + 防呆驗證放寬
+
+---
+
+### Phase 23: 表單欄位與驗證調整
+- **Status:** ✅ complete
+- **Completed:** 2026-02-02
+
+#### Task 23.1: 隊號上限移除
+- **Status:** ✅ complete
+- 移除 team number 1-9999 限制，改為正整數驗證（> 0 的整數）
+- 原因：部分 FRC 隊號超過 9999
+
+**Files Modified:**
+- `App.tsx` - 移除 9999 上限檢查
+- `components/TabViews.tsx` - 移除 9999 即時驗證
+- `contexts/LanguageContext.tsx` - 更新驗證錯誤訊息文字
+
+#### Task 23.2: 起始區域 Offset 調整
+- **Status:** ✅ complete
+- 多次調整 starting zone offset，最終校準值：
+  - Red = 25%
+  - Blue = 68%
+  - Width = 3.5%
+
+**Files Modified:**
+- `constants.ts` - 更新 `RED_STARTING_ZONE_OFFSET`, `BLUE_STARTING_ZONE_OFFSET`
+- `components/FieldCanvas.tsx` - 起始區域 offset 註解更新
+
+#### Task 23.3: Header 顯示隊號
+- **Status:** ✅ complete
+- 左上角 header subtitle 行新增 `#teamNumber` 顯示
+- 讓 scouter 隨時確認正在記錄哪支隊伍
+
+**Files Modified:**
+- `App.tsx` - header subtitle 新增隊號
+
+#### Task 23.4: 攀爬 None 重置
+- **Status:** ✅ complete
+- 當 climb status 改為 None 時，自動重置 time=0 和 position=Center
+- 避免無效的攀爬資料殘留
+
+**Files Modified:**
+- `components/TabViews.tsx` - climb status onChange 邏輯
+
+#### Task 23.5: Bump/Trench 分離
+- **Status:** ✅ complete
+- `bumpTrenchCount` 拆分為 `bumpCount` + `trenchCount` 兩個獨立計數器
+- 原因：Bump 和 Trench 是不同的場地動作，分開記錄更精確
+
+**Files Modified:**
+- `types.ts` - `bumpTrenchCount` → `bumpCount` + `trenchCount`
+- `constants.ts` - TSV schema 更新
+- `components/TabViews.tsx` - 分離計數器 UI
+- `contexts/LanguageContext.tsx` - 翻譯更新
+
+#### Task 23.6: 翻譯修正
+- **Status:** ✅ complete
+- "Riding on Ball" → "Riding on Fuel" / "騎在 Fuel 上"
+
+**Files Modified:**
+- `contexts/LanguageContext.tsx` - 翻譯文字修正
+
+#### Task 23.7: TSV Schema 更新
+- **Status:** ✅ complete
+- `TSV_SCHEMA_PATH`: 4 欄位 → 5 欄位（加入 alliance）
+- `TSV_SCHEMA_MATCH`: 20 欄位 → 21 欄位（bump/trench 分離）
+
+**Files Modified:**
+- `constants.ts` - TSV schema 欄位更新
+
+---
+
+### 完成項目
+- [x] 移除 team number 9999 上限，改為正整數驗證
+- [x] 起始區域 offset 校準 (Red=25%, Blue=68%, Width=3.5%)
+- [x] Header 左上角顯示 #teamNumber
+- [x] Climb None 自動重置 time=0, position=Center
+- [x] bumpTrenchCount 拆分為 bumpCount + trenchCount
+- [x] "Riding on Ball" → "Riding on Fuel" 翻譯修正
+- [x] TSV_SCHEMA_PATH 加入 alliance (4→5 欄位)
+- [x] TSV_SCHEMA_MATCH bump/trench 分離 (20→21 欄位)
+
+### 修改檔案
+- `App.tsx` - header 顯示隊號、移除 9999 上限
+- `types.ts` - bumpTrenchCount → bumpCount + trenchCount
+- `constants.ts` - TSV schema 更新 (match 21, path 5)、起始區域 offset 調整
+- `components/TabViews.tsx` - 分離計數器、climb None 重置、移除 9999 驗證
+- `components/FieldCanvas.tsx` - 起始區域 offset 註解更新
+- `contexts/LanguageContext.tsx` - 翻譯更新 (bump/trench 分離、Riding on Fuel、隊號驗證訊息)
+- `CLAUDE.md` - 文件同步更新
+
+### Git Commits
+- `f77b7c7` - feat: remove CDN dependencies, add native plugins, remove team number cap
+- `1659477` - feat: header team number, split bump/trench, fix climb reset, update schemas
+
+---
+
+## 5-Question Reboot Check
+
+1. **做什麼？** Scouting Pass 表單欄位微調 + TSV Schema 更新 + 驗證規則調整
+2. **進度？** ✅ 全部完成
+3. **下一步？** 測試完整表單流程、驗證 scanner app 讀取新 TSV 格式、部署更新版本
+4. **阻礙？** 無
+5. **檔案？** `App.tsx`, `types.ts`, `constants.ts`, `TabViews.tsx`, `FieldCanvas.tsx`, `LanguageContext.tsx`
+
+---
+*Last updated: 2026-02-02*

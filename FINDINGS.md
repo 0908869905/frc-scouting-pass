@@ -167,5 +167,48 @@ iOS App 透過 Capacitor 打包時，CDN 資源（Tailwind CSS、Google Fonts）
 - **開發體驗不變**：`npm run dev` 仍然支援 HMR，Tailwind Vite plugin 編譯速度快
 
 ---
-*Last updated: 2026-02-01*
+
+## Scouting Pass 欄位與驗證調整 (2026-02-02)
+
+### 問題 1: Team Number 上限過於嚴格
+- **原規則**: 1-9999 整數
+- **問題**: 部分 FRC 隊號超過 9999（如五位數隊號）
+- **新規則**: 正整數（> 0 的整數，無上限）
+- **選擇理由**: FRC 官方隊號持續增長，硬編碼上限會排除合法隊伍
+
+### 問題 2: Bump 和 Trench 合併計數不夠精確
+- **原設計**: `bumpTrenchCount` 單一計數器
+- **問題**: Bump（衝撞）和 Trench（溝渠）是不同的場地動作，合併無法區分
+- **新設計**: 拆分為 `bumpCount` + `trenchCount` 兩個獨立計數器
+- **影響**: TSV_SCHEMA_MATCH 從 20 欄位增為 21 欄位
+- **選擇理由**: 分開記錄讓分析更精確，scouter 可以獨立追蹤每種動作次數
+
+### 問題 3: 起始區域 Offset 不準確
+- **原值**: Red=21%, Blue=72%, Width=3.5%
+- **問題**: 場地圖更新後，起始區域位置偏移
+- **新值**: Red=25%, Blue=68%, Width=3.5%
+- **選擇理由**: 多次目視校準，確保綠色半透明區域精確覆蓋場地圖上的起始區域
+
+### 問題 4: Path QR 缺少 Alliance 資訊
+- **原設計**: TSV_SCHEMA_PATH = [eventCode, matchNumber, teamNumber, autoPath] (4 欄位)
+- **問題**: Scanner 無法判斷路徑是紅方還是藍方
+- **新設計**: TSV_SCHEMA_PATH = [eventCode, matchNumber, teamNumber, alliance, autoPath] (5 欄位)
+- **選擇理由**: Alliance 資訊對路徑分析至關重要，紅藍方的場地方向不同
+
+### 問題 5: Climb None 時殘留無效資料
+- **問題**: 切換 climb status 為 None 後，time 和 position 仍保留舊值
+- **解決**: 當 climb status 改為 None 時，自動重置 time=0, position=Center
+- **選擇理由**: 避免 TSV 匯出包含無意義的攀爬時間和位置
+
+| Decision | Rationale |
+|----------|-----------|
+| 隊號改為正整數驗證 | FRC 隊號持續增長，不應硬編碼上限 |
+| bumpTrenchCount → bumpCount + trenchCount | 不同動作分開記錄，分析更精確 |
+| 起始區域 Red=25%, Blue=68% | 目視校準匹配場地圖 |
+| Path QR 加入 alliance | Scanner 需要知道路徑方向 |
+| Climb None 自動重置 | 避免無效資料殘留 |
+| "Riding on Ball" → "Riding on Fuel" | 正確對應遊戲元素名稱 |
+
+---
+*Last updated: 2026-02-02*
 *Note: Video Analyzer 相關內容已移至獨立專案*

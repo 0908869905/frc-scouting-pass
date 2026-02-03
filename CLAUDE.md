@@ -47,29 +47,33 @@ App icons are pre-generated in `ios-icons/` directory.
 ### Data Flow
 1. User fills form phases: PreMatch → Auton → Teleop → **Penalty** → PostMatch
 2. **Validation at each phase transition:**
-   - PreMatch → Auton: Required fields + Team number format (1-9999)
+   - PreMatch → Auton: Required fields + Team number format (positive integer, no upper limit)
    - Auton → Teleop: Auto path starting position (must be in starting zone)
+   - Climb status = None: auto-reset time=0, position=Center
 3. **Two QR codes** generated with LZ-String compressed data:
-   - Match Data QR (cyan) - all scouting data except path
-   - Auto Path QR (amber) - eventCode, matchNumber, teamNumber, autoPath
+   - Match Data QR (cyan) - all scouting data except path (21 fields)
+   - Auto Path QR (amber) - eventCode, matchNumber, teamNumber, alliance, autoPath (5 fields)
 4. TSV export for copying or Google Sheets upload
 5. Offline queue persists to localStorage for later sync
 
 ### Validation Rules (防呆機制)
 | Field | Rule | Location |
 |-------|------|----------|
-| Team Number | Positive integer | `App.tsx`, `TabViews.tsx` |
-| Auto Path Start | Red: X = 21-24.5%, Blue: X = 72-75.5% | `App.tsx`, `FieldCanvas.tsx` |
+| Team Number | Positive integer (no upper limit) | `App.tsx`, `TabViews.tsx` |
+| Auto Path Start | Red: X = 25-28.5%, Blue: X = 68-71.5% | `App.tsx`, `FieldCanvas.tsx` |
 
 **Starting Zone Constants** (must match in both files):
 ```typescript
 const STARTING_ZONE_WIDTH = 3.5;          // 3.5% width
-const RED_STARTING_ZONE_OFFSET = 21;      // Red zone: X = 21-24.5%
-const BLUE_STARTING_ZONE_OFFSET = 72;     // Blue zone: X = 72-75.5%
+const RED_STARTING_ZONE_OFFSET = 25;      // Red zone: X = 25-28.5%
+const BLUE_STARTING_ZONE_OFFSET = 68;     // Blue zone: X = 68-71.5%
 ```
 
+### UI Notes
+- **Header**: Left side shows app name + subtitle with `#teamNumber` (visible during scouting)
+
 ### Key Files
-- `App.tsx` - Main container, phase navigation, form state management
+- `App.tsx` - Main container, phase navigation, form state management, header with team number display
 - `styles.css` - Tailwind CSS entry point + @theme brand colors + animations
 - `types.ts` - Core interfaces (ScoutingData, MatchRecord, enums)
 - `constants.ts` - APP_CONFIG, TSV_SCHEMA definitions
@@ -87,10 +91,12 @@ All form tabs use `TabProps` interface: `{ data: ScoutingData, update: (updates)
 |-------|-----------|
 | PreMatch | scouterName, eventCode, matchLevel, matchNumber, **alliance** (Red/Blue), teamNumber |
 | Auton | autoPath (FieldCanvas), autoFuel, autoClimbStatus, autoClimbTime (Stopwatch) |
-| Teleop | bumpTrenchCount, fuelDroppedOnBump, teleFuel, minorPenalty, majorPenalty, teleClimbStatus, teleClimbPosition, teleClimbTime (Stopwatch) |
+| Teleop | bumpCount, trenchCount, fuelDroppedOnBump, teleFuel, minorPenalty, majorPenalty, teleClimbStatus, teleClimbPosition, teleClimbTime (Stopwatch) |
 | PostMatch | robotDied, almostTipped, ridingOnBall, defenseRating, driverSkill, speedRating, comments, subjectiveNotes |
 
-**TSV Schema**: 18 欄位 (詳見 `constants.ts` 的 `TSV_SCHEMA_MATCH`)
+**TSV Schema**:
+- `TSV_SCHEMA_MATCH`: 21 欄位 (詳見 `constants.ts`)
+- `TSV_SCHEMA_PATH`: 5 欄位 (eventCode, matchNumber, teamNumber, alliance, autoPath)
 
 ### Adding New Form Fields
 1. Add field to `ScoutingData` interface in `types.ts`
