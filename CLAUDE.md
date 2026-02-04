@@ -60,13 +60,13 @@ App icons are pre-generated in `ios-icons/` directory.
 | Field | Rule | Location |
 |-------|------|----------|
 | Team Number | Positive integer (no upper limit) | `App.tsx`, `TabViews.tsx` |
-| Auto Path Start | Red: X = 25-28.5%, Blue: X = 68-71.5% | `App.tsx`, `FieldCanvas.tsx` |
+| Auto Path Start | Red: X = 25-28.5%, Blue: X = 71.5-75% | `App.tsx`, `FieldCanvas.tsx` |
 
 **Starting Zone Constants** (must match in both files):
 ```typescript
 const STARTING_ZONE_WIDTH = 3.5;          // 3.5% width
 const RED_STARTING_ZONE_OFFSET = 25;      // Red zone: X = 25-28.5%
-const BLUE_STARTING_ZONE_OFFSET = 68;     // Blue zone: X = 68-71.5%
+const BLUE_STARTING_ZONE_OFFSET = 71.5;   // Blue zone: X = 71.5-75%
 ```
 
 ### UI Notes

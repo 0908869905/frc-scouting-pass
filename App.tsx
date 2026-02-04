@@ -142,7 +142,7 @@ function AppContent() {
   };
 
   const handleReset = () => {
-    const nextMatchNum = data.matchLevel === MatchLevel.Quals ? data.matchNumber + 1 : data.matchNumber;
+    const nextMatchNum = data.matchNumber + 1;
 
     setData({
       ...INITIAL_DATA,

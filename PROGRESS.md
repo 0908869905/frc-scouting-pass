@@ -1282,3 +1282,51 @@ Scouting Pass 表單欄位調整 + TSV Schema 更新 + 起始區域校準 + 防�
 
 ---
 *Last updated: 2026-02-02*
+
+---
+
+## Session: 2026-02-03
+
+### Overview
+起始區域 offset 校準 — 紅藍方各往外移一格
+
+---
+
+### Phase 24: 起始區域微調
+- **Status:** ✅ complete
+- **Completed:** 2026-02-03
+
+#### Task 24.1: 紅方起始區域往右一格
+- RED_STARTING_ZONE_OFFSET: 25 → 28.5%
+- 中間步驟，後被 Task 24.2 覆蓋
+
+#### Task 24.2: 紅藍方各往外一格
+- Red: 28.5 → 25%（往左，遠離中心）
+- Blue: 68 → 71.5%（往右，遠離中心）
+- 最終值：Red=25%, Blue=71.5%, Width=3.5%
+
+---
+
+### 完成項目
+- [x] 紅方起始區域 offset 調整 (25→28.5→25%)
+- [x] 藍方起始區域 offset 調整 (68→71.5%)
+
+### 修改檔案
+- `constants.ts` - 起始區域 offset (Red=25%, Blue=71.5%)
+
+### Git Commits
+- `9949f56` - fix: shift red starting zone offset right by one grid (25→28.5%)
+- `7b8c7e6` - fix: shift starting zones outward by one grid (Red 28.5→25%, Blue 68→71.5%)
+
+---
+
+## 5-Question Reboot Check
+
+1. **做什麼？** 起始區域 offset 校準
+2. **進度？** ✅ 全部完成
+3. **下一步？** 測試完整表單流程、驗證起始區域位置正確、部署更新版本
+4. **阻礙？** 無
+5. **檔案？** `constants.ts`, `components/FieldCanvas.tsx`, `App.tsx`
+
+---
+*Last updated: 2026-02-03*

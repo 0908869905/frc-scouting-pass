@@ -1,5 +1,5 @@
 
-import { ScoutingData } from '../types';
+import { ScoutingData, PathPoint } from '../types';
 import { TSV_SCHEMA_MATCH, TSV_SCHEMA_PIT, TSV_SCHEMA_PATH, APP_CONFIG } from '../constants';
 
 const MATCH_LEVEL_ABBREV: Record<string, string> = {
@@ -18,10 +18,51 @@ const ROBOT_POS_ABBREV: Record<string, string> = {
   'Blue 3': 'B3'
 };
 
-// Convert PathPoint array to compact string format: "x1,y1|x2,y2|..."
-const pathToString = (path: { x: number; y: number }[]): string => {
+// --- Douglas-Peucker path simplification ---
+// Removes redundant intermediate points while preserving path shape.
+// Tolerance is in percentage-coordinate units (0-100 range).
+function perpendicularDistance(p: PathPoint, a: PathPoint, b: PathPoint): number {
+  const dx = b.x - a.x;
+  const dy = b.y - a.y;
+  if (dx === 0 && dy === 0) {
+    return Math.sqrt((p.x - a.x) ** 2 + (p.y - a.y) ** 2);
+  }
+  return Math.abs(dy * p.x - dx * p.y + b.x * a.y - b.y * a.x) / Math.sqrt(dx * dx + dy * dy);
+}
+
+function douglasPeucker(points: PathPoint[], tolerance: number): PathPoint[] {
+  if (points.length <= 2) return points;
+
+  let maxDist = 0;
+  let maxIdx = 0;
+  const first = points[0];
+  const last = points[points.length - 1];
+
+  for (let i = 1; i < points.length - 1; i++) {
+    const d = perpendicularDistance(points[i], first, last);
+    if (d > maxDist) { maxDist = d; maxIdx = i; }
+  }
+
+  if (maxDist > tolerance) {
+    const left = douglasPeucker(points.slice(0, maxIdx + 1), tolerance);
+    const right = douglasPeucker(points.slice(maxIdx), tolerance);
+    return [...left.slice(0, -1), ...right];
+  }
+  return [first, last];
+}
+
+// Simplify path for QR export. Tolerance 1.0 ≈ 1% of field width (~16cm).
+export function simplifyPath(points: PathPoint[], tolerance: number = 1.0): PathPoint[] {
+  if (points.length <= 2) return points;
+  return douglasPeucker(points, tolerance);
+}
+
+// Convert PathPoint array to compact string: "x,y|x,y|..."
+// Applies Douglas-Peucker simplification + integer rounding for minimal QR size.
+const pathToString = (path: PathPoint[]): string => {
   if (!path || path.length === 0) return 'None';
-  return path.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join('|');
+  const simplified = simplifyPath(path);
+  return simplified.map(p => `${Math.round(p.x)},${Math.round(p.y)}`).join('|');
 };
 
 // Helper to format comments
