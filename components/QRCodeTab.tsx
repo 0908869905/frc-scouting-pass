@@ -1,4 +1,4 @@
-import { Fragment, useState } from 'react';
+import { Fragment, useState, useEffect, useRef } from 'react';
 import type { FC } from 'react';
 import QRCode from 'react-qr-code';
 import { ScoutingData } from '../types';
@@ -9,6 +9,7 @@ import { Copy, CheckCircle, AlertCircle, Save, WifiOff, Zap, Info, Map } from 'l
 import LZString from 'lz-string';
 import { TSV_SCHEMA_MATCH, TSV_SCHEMA_PIT, TSV_SCHEMA_PATH } from '../constants';
 import { useLanguage } from '../contexts/LanguageContext';
+import { HapticFeedback } from '../utils/haptics';
 
 interface Props {
   data: ScoutingData;
@@ -21,6 +22,21 @@ export const QRCodeTab: FC<Props> = ({ data, onReset }) => {
   const [isSavedLocally, setIsSavedLocally] = useState(false);
   const [showSchema, setShowSchema] = useState(false);
   const [showPathSchema, setShowPathSchema] = useState(false);
+  const prevStatusRef = useRef(status);
+
+  // Trigger haptic feedback when status changes
+  useEffect(() => {
+    if (prevStatusRef.current !== status) {
+      if (status === 'uploaded') {
+        HapticFeedback.success();
+      } else if (status === 'offline_saved') {
+        HapticFeedback.warning();
+      } else if (status === 'error') {
+        HapticFeedback.error();
+      }
+      prevStatusRef.current = status;
+    }
+  }, [status]);
 
   // Main data (without path)
   const tsvData = generateTSV(data);

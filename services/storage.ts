@@ -61,6 +61,30 @@ export const deleteMatchRecord = (id: string) => {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(newHistory));
 };
 
+export const updateMatchRecord = (id: string, data: ScoutingData): MatchRecord | null => {
+  const history = getHistory();
+  const index = history.findIndex(r => r.id === id);
+
+  if (index < 0) return null;
+
+  const updatedRecord: MatchRecord = {
+    ...history[index],
+    data: { ...data },
+    timestamp: Date.now(),
+    synced: false // Mark as needing re-sync
+  };
+
+  history[index] = updatedRecord;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
+
+  return updatedRecord;
+};
+
+export const getMatchRecord = (id: string): MatchRecord | null => {
+  const history = getHistory();
+  return history.find(r => r.id === id) || null;
+};
+
 export const getUnsyncedCount = (): number => {
   return getHistory().filter(r => !r.synced).length;
 };

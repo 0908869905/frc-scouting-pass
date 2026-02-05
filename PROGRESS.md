@@ -1398,3 +1398,183 @@ Match Number 自動遞增 + Path QR Code Douglas-Peucker 壓縮
 
 ---
 *Last updated: 2026-02-04*
+
+---
+
+## Session: 2026-02-05
+
+### Overview
+Stopwatch 碼表修復 — 修復 Teleop 碼表數字重疊問題
+
+---
+
+### Phase 27: Stopwatch 視覺修復
+- **Status:** ✅ complete
+- **Completed:** 2026-02-05
+
+#### Task 27.1: 修復碼表數字重疊問題
+- **問題**: 用戶反應 Teleop 碼表「原始的秒數會留在底層，新的秒數會在上層」（兩層數字重疊）
+- **原因**: `animate-pulse` 動畫與高頻更新（每 10ms）產生視覺衝突
+  - `animate-pulse` 動畫週期約 2 秒，包含 opacity 和 scale 變化
+  - 碼表每 10ms 更新一次數字，DOM 重繪與動畫變換疊加造成殘影
+- **解決**: 移除時間數字上的 `animate-pulse`，改用獨立的紅色閃爍圓點作為運行指示器
+
+---
+
+### 完成項目
+- [x] 修復 Stopwatch 碼表數字重疊問題
+- [x] 移除時間數字上的 `animate-pulse` 動畫
+- [x] 新增獨立的紅色閃爍圓點作為運行狀態指示器
+
+### 修改檔案
+- `components/TabViews.tsx` - Stopwatch 組件視覺修復
+
+### Git Commits
+- `b98c566` - fix: remove animate-pulse from Stopwatch to prevent double-digit overlay
+- `16a286d` - docs: update documentation for 2026-02-04 session
+
+---
+
+## 5-Question Reboot Check
+
+1. **做什麼？** 修復 Stopwatch 碼表數字重疊的視覺問題
+2. **進度？** ✅ 已完成，已 push 到 GitHub
+3. **下一步？** 無明確後續，可進行其他功能開發或測試
+4. **阻礙？** 無
+5. **檔案？** `components/TabViews.tsx`
+
+---
+*Last updated: 2026-02-05*
+
+---
+
+## Session: 2026-02-05 (Part 2)
+
+### Overview
+Scouting PASS 8 項 UX 改進功能實作 — 震動確認、自動保存、Scouter 名稱記憶、比賽計時、滑動手勢、TBA 資料、歷史記錄編輯
+
+---
+
+### Phase 28: UX 改進 Batch 1 — 基礎 UX
+- **Status:** ✅ complete
+
+#### Task 28.1: 震動確認提交
+- 提交 QR Code 時觸發震動回饋
+- 建立 `utils/haptics.ts` 提供統一觸覺 API
+- 修改 `QRCodeTab.tsx` 在提交時呼叫
+
+#### Task 28.2: 自動保存指示器
+- 建立 `components/ui/AutoSaveIndicator.tsx`
+- 顯示「已自動保存」時間戳
+- 整合到 `App.tsx` 追蹤 lastSaveTime
+
+#### Task 28.3: 常用 Scouter 名稱記憶
+- 建立 `hooks/useRecentScouters.ts` (localStorage: `recent_scouters`)
+- 建立 `components/ui/ScouterNameInput.tsx` — 下拉選單顯示最近 3 個名稱
+- 整合到 PreMatchTab
+
+#### Task 28.4: 比賽時間提示
+- 建立 `components/ui/PhaseTimeIndicator.tsx`
+- 顯示 Auto (15 秒) / Teleop (2:15) 倒數計時
+- Settings 新增開關 (localStorage: `match_timer_enabled`)
+
+---
+
+### Phase 29: UX 改進 Batch 2 — 滑動手勢導航
+- **Status:** ✅ complete
+
+#### Task 29.1: 滑動手勢導航
+- 建立 `hooks/useSwipeNavigation.ts`
+- 左滑 → 下一階段、右滑 → 上一階段
+- `FieldCanvas.tsx` 新增 `data-swipe-ignore` 屬性排除繪圖區
+
+---
+
+### Phase 30: UX 改進 Batch 3 — TBA 資料內建
+- **Status:** ✅ complete
+
+#### Task 30.1: 內建賽程資料
+- 建立 `data/events2026.ts` — 2026 賽事列表
+- 建立 `data/eventSchedule.ts` — 賽程 schema + 示範資料
+
+#### Task 30.2: 賽事代碼下拉選單
+- 建立 `components/ui/EventCodeSelect.tsx`
+- 可搜尋的 Event Code 選擇器
+
+#### Task 30.3: 快速隊伍切換按鈕
+- 建立 `components/ui/QuickTeamSelect.tsx`
+- 根據賽程顯示當場比賽 6 支隊伍按鈕
+
+---
+
+### Phase 31: UX 改進 Batch 4 — 歷史記錄編輯
+- **Status:** ✅ complete
+
+#### Task 31.1: 批量編輯歷史記錄
+- 建立 `components/HistoryEditForm.tsx` — 編輯表單
+- 擴展 `HistoryModal.tsx` — 新增編輯功能入口
+- `storage.ts` 新增 `updateMatchRecord`, `getMatchRecord` 函數
+
+---
+
+### 完成項目
+- [x] 震動確認提交 (`utils/haptics.ts` + `QRCodeTab.tsx`)
+- [x] 自動保存指示器 (`components/ui/AutoSaveIndicator.tsx` + `App.tsx`)
+- [x] 常用 Scouter 名稱記憶 (`hooks/useRecentScouters.ts` + `components/ui/ScouterNameInput.tsx`)
+- [x] 比賽時間提示 (`components/ui/PhaseTimeIndicator.tsx` + Settings)
+- [x] 滑動手勢導航 (`hooks/useSwipeNavigation.ts` + `FieldCanvas.tsx` 排除)
+- [x] 內建賽程資料 (`data/events2026.ts` + `data/eventSchedule.ts`)
+- [x] 賽事代碼下拉選單 (`components/ui/EventCodeSelect.tsx`)
+- [x] 快速隊伍切換按鈕 (`components/ui/QuickTeamSelect.tsx`)
+- [x] 批量編輯歷史記錄 (`components/HistoryEditForm.tsx` + `HistoryModal.tsx` + `storage.ts`)
+
+### 新增檔案
+- `FRC/utils/haptics.ts` - 觸覺回饋 API
+- `FRC/hooks/useSwipeNavigation.ts` - 滑動手勢 hook
+- `FRC/hooks/useRecentScouters.ts` - 最近 scouter 記憶 hook
+- `FRC/data/events2026.ts` - 2026 賽事列表
+- `FRC/data/eventSchedule.ts` - 賽程 schema + 示範資料
+- `FRC/components/ui/AutoSaveIndicator.tsx` - 自動保存指示器
+- `FRC/components/ui/ScouterNameInput.tsx` - Scouter 名稱輸入 + 下拉選單
+- `FRC/components/ui/PhaseTimeIndicator.tsx` - 比賽階段計時器
+- `FRC/components/ui/EventCodeSelect.tsx` - 賽事代碼選擇器
+- `FRC/components/ui/QuickTeamSelect.tsx` - 快速隊伍切換
+- `FRC/components/HistoryEditForm.tsx` - 歷史記錄編輯表單
+
+### 修改檔案
+- `FRC/App.tsx` - lastSaveTime 狀態、滑動手勢、showMatchTimer 設定
+- `FRC/components/TabViews.tsx` - 整合新 UI 組件
+- `FRC/components/QRCodeTab.tsx` - 觸覺回饋
+- `FRC/components/HistoryModal.tsx` - 編輯功能
+- `FRC/components/FieldCanvas.tsx` - data-swipe-ignore 屬性
+- `FRC/services/storage.ts` - updateMatchRecord, getMatchRecord 函數
+- `FRC/contexts/LanguageContext.tsx` - ~25 個新翻譯鍵
+
+### localStorage Keys (新增)
+| Key | 用途 |
+|-----|------|
+| `recent_scouters` | 最近 3 個 scouter 名稱 |
+| `match_timer_enabled` | 計時器開關 |
+
+### 錯誤修正
+| 錯誤 | 解決方案 |
+|------|----------|
+| `CloudCheck` 圖示不存在 | 改用 `Cloud` 圖示 |
+| `Alliance` 重複 import | 移除重複的 import 行 |
+
+### 待辦事項
+- [ ] TBA API 需要有效的 API Key 才能取得真實賽程資料
+- [ ] `data/eventSchedule.ts` 是示範資料，當 2026 賽程公布時需要更新
+
+---
+
+## 5-Question Reboot Check
+
+1. **做什麼？** 實作 Scouting PASS 8 項 UX 改進功能
+2. **進度？** ✅ 全部完成（11 個新檔案、7 個修改檔案、~25 個翻譯鍵）
+3. **下一步？** 等 2026 賽程公布後更新 `data/eventSchedule.ts`、取得 TBA API Key
+4. **阻礙？** TBA API 需要 API Key
+5. **檔案？** `utils/haptics.ts`, `hooks/useSwipeNavigation.ts`, `hooks/useRecentScouters.ts`, `data/events2026.ts`, `components/ui/*.tsx`, `components/HistoryEditForm.tsx`
+
+---
+*Last updated: 2026-02-05*

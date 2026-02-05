@@ -1,13 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { MatchPhase, ScoutingData, INITIAL_DATA, MatchLevel, Handedness } from './types';
 import { PreMatchTab, AutonTab, TeleopTab, PostMatchTab } from './components/TabViews';
 import { QRCodeTab } from './components/QRCodeTab';
 import { HistoryModal } from './components/HistoryModal';
 import { Button } from './components/ui/Button';
+import { AutoSaveIndicator } from './components/ui/AutoSaveIndicator';
 import { APP_CONFIG, STARTING_ZONE_WIDTH, RED_STARTING_ZONE_OFFSET, BLUE_STARTING_ZONE_OFFSET } from './constants';
 import { ChevronRight, ChevronLeft, Settings, X, History as HistoryIcon, Globe } from 'lucide-react';
 import { getUnsyncedCount } from './services/storage';
 import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
+import { useSwipeNavigation } from './hooks/useSwipeNavigation';
 
 // 2026 REBUILT: Penalty merged into Teleop
 const phases: MatchPhase[] = ['PreMatch', 'Auton', 'Teleop', 'PostMatch', 'QRCode'];
@@ -37,8 +39,17 @@ function AppContent() {
     return (localStorage.getItem('handedness') as Handedness) || 'right';
   });
 
+  // Match timer setting
+  const [showMatchTimer, setShowMatchTimer] = useState<boolean>(() => {
+    const saved = localStorage.getItem('match_timer_enabled');
+    return saved !== null ? saved === 'true' : true;
+  });
+
   // Simple poller to update unsynced badge on header
   const [unsyncedCount, setUnsyncedCount] = useState(0);
+
+  // Auto-save indicator timestamp
+  const [lastSaveTime, setLastSaveTime] = useState<number | null>(null);
 
   useEffect(() => {
     setUnsyncedCount(getUnsyncedCount());
@@ -50,11 +61,16 @@ function AppContent() {
 
   useEffect(() => {
     localStorage.setItem('scoutingData', JSON.stringify(data));
+    setLastSaveTime(Date.now());
   }, [data]);
 
   useEffect(() => {
     localStorage.setItem('handedness', handedness);
   }, [handedness]);
+
+  useEffect(() => {
+    localStorage.setItem('match_timer_enabled', String(showMatchTimer));
+  }, [showMatchTimer]);
 
   const updateData = (fields: Partial<ScoutingData>) => {
     setData(prev => ({ ...prev, ...fields }));
@@ -167,6 +183,13 @@ function AppContent() {
     setLang(lang === 'en' ? 'zh' : 'en');
   };
 
+  // Swipe navigation handlers
+  const swipeHandlers = useSwipeNavigation({
+    onSwipeLeft: handleNext,
+    onSwipeRight: handlePrev,
+    threshold: 50
+  });
+
   return (
     <div className="h-full flex flex-col bg-slate-950 text-slate-100 font-sans relative">
       <HistoryModal isOpen={showHistory} onClose={() => setShowHistory(false)} />
@@ -200,6 +223,24 @@ function AppContent() {
                   </button>
                 </div>
               </div>
+
+              {/* Match Timer Toggle */}
+              <div>
+                <label className="block text-sm text-slate-400 font-bold uppercase mb-3">{t('showTimer')}</label>
+                <button
+                  onClick={() => setShowMatchTimer(!showMatchTimer)}
+                  className={`w-full p-4 rounded-xl border-2 transition-all font-medium flex items-center justify-between ${
+                    showMatchTimer
+                      ? 'border-brand-500 bg-brand-900/20 text-white'
+                      : 'border-slate-700 bg-slate-800 text-slate-400'
+                  }`}
+                >
+                  <span>{t('showTimer')}</span>
+                  <div className={`w-12 h-6 rounded-full relative transition-colors ${showMatchTimer ? 'bg-brand-500' : 'bg-slate-600'}`}>
+                    <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${showMatchTimer ? 'right-1' : 'left-1'}`} />
+                  </div>
+                </button>
+              </div>
             </div>
 
             <div className="mt-8">
@@ -215,8 +256,11 @@ function AppContent() {
           <h1 className="text-xl font-display font-bold text-white">
             {APP_CONFIG.teamName} <span className="text-slate-500 text-sm font-sans tracking-wide">| {APP_CONFIG.appName}</span>
           </h1>
-          <div className="text-xs text-slate-500 font-mono mt-1">
-            {data.teamNumber && <span className="text-white font-bold">#{data.teamNumber}</span>}{data.teamNumber && ' • '}{t('match')} {data.matchNumber} • <span className={data.alliance === 'Red' ? 'text-red-400' : 'text-blue-400'}>{t(data.alliance)}</span>
+          <div className="text-xs text-slate-500 font-mono mt-1 flex items-center gap-2">
+            <span>
+              {data.teamNumber && <span className="text-white font-bold">#{data.teamNumber}</span>}{data.teamNumber && ' • '}{t('match')} {data.matchNumber} • <span className={data.alliance.startsWith('R') ? 'text-red-400' : 'text-blue-400'}>{data.alliance}</span>
+            </span>
+            <AutoSaveIndicator lastSaveTime={lastSaveTime} />
           </div>
         </div>
         <div className="flex items-center gap-3">
@@ -262,10 +306,14 @@ function AppContent() {
       </div>
 
       {/* Main Content Area */}
-      <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-6 w-full max-w-5xl mx-auto no-scrollbar">
+      <main
+        className="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-6 w-full max-w-5xl mx-auto no-scrollbar"
+        onTouchStart={swipeHandlers.onTouchStart}
+        onTouchEnd={swipeHandlers.onTouchEnd}
+      >
         {currentPhase === 'PreMatch' && <PreMatchTab data={data} update={updateData} handedness={handedness} />}
-        {currentPhase === 'Auton' && <AutonTab data={data} update={updateData} handedness={handedness} />}
-        {currentPhase === 'Teleop' && <TeleopTab data={data} update={updateData} handedness={handedness} />}
+        {currentPhase === 'Auton' && <AutonTab data={data} update={updateData} handedness={handedness} showMatchTimer={showMatchTimer} />}
+        {currentPhase === 'Teleop' && <TeleopTab data={data} update={updateData} handedness={handedness} showMatchTimer={showMatchTimer} />}
         {currentPhase === 'PostMatch' && <PostMatchTab data={data} update={updateData} handedness={handedness} />}
         {currentPhase === 'QRCode' && <QRCodeTab data={data} onReset={handleReset} />}
       </main>

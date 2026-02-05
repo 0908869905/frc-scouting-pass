@@ -78,11 +78,24 @@ const BLUE_STARTING_ZONE_OFFSET = 71.5;   // Blue zone: X = 71.5-75%
 - `styles.css` - Tailwind CSS entry point + @theme brand colors + animations
 - `types.ts` - Core interfaces (ScoutingData, MatchRecord, enums)
 - `constants.ts` - APP_CONFIG, TSV_SCHEMA definitions
-- `services/storage.ts` - localStorage for offline queue & history
+- `services/storage.ts` - localStorage for offline queue & history + `updateMatchRecord`, `getMatchRecord`
 - `services/googleSheets.ts` - TSV generation, Google Apps Script upload, Douglas-Peucker path simplification (`simplifyPath`)
-- `contexts/LanguageContext.tsx` - i18n (English/Traditional Chinese, 90+ keys)
+- `contexts/LanguageContext.tsx` - i18n (English/Traditional Chinese, 115+ keys)
 - `components/TabViews.tsx` - Form phase components with Counter/inputs
-- `components/QRCodeTab.tsx` - QR generation & export functionality
+- `components/QRCodeTab.tsx` - QR generation & export functionality + haptic feedback
+
+### UX Enhancement Files (2026-02-05)
+- `utils/haptics.ts` - Unified haptic feedback API (Capacitor + Web)
+- `hooks/useSwipeNavigation.ts` - Swipe gesture navigation between phases
+- `hooks/useRecentScouters.ts` - Recent scouter names memory (localStorage)
+- `data/events2026.ts` - 2026 event list (offline TBA data)
+- `data/eventSchedule.ts` - Match schedule schema + demo data
+- `components/ui/AutoSaveIndicator.tsx` - Auto-save timestamp display
+- `components/ui/ScouterNameInput.tsx` - Scouter name input with recent suggestions
+- `components/ui/PhaseTimeIndicator.tsx` - Match phase countdown timer
+- `components/ui/EventCodeSelect.tsx` - Searchable event code selector
+- `components/ui/QuickTeamSelect.tsx` - Quick team selection from match schedule
+- `components/HistoryEditForm.tsx` - History record editing form
 
 ### Component Pattern
 All form tabs use `TabProps` interface: `{ data: ScoutingData, update: (updates) => void, handedness: Handedness }`
@@ -119,6 +132,12 @@ All form tabs use `TabProps` interface: `{ data: ScoutingData, update: (updates)
 
 - **Mobile-first**: Test at 375px width minimum, handedness preference affects button layout
 - **Offline-first**: localStorage is primary storage, server sync is fallback
+- **localStorage Keys**:
+  - `frc_scouting_data` - Current scouting session data
+  - `frc_offline_queue` - Offline sync queue
+  - `frc_match_history` - Match history records
+  - `recent_scouters` - Recent 3 scouter names (for quick selection)
+  - `match_timer_enabled` - Match phase timer toggle
 - **i18n**: All user-facing text through `useLanguage()` hook
 - **State**: React hooks only (useState, useContext) - no external state management
 - **Google Sheets**: Uses no-cors mode; data transmitted as TSV with unicode escaping

@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import type { FC } from 'react';
-import { X, CheckCircle, AlertCircle, UploadCloud, Trash2, RefreshCw } from 'lucide-react';
-import { MatchRecord } from '../types';
-import { getHistory, deleteMatchRecord, markAsSynced } from '../services/storage';
+import { X, CheckCircle, AlertCircle, UploadCloud, Trash2, RefreshCw, Edit2 } from 'lucide-react';
+import { MatchRecord, ScoutingData } from '../types';
+import { getHistory, deleteMatchRecord, markAsSynced, updateMatchRecord } from '../services/storage';
 import { uploadToGoogleSheets } from '../services/googleSheets';
 import { Button } from './ui/Button';
 import { useLanguage } from '../contexts/LanguageContext';
+import { HistoryEditForm } from './HistoryEditForm';
 
 interface Props {
   isOpen: boolean;
@@ -16,9 +17,16 @@ export const HistoryModal: FC<Props> = ({ isOpen, onClose }) => {
   const { t } = useLanguage();
   const [history, setHistory] = useState<MatchRecord[]>([]);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const loadHistory = () => {
     setHistory(getHistory());
+  };
+
+  const handleEditSave = (id: string, data: ScoutingData) => {
+    updateMatchRecord(id, data);
+    setEditingId(null);
+    loadHistory();
   };
 
   useEffect(() => {
@@ -117,45 +125,63 @@ export const HistoryModal: FC<Props> = ({ isOpen, onClose }) => {
             <div className="text-center text-slate-500 py-10">No match records found.</div>
           ) : (
             history.map((record) => (
-              <div key={record.id} className="bg-slate-800/50 border border-slate-700 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:bg-slate-800 transition-colors">
-                <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                        <span className="font-display font-bold text-lg text-white">{t('match')} {record.data.matchNumber}</span>
-                        <span className="text-xs text-slate-400 bg-slate-900 px-2 py-0.5 rounded border border-slate-700">
-                            {record.data.teamNumber}
-                        </span>
-                        <span className="text-xs text-slate-500 uppercase tracking-wider">{t(record.data.matchLevel) || record.data.matchLevel}</span>
-                    </div>
-                    <div className="text-xs text-slate-500">
-                        {new Date(record.timestamp).toLocaleString()} • {record.data.scouterName}
-                    </div>
-                </div>
-
-                <div className="flex items-center gap-2 w-full sm:w-auto">
-                    {record.synced ? (
-                        <div className="px-3 py-1.5 bg-green-900/20 text-green-500 text-xs font-bold rounded-lg border border-green-900/50 flex items-center gap-1.5 flex-1 sm:flex-none justify-center">
-                            <CheckCircle size={14} /> Synced
+              <div key={record.id}>
+                {editingId === record.id ? (
+                  <HistoryEditForm
+                    record={record}
+                    onSave={(data) => handleEditSave(record.id, data)}
+                    onCancel={() => setEditingId(null)}
+                  />
+                ) : (
+                  <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:bg-slate-800 transition-colors">
+                    <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                            <span className="font-display font-bold text-lg text-white">{t('match')} {record.data.matchNumber}</span>
+                            <span className="text-xs text-slate-400 bg-slate-900 px-2 py-0.5 rounded border border-slate-700">
+                                {record.data.teamNumber}
+                            </span>
+                            <span className="text-xs text-slate-500 uppercase tracking-wider">{t(record.data.matchLevel) || record.data.matchLevel}</span>
                         </div>
-                    ) : (
-                        <Button 
-                            size="sm" 
-                            variant="primary" 
-                            className="bg-orange-600 hover:bg-orange-500 text-xs flex-1 sm:flex-none"
-                            onClick={() => handleSingleSync(record)}
-                            disabled={isSyncing}
+                        <div className="text-xs text-slate-500">
+                            {new Date(record.timestamp).toLocaleString()} • {record.data.scouterName}
+                        </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 w-full sm:w-auto">
+                        {record.synced ? (
+                            <div className="px-3 py-1.5 bg-green-900/20 text-green-500 text-xs font-bold rounded-lg border border-green-900/50 flex items-center gap-1.5 flex-1 sm:flex-none justify-center">
+                                <CheckCircle size={14} /> Synced
+                            </div>
+                        ) : (
+                            <Button
+                                size="sm"
+                                variant="primary"
+                                className="bg-orange-600 hover:bg-orange-500 text-xs flex-1 sm:flex-none"
+                                onClick={() => handleSingleSync(record)}
+                                disabled={isSyncing}
+                            >
+                                <UploadCloud size={14} className="mr-1" /> {t('retry')}
+                            </Button>
+                        )}
+
+                        <button
+                            onClick={() => setEditingId(record.id)}
+                            className="p-2 text-slate-500 hover:text-brand-400 hover:bg-brand-950/30 rounded-lg transition-colors"
+                            title={t('editRecord')}
                         >
-                            <UploadCloud size={14} className="mr-1" /> {t('retry')}
-                        </Button>
-                    )}
-                    
-                    <button 
-                        onClick={() => handleDelete(record.id)}
-                        className="p-2 text-slate-500 hover:text-red-500 hover:bg-red-950/30 rounded-lg transition-colors"
-                        title={t('delete')}
-                    >
-                        <Trash2 size={18} />
-                    </button>
-                </div>
+                            <Edit2 size={18} />
+                        </button>
+
+                        <button
+                            onClick={() => handleDelete(record.id)}
+                            className="p-2 text-slate-500 hover:text-red-500 hover:bg-red-950/30 rounded-lg transition-colors"
+                            title="Delete"
+                        >
+                            <Trash2 size={18} />
+                        </button>
+                    </div>
+                  </div>
+                )}
               </div>
             ))
           )}

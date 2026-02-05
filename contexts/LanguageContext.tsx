@@ -116,7 +116,40 @@ const translations = {
     "Level1": "Level 1",
     "Level2": "Level 2",
     "Level3": "Level 3",
-    "Failed": "Failed"
+    "Failed": "Failed",
+
+    // Auto Save Indicator
+    savedJustNow: "Just saved",
+    savedSecondsAgo: "{n}s ago",
+    savedMinutesAgo: "{n}m ago",
+
+    // Recent Scouters
+    recentScouters: "Recent",
+
+    // Phase Time Indicator
+    autoTime: "Auto: 15s",
+    teleopTime: "Teleop: 2:15",
+    startTimer: "Start",
+    pauseTimer: "Pause",
+    resetTimer: "Reset",
+    showTimer: "Show Match Timer",
+
+    // Event Code Select
+    selectEvent: "Select Event",
+    customEvent: "Custom Code",
+    searchEvents: "Search events...",
+
+    // Quick Team Select
+    quickTeamSelect: "Quick Select",
+    manualEntry: "Manual entry",
+    matchNotFound: "Match not in schedule",
+
+    // History Edit
+    editRecord: "Edit",
+    saveChanges: "Save",
+    cancelEdit: "Cancel",
+    viewQR: "View QR",
+    recordUpdated: "Record updated"
   },
   zh: {
     // Headers
@@ -230,7 +263,40 @@ const translations = {
     "Level1": "層級 1",
     "Level2": "層級 2",
     "Level3": "層級 3",
-    "Failed": "失敗"
+    "Failed": "失敗",
+
+    // Auto Save Indicator
+    savedJustNow: "剛剛儲存",
+    savedSecondsAgo: "{n}秒前",
+    savedMinutesAgo: "{n}分鐘前",
+
+    // Recent Scouters
+    recentScouters: "最近使用",
+
+    // Phase Time Indicator
+    autoTime: "自動: 15秒",
+    teleopTime: "手動: 2:15",
+    startTimer: "開始",
+    pauseTimer: "暫停",
+    resetTimer: "重置",
+    showTimer: "顯示比賽計時器",
+
+    // Event Code Select
+    selectEvent: "選擇賽事",
+    customEvent: "自訂代碼",
+    searchEvents: "搜尋賽事...",
+
+    // Quick Team Select
+    quickTeamSelect: "快速選擇",
+    manualEntry: "手動輸入",
+    matchNotFound: "此場次不在賽程中",
+
+    // History Edit
+    editRecord: "編輯",
+    saveChanges: "儲存",
+    cancelEdit: "取消",
+    viewQR: "查看 QR",
+    recordUpdated: "記錄已更新"
   }
 };
 

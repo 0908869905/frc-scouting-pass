@@ -321,6 +321,7 @@ export const FieldCanvas: FC<FieldCanvasProps> = ({ path, onPathChange, alliance
       {/* Canvas Container */}
       <div
         ref={containerRef}
+        data-swipe-ignore
         className="relative w-full rounded-xl overflow-hidden border-2 border-slate-700 bg-slate-900"
         style={{ touchAction: 'none', height: canvasSize.height || 'auto' }}
       >

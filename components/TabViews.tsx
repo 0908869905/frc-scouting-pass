@@ -6,6 +6,10 @@ import { Plus, Minus, Check, Zap, AlertTriangle, Play, Square, RotateCcw } from 
 import { MATCH_LEVEL_OPTIONS, ALLIANCE_OPTIONS, AUTO_CLIMB_OPTIONS, TELE_CLIMB_OPTIONS, CLIMB_POSITION_OPTIONS } from '../constants';
 import { FieldCanvas } from './FieldCanvas';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
+import { ScouterNameInput } from './ui/ScouterNameInput';
+import { PhaseTimeIndicator } from './ui/PhaseTimeIndicator';
+import { EventCodeSelect } from './ui/EventCodeSelect';
+import { QuickTeamSelect } from './ui/QuickTeamSelect';
 
 const triggerHaptic = () => {
   Haptics.impact({ style: ImpactStyle.Light }).catch(() => {});
@@ -15,6 +19,7 @@ interface TabProps {
   data: ScoutingData;
   update: (fields: Partial<ScoutingData>) => void;
   handedness?: Handedness;
+  showMatchTimer?: boolean;
 }
 
 // Team number validation helper (must be positive integer)
@@ -342,21 +347,16 @@ export const PreMatchTab: FC<TabProps> = ({ data, update }) => {
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1.5">
           <label className="text-xs font-bold text-slate-500 uppercase">{t('scouterName')}</label>
-          <input
-            type="text"
-            className="w-full bg-slate-900 border-2 border-slate-700 rounded-xl p-3.5 text-white text-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-all placeholder:text-slate-600"
-            placeholder="Name"
+          <ScouterNameInput
             value={data.scouterName}
-            onChange={e => update({ scouterName: e.target.value })}
+            onChange={value => update({ scouterName: value })}
           />
         </div>
         <div className="space-y-1.5">
           <label className="text-xs font-bold text-slate-500 uppercase">{t('eventCode')}</label>
-          <input
-            type="text"
-            className="w-full bg-slate-900 border-2 border-slate-700 rounded-xl p-3.5 text-white text-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-all font-mono"
+          <EventCodeSelect
             value={data.eventCode}
-            onChange={e => update({ eventCode: e.target.value })}
+            onChange={value => update({ eventCode: value })}
           />
         </div>
       </div>
@@ -416,6 +416,15 @@ export const PreMatchTab: FC<TabProps> = ({ data, update }) => {
         </div>
       </div>
 
+      {/* Quick Team Select (from embedded schedule) */}
+      <QuickTeamSelect
+        eventCode={data.eventCode}
+        matchNumber={data.matchNumber}
+        currentTeamNumber={data.teamNumber}
+        currentAlliance={data.alliance}
+        onSelect={(teamNumber, alliance) => update({ teamNumber, alliance })}
+      />
+
       {/* Team Number - Large & Prominent with Validation */}
       <div className="space-y-2">
         <label className="text-xs font-bold text-slate-500 uppercase">{t('teamNumber')}</label>
@@ -443,7 +452,7 @@ export const PreMatchTab: FC<TabProps> = ({ data, update }) => {
 // Auton Tab - Green Theme
 // -----------------------------------------------------------------------------
 
-export const AutonTab: FC<TabProps> = ({ data, update, handedness }) => {
+export const AutonTab: FC<TabProps> = ({ data, update, handedness, showMatchTimer = true }) => {
   const { t } = useLanguage();
 
   const alliance: 'red' | 'blue' = data.alliance.startsWith('R') ? 'red' : 'blue';
@@ -456,6 +465,9 @@ export const AutonTab: FC<TabProps> = ({ data, update, handedness }) => {
         <h2 className="text-2xl font-display font-bold text-brand-400">{t('autoHeader')}</h2>
         <Zap className="text-brand-500" size={20} />
       </div>
+
+      {/* Phase Time Indicator */}
+      <PhaseTimeIndicator phase="auto" showTimer={showMatchTimer} />
 
       {/* Field Canvas for Path Drawing */}
       <FieldCanvas
@@ -537,7 +549,7 @@ export const AutonTab: FC<TabProps> = ({ data, update, handedness }) => {
 // Teleop Tab - Blue Theme
 // -----------------------------------------------------------------------------
 
-export const TeleopTab: FC<TabProps> = ({ data, update, handedness }) => {
+export const TeleopTab: FC<TabProps> = ({ data, update, handedness, showMatchTimer = true }) => {
   const { t } = useLanguage();
 
   return (
@@ -547,6 +559,9 @@ export const TeleopTab: FC<TabProps> = ({ data, update, handedness }) => {
         <div className="w-3 h-3 rounded-full bg-blue-500 animate-pulse"></div>
         <h2 className="text-2xl font-display font-bold text-blue-400">{t('teleopHeader')}</h2>
       </div>
+
+      {/* Phase Time Indicator */}
+      <PhaseTimeIndicator phase="teleop" showTimer={showMatchTimer} />
 
       {/* Main Content */}
       <div className="grid grid-cols-1 gap-5">

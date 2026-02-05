@@ -246,5 +246,87 @@ Auto Path QR Code 包含大量路徑座標點，導致 QR Code 資料量過大�
 | 平均每點字元 | 10.3 | 7.6 | 26% |
 
 ---
-*Last updated: 2026-02-04*
+
+## Stopwatch animate-pulse 視覺衝突 (2026-02-05)
+
+### 問題
+Teleop 碼表在運行時出現「原始的秒數留在底層，新的秒數在上層」的雙重數字重疊現象。
+
+### 原因
+`animate-pulse` 動畫與高頻 DOM 更新產生衝突：
+- **animate-pulse 行為**: Tailwind 的 `animate-pulse` 約 2 秒週期，包含 opacity 變化（100% → 75% → 100%）和輕微 scale 變換
+- **Stopwatch 更新頻率**: `setInterval` 每 10ms 更新一次時間顯示
+- **衝突機制**: 當 DOM 文字內容快速更新時，瀏覽器的 CSS 動畫渲染與 DOM 重繪疊加，造成舊文字的「殘影」與新文字同時可見
+
+### 解決方案
+移除時間數字上的 `animate-pulse`，改用獨立的紅色閃爍圓點作為運行狀態指示器。
+
+| 方案 | 優點 | 缺點 |
+|------|------|------|
+| **獨立閃爍圓點** (選用) | 圓點無需快速更新，動畫穩定；數字清晰無殘影 | 視覺效果稍弱 |
+| 降低更新頻率 | 減少衝突機率 | 犧牲計時精度（0.01秒顯示需要高頻更新） |
+| 使用 CSS transform | 可能改善渲染 | 仍可能有殘影，不保證解決 |
+| 禁用硬體加速 | 簡化渲染管線 | 可能影響整體效能 |
+
+### 選擇理由
+1. **根本解決**: 完全分離「動畫元素」和「高頻更新元素」，從架構上避免衝突
+2. **零副作用**: 計時精度不受影響，仍保持 10ms 更新
+3. **視覺清晰**: 用戶明確看到「紅點閃爍 = 計時中」的狀態指示
+4. **跨瀏覽器穩定**: 避免依賴特定瀏覽器的渲染優化行為
+
+### 適用場景
+任何需要 **CSS 動畫** + **高頻 DOM 更新** 共存的場景，都應避免將動畫直接應用於會快速更新內容的元素。
+
+---
+
+## Scouting PASS UX 改進設計決策 (2026-02-05)
+
+### 設計原則
+針對 FRC 比賽 scouting 的特殊場景（快節奏、行動裝置、可能離線）進行 UX 優化。
+
+### 決策紀錄
+
+| 功能 | 決策 | 理由 |
+|------|------|------|
+| 震動確認提交 | `utils/haptics.ts` 封裝，支援 Capacitor 和 Web API | 統一 native/web 觸覺體驗，提交成功有明確回饋 |
+| 自動保存指示器 | 獨立 `AutoSaveIndicator.tsx` 組件 | 減少用戶焦慮，確認資料已保存 |
+| Scouter 名稱記憶 | localStorage `recent_scouters` 儲存最近 3 個 | 同一 scouter 重複使用同裝置，避免每次重新輸入 |
+| 比賽時間提示 | Settings 可開關，預設關閉 | 部分 scouter 覺得分心，提供彈性 |
+| 滑動手勢導航 | `useSwipeNavigation` hook + `data-swipe-ignore` 排除機制 | 行動裝置友善，但需排除繪圖區域避免衝突 |
+| TBA 賽程資料 | 本地內建 `data/events2026.ts` + `data/eventSchedule.ts` | 離線環境可用，不依賴即時 API |
+| 歷史記錄編輯 | `updateMatchRecord` + `getMatchRecord` 函數 | 修正輸入錯誤，避免重新 scouting 整場比賽 |
+
+### 架構選擇
+
+#### 滑動手勢與繪圖區衝突
+- **問題**: 滑動手勢會干擾 FieldCanvas 路徑繪製
+- **解決**: 在 `FieldCanvas.tsx` 根元素添加 `data-swipe-ignore` 屬性
+- **機制**: `useSwipeNavigation` 檢查 target 是否有此屬性或是其子元素，有則忽略手勢
+
+#### TBA 資料離線策略
+- **問題**: 比賽場地可能無網路，無法即時查詢 TBA API
+- **解決**: 預先內建 2026 賽事列表和賽程資料
+- **更新時機**: 賽季初公布後手動更新 `data/` 目錄下的檔案
+- **待辦**: 若有 TBA API Key，可加入即時 fetch 作為補充
+
+#### localStorage Keys 設計
+| Key | 格式 | 說明 |
+|-----|------|------|
+| `recent_scouters` | `string[]` (JSON) | 最多保留 3 個，FIFO |
+| `match_timer_enabled` | `"true" \| "false"` | 計時器開關 |
+
+### 錯誤處理
+
+#### CloudCheck 圖示不存在
+- **症狀**: `CloudCheck` 圖示 import 錯誤
+- **原因**: lucide-react 沒有 `CloudCheck` 圖示
+- **解決**: 改用 `Cloud` 圖示
+
+#### Alliance 重複 import
+- **症狀**: TypeScript 報錯重複 import
+- **原因**: 複製貼上時重複引入 `Alliance` type
+- **解決**: 移除重複的 import 行
+
+---
+*Last updated: 2026-02-05*
 *Note: Video Analyzer 相關內容已移至獨立專案*
