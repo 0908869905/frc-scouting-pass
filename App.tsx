@@ -126,6 +126,8 @@ function AppContent() {
     }
 
     setCurrentPhase(targetPhase);
+    // Scroll to top when navigating between phases
+    window.scrollTo(0, 0);
     return true;
   };
 
@@ -138,7 +140,10 @@ function AppContent() {
 
   const handlePrev = () => {
     const idx = phases.indexOf(currentPhase);
-    if (idx > 0) setCurrentPhase(phases[idx - 1]);
+    if (idx > 0) {
+      setCurrentPhase(phases[idx - 1]);
+      window.scrollTo(0, 0);
+    }
   };
 
   const handleReset = () => {

@@ -199,6 +199,15 @@ const Stopwatch: FC<{
   const [displayTime, setDisplayTime] = useState(value);
   const startTimeRef = useRef<number>(0);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  // Refs to track current state for unmount cleanup
+  const isRunningRef = useRef(isRunning);
+  const displayTimeRef = useRef(displayTime);
+  const onChangeRef = useRef(onChange);
+
+  // Keep refs in sync with state
+  useEffect(() => { isRunningRef.current = isRunning; }, [isRunning]);
+  useEffect(() => { displayTimeRef.current = displayTime; }, [displayTime]);
+  useEffect(() => { onChangeRef.current = onChange; }, [onChange]);
 
   // Sync display with external value when not running
   useEffect(() => {
@@ -239,11 +248,17 @@ const Stopwatch: FC<{
     onChange(0);
   }, [onChange]);
 
-  // Cleanup on unmount
+  // Cleanup on unmount - auto-save if still running
   useEffect(() => {
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
+      }
+      // If timer was running when component unmounts (e.g., user navigated away),
+      // save the current time
+      if (isRunningRef.current) {
+        const rounded = Math.round(displayTimeRef.current * 100) / 100;
+        onChangeRef.current(rounded);
       }
     };
   }, []);
@@ -479,13 +494,15 @@ export const AutonTab: FC<TabProps> = ({ data, update, handedness }) => {
           </div>
         </div>
 
-        {/* Auto Climb Time Stopwatch - Always show */}
-        <Stopwatch
-          label={t('autoClimbTime')}
-          value={data.autoClimbTime}
-          onChange={val => update({ autoClimbTime: val })}
-          accentColor="amber"
-        />
+        {/* Auto Climb Time Stopwatch - Only show when climbing */}
+        {data.autoClimbStatus !== AutoClimbStatus.None && (
+          <Stopwatch
+            label={t('autoClimbTime')}
+            value={data.autoClimbTime}
+            onChange={val => update({ autoClimbTime: val })}
+            accentColor="amber"
+          />
+        )}
 
         {/* Auto Climb Position Selection - Show when status is not None */}
         {data.autoClimbStatus !== AutoClimbStatus.None && (
@@ -540,7 +557,6 @@ export const TeleopTab: FC<TabProps> = ({ data, update, handedness }) => {
           onChange={val => update({ bumpCount: val })}
           handedness={handedness}
           accentColor="blue"
-          max={20}
         />
         <Counter
           label={t('trenchCount')}
@@ -548,7 +564,6 @@ export const TeleopTab: FC<TabProps> = ({ data, update, handedness }) => {
           onChange={val => update({ trenchCount: val })}
           handedness={handedness}
           accentColor="blue"
-          max={20}
         />
 
         {/* Fuel Dropped on Bump */}
@@ -558,7 +573,6 @@ export const TeleopTab: FC<TabProps> = ({ data, update, handedness }) => {
           onChange={val => update({ fuelDroppedOnBumpCount: val })}
           handedness={handedness}
           accentColor="orange"
-          max={20}
         />
       </div>
 
@@ -578,7 +592,6 @@ export const TeleopTab: FC<TabProps> = ({ data, update, handedness }) => {
             onChange={val => update({ minorPenalty: val })}
             handedness={handedness}
             accentColor="orange"
-            max={20}
           />
           <Counter
             label={t('majorPenalty')}
@@ -586,7 +599,6 @@ export const TeleopTab: FC<TabProps> = ({ data, update, handedness }) => {
             onChange={val => update({ majorPenalty: val })}
             handedness={handedness}
             accentColor="red"
-            max={20}
           />
         </div>
       </div>
@@ -623,13 +635,15 @@ export const TeleopTab: FC<TabProps> = ({ data, update, handedness }) => {
           })}
         </div>
 
-        {/* Teleop Climb Time Stopwatch - Always show */}
-        <Stopwatch
-          label={t('teleClimbTime')}
-          value={data.teleClimbTime}
-          onChange={val => update({ teleClimbTime: val })}
-          accentColor="amber"
-        />
+        {/* Teleop Climb Time Stopwatch - Only show when climbing */}
+        {data.teleClimbStatus !== TeleClimbStatus.None && (
+          <Stopwatch
+            label={t('teleClimbTime')}
+            value={data.teleClimbTime}
+            onChange={val => update({ teleClimbTime: val })}
+            accentColor="amber"
+          />
+        )}
 
         {/* Teleop Climb Position Selection - Show when status is not None */}
         {data.teleClimbStatus !== TeleClimbStatus.None && (
