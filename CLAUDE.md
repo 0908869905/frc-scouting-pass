@@ -54,7 +54,8 @@ App icons are pre-generated in `ios-icons/` directory.
    - Match Data QR (cyan) - all scouting data except path (21 fields)
    - Auto Path QR (amber) - eventCode, matchNumber, teamNumber, alliance, autoPath (5 fields)
 4. TSV export for copying or Google Sheets upload
-5. Offline queue persists to localStorage for later sync
+5. On reset, **matchNumber auto-increments by 1** (all match levels, not just Quals)
+6. Offline queue persists to localStorage for later sync
 
 ### Validation Rules (防呆機制)
 | Field | Rule | Location |
@@ -78,7 +79,7 @@ const BLUE_STARTING_ZONE_OFFSET = 71.5;   // Blue zone: X = 71.5-75%
 - `types.ts` - Core interfaces (ScoutingData, MatchRecord, enums)
 - `constants.ts` - APP_CONFIG, TSV_SCHEMA definitions
 - `services/storage.ts` - localStorage for offline queue & history
-- `services/googleSheets.ts` - TSV generation & Google Apps Script upload
+- `services/googleSheets.ts` - TSV generation, Google Apps Script upload, Douglas-Peucker path simplification (`simplifyPath`)
 - `contexts/LanguageContext.tsx` - i18n (English/Traditional Chinese, 90+ keys)
 - `components/TabViews.tsx` - Form phase components with Counter/inputs
 - `components/QRCodeTab.tsx` - QR generation & export functionality

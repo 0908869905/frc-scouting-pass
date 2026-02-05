@@ -1330,3 +1330,71 @@ Scouting Pass 表單欄位調整 + TSV Schema 更新 + 起始區域校準 + 防�
 
 ---
 *Last updated: 2026-02-03*
+
+---
+
+## Session: 2026-02-04
+
+### Overview
+Match Number 自動遞增 + Path QR Code Douglas-Peucker 壓縮
+
+---
+
+### Phase 25: Match Number 自動遞增
+- **Status:** ✅ complete
+- **Completed:** 2026-02-04
+
+#### Task 25.1: 移除 Quals 條件限制
+- 修改 `App.tsx` 的 `handleReset`，移除 `matchLevel === Quals` 條件
+- 所有 matchLevel 模式（Quals、Playoffs、Finals 等）reset 後 matchNumber 都會自動 +1
+- 使用 Playwright 實測驗證功能正常
+
+---
+
+### Phase 26: Path QR Code 壓縮
+- **Status:** ✅ complete
+- **Completed:** 2026-02-04
+
+#### Task 26.1: Douglas-Peucker 路徑簡化演算法
+- 在 `services/googleSheets.ts` 加入 Douglas-Peucker 路徑簡化演算法
+- 整數座標取代浮點數（`Math.round()`）
+- 壓縮效果：61 點 → 11 點，628 字元 → 84 字元（約 87% 減少）
+- 新增 `simplifyPath` export 函數
+- Scanner app 不需改動，格式仍為 `x,y|x,y|...`
+
+---
+
+### Phase 24.3: CLAUDE.md 修正
+- **Status:** ✅ complete
+- 更新 Blue starting zone offset 從 68 到 71.5%，與 `constants.ts` 實際值一致
+
+---
+
+### 完成項目
+- [x] handleReset matchNumber 自動 +1（移除 Quals 條件限制）
+- [x] Douglas-Peucker 路徑簡化演算法實作
+- [x] 整數座標壓縮（浮點數 → Math.round）
+- [x] QR 路徑數據約 87% 減少（628 → 84 字元）
+- [x] simplifyPath export 函數
+- [x] CLAUDE.md Blue offset 修正 (68 → 71.5%)
+
+### 修改檔案
+- `App.tsx` - handleReset matchNumber 自動 +1（移除 Quals 條件）
+- `services/googleSheets.ts` - Douglas-Peucker 路徑簡化 + 整數座標 + simplifyPath export
+- `CLAUDE.md` - 修正 Blue starting zone offset (68 → 71.5%)
+
+### Git Commits
+- `5a90413` - feat: auto-increment match number on reset, compress path QR with Douglas-Peucker
+
+---
+
+## 5-Question Reboot Check
+
+1. **做什麼？** Match Number 自動遞增（所有模式）+ Path QR Code Douglas-Peucker 壓縮（87% 減少）
+2. **進度？** ✅ 全部完成
+3. **下一步？** 測試不同路徑複雜度下的壓縮效果、驗證 scanner app 正確解析簡化路徑、部署更新版本
+4. **阻礙？** 無
+5. **檔案？** `App.tsx`, `services/googleSheets.ts`, `CLAUDE.md`
+
+---
+*Last updated: 2026-02-04*
