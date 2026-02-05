@@ -273,9 +273,13 @@ const Stopwatch: FC<{
   return (
     <div className={`bg-gradient-to-b ${colors.bg} rounded-2xl p-5 flex flex-col gap-3 shadow-lg border`}>
       <div className="text-slate-300 text-sm font-bold uppercase tracking-wider text-center">{label}</div>
-      <div className="flex items-center justify-center gap-4">
+      <div className="flex items-center justify-center gap-3">
+        {/* Running Indicator */}
+        {isRunning && (
+          <div className="w-3 h-3 rounded-full bg-red-500 animate-pulse" />
+        )}
         {/* Time Display */}
-        <div className={`text-5xl font-display font-black tabular-nums text-center min-w-[120px] ${isRunning ? 'text-amber-400 animate-pulse' : 'text-white'}`}>
+        <div className={`text-5xl font-display font-black tabular-nums text-center min-w-[120px] ${isRunning ? 'text-amber-400' : 'text-white'}`}>
           {formatTime(displayTime)}
         </div>
       </div>
