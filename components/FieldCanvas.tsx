@@ -394,6 +394,12 @@ export const FieldCanvas: FC<FieldCanvasProps> = ({ path, onPathChange, alliance
   if (isFullscreen) {
     return (
       <div ref={fullscreenRef} className="fixed inset-0 z-50 bg-black flex flex-col items-center justify-center" data-swipe-ignore>
+        {/* Exit fullscreen - top right, highest z-index */}
+        <button onClick={exitFullscreen}
+          className="absolute top-3 right-3 z-30 p-2.5 rounded-xl bg-black/60 border border-slate-500 text-white transition-all active:scale-95">
+          <Minimize2 size={20} />
+        </button>
+
         {/* Field container - centered */}
         <div
           ref={containerRef}
@@ -440,7 +446,7 @@ export const FieldCanvas: FC<FieldCanvasProps> = ({ path, onPathChange, alliance
 
           {/* Climb Time Stopwatch - in fullscreen */}
           {onClimbTimeChange && (
-            <div className="flex items-center gap-1.5 ml-auto mr-2">
+            <div className="flex items-center gap-1.5 ml-auto">
               <div className={`text-lg font-display font-black tabular-nums min-w-[56px] text-center ${swRunning ? 'text-amber-400' : 'text-white'}`}>
                 {swDisplay.toFixed(2)}
               </div>
@@ -450,12 +456,6 @@ export const FieldCanvas: FC<FieldCanvasProps> = ({ path, onPathChange, alliance
               </button>
             </div>
           )}
-
-          {/* Exit fullscreen - always far right */}
-          <button onClick={exitFullscreen}
-            className={`p-3 rounded-xl bg-slate-700/50 border border-slate-600 text-white transition-all active:scale-95 ${onClimbTimeChange ? '' : 'ml-auto'}`}>
-            <Minimize2 size={20} />
-          </button>
         </div>
       </div>
     );
