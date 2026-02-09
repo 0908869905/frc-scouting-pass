@@ -38,7 +38,6 @@ export const FieldCanvas: FC<FieldCanvasProps> = ({ path, onPathChange, alliance
   const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
   const [loadedFieldImage, setLoadedFieldImage] = useState<HTMLImageElement | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const fullscreenRef = useRef<HTMLDivElement>(null);
 
   // Fullscreen stopwatch state
   const [swRunning, setSwRunning] = useState(false);
@@ -94,43 +93,40 @@ export const FieldCanvas: FC<FieldCanvasProps> = ({ path, onPathChange, alliance
     img.src = fieldImage;
   }, []);
 
-  // Resize observer to handle responsive sizing
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
+  // Calculate fullscreen dimensions from window size
+  const calcFullscreenSize = useCallback(() => {
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    let w = vw;
+    let h = Math.round(vw * FIELD_ASPECT_RATIO);
+    if (h > vh) { h = vh; w = Math.round(vh / FIELD_ASPECT_RATIO); }
+    return { width: w, height: h };
+  }, []);
 
-    const updateSize = () => {
-      if (isFullscreen) {
-        const fs = fullscreenRef.current;
-        if (!fs) return;
-        const vw = fs.clientWidth;
-        const vh = fs.clientHeight;
-        // Fit 2:1 field inside viewport, maintaining exact ratio
-        let w = vw;
-        let h = Math.round(vw * FIELD_ASPECT_RATIO);
-        if (h > vh) { h = vh; w = Math.round(vh / FIELD_ASPECT_RATIO); }
-        setCanvasSize({ width: w, height: h });
-      } else {
+  const handleEnterFullscreen = useCallback(() => {
+    setCanvasSize(calcFullscreenSize());
+    setIsFullscreen(true);
+  }, [calcFullscreenSize]);
+
+  // Resize handling
+  useEffect(() => {
+    if (isFullscreen) {
+      const handleResize = () => setCanvasSize(calcFullscreenSize());
+      window.addEventListener('resize', handleResize);
+      return () => window.removeEventListener('resize', handleResize);
+    } else {
+      const container = containerRef.current;
+      if (!container) return;
+      const updateSize = () => {
         const w = container.clientWidth;
         setCanvasSize({ width: w, height: Math.round(w * FIELD_ASPECT_RATIO) });
-      }
-    };
-
-    if (isFullscreen) {
-      // Double RAF to ensure overlay is fully laid out
-      requestAnimationFrame(() => requestAnimationFrame(updateSize));
-      window.addEventListener('resize', updateSize);
-    } else {
+      };
       updateSize();
+      const ro = new ResizeObserver(updateSize);
+      ro.observe(container);
+      return () => ro.disconnect();
     }
-    const resizeObserver = new ResizeObserver(updateSize);
-    resizeObserver.observe(container);
-
-    return () => {
-      resizeObserver.disconnect();
-      window.removeEventListener('resize', updateSize);
-    };
-  }, [isFullscreen]);
+  }, [isFullscreen, calcFullscreenSize]);
 
   // Draw path on canvas
   useEffect(() => {
@@ -378,7 +374,7 @@ export const FieldCanvas: FC<FieldCanvasProps> = ({ path, onPathChange, alliance
   // Fullscreen overlay
   if (isFullscreen) {
     return (
-      <div ref={fullscreenRef} className="fixed inset-0 z-[9999] bg-black flex items-center justify-center" style={{ width: '100dvw', height: '100dvh' }} data-swipe-ignore>
+      <div className="fixed inset-0 z-[9999] bg-black flex items-center justify-center" style={{ width: '100dvw', height: '100dvh' }} data-swipe-ignore>
         {/* Exit fullscreen - top right, highest z-index */}
         <button onClick={() => setIsFullscreen(false)}
           className="absolute top-3 right-3 z-30 p-2.5 rounded-xl bg-black/60 border border-slate-500 text-white transition-all active:scale-95">
@@ -471,7 +467,7 @@ export const FieldCanvas: FC<FieldCanvasProps> = ({ path, onPathChange, alliance
 
         {/* Fullscreen button */}
         <button
-          onClick={() => setIsFullscreen(true)}
+          onClick={handleEnterFullscreen}
           className="absolute top-2 right-2 p-1.5 rounded bg-slate-900/70 border border-slate-600 text-slate-300 hover:text-white z-20 transition-all active:scale-95"
         >
           <Maximize2 size={16} />
