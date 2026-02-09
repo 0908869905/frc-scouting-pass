@@ -100,16 +100,7 @@ export const FieldCanvas: FC<FieldCanvasProps> = ({ path, onPathChange, alliance
 
     const updateSize = () => {
       if (isFullscreen) {
-        const vw = window.innerWidth;
-        const vh = window.innerHeight;
-        // Fit field into viewport maintaining aspect ratio
-        let width = vw;
-        let height = Math.round(vw * FIELD_ASPECT_RATIO);
-        if (height > vh) {
-          height = vh;
-          width = Math.round(vh / FIELD_ASPECT_RATIO);
-        }
-        setCanvasSize({ width, height });
+        setCanvasSize({ width: window.innerWidth, height: window.innerHeight });
       } else {
         const width = container.clientWidth;
         const height = Math.round(width * FIELD_ASPECT_RATIO);
@@ -374,12 +365,12 @@ export const FieldCanvas: FC<FieldCanvasProps> = ({ path, onPathChange, alliance
   // Fullscreen overlay
   if (isFullscreen) {
     return (
-      <div className="fixed inset-0 z-50 bg-black flex flex-col items-center justify-center" data-swipe-ignore>
-        {/* Field container - centered */}
+      <div className="fixed inset-0 z-50 bg-black" data-swipe-ignore>
+        {/* Field container - full screen */}
         <div
           ref={containerRef}
-          className="relative overflow-hidden"
-          style={{ touchAction: 'none', width: canvasSize.width, height: canvasSize.height }}
+          className="absolute inset-0 overflow-hidden"
+          style={{ touchAction: 'none' }}
         >
           <img src={fieldImage} alt="FRC Field" className="absolute inset-0 w-full h-full object-fill pointer-events-none" draggable={false} />
           <div className={`absolute top-2 left-2 px-2 py-1 rounded text-xs font-bold z-20 ${alliance === 'red' ? 'bg-red-500/30 text-red-400' : 'bg-blue-500/30 text-blue-400'}`}>
