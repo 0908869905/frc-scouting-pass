@@ -365,12 +365,12 @@ export const FieldCanvas: FC<FieldCanvasProps> = ({ path, onPathChange, alliance
   // Fullscreen overlay
   if (isFullscreen) {
     return (
-      <div className="fixed inset-0 z-50 bg-black" data-swipe-ignore>
-        {/* Field container - full screen */}
+      <div className="fixed inset-0 z-50 bg-black flex flex-col items-center justify-center" data-swipe-ignore>
+        {/* Field container - centered */}
         <div
           ref={containerRef}
-          className="absolute inset-0 overflow-hidden"
-          style={{ touchAction: 'none' }}
+          className="relative overflow-hidden"
+          style={{ touchAction: 'none', width: canvasSize.width, height: canvasSize.height }}
         >
           <img src={fieldImage} alt="FRC Field" className="absolute inset-0 w-full h-full object-fill pointer-events-none" draggable={false} />
           <div className={`absolute top-2 left-2 px-2 py-1 rounded text-xs font-bold z-20 ${alliance === 'red' ? 'bg-red-500/30 text-red-400' : 'bg-blue-500/30 text-blue-400'}`}>
