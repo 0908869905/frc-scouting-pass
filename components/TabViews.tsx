@@ -483,8 +483,8 @@ export const AutonTab: FC<TabProps> = ({ data, update, handedness, showMatchTime
         path={data.autoPath}
         onPathChange={(path) => update({ autoPath: path })}
         alliance={alliance}
-        climbTime={data.autoClimbStatus !== AutoClimbStatus.None ? data.autoClimbTime : undefined}
-        onClimbTimeChange={data.autoClimbStatus !== AutoClimbStatus.None ? (val) => update({ autoClimbTime: val }) : undefined}
+        climbTime={data.autoClimbTime}
+        onClimbTimeChange={(val) => update({ autoClimbTime: val })}
         climbLabel={t('autoClimbTime')}
       />
 
