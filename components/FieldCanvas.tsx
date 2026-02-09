@@ -40,6 +40,41 @@ export const FieldCanvas: FC<FieldCanvasProps> = ({ path, onPathChange, alliance
   const [isFullscreen, setIsFullscreen] = useState(false);
   const fullscreenRef = useRef<HTMLDivElement>(null);
 
+  // Enter fullscreen - must be called directly from user gesture (no setTimeout)
+  const enterFullscreen = useCallback(() => {
+    const el = document.documentElement as any;
+    const rfs = el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen;
+    if (rfs) {
+      rfs.call(el).catch(() => {});
+    }
+    setIsFullscreen(true);
+  }, []);
+
+  const exitFullscreen = useCallback(() => {
+    const doc = document as any;
+    const efs = doc.exitFullscreen || doc.webkitExitFullscreen || doc.msExitFullscreen;
+    if (doc.fullscreenElement || doc.webkitFullscreenElement) {
+      efs?.call(doc).catch(() => {});
+    }
+    setIsFullscreen(false);
+  }, []);
+
+  // Sync state when user exits fullscreen via gesture/escape
+  useEffect(() => {
+    const handler = () => {
+      const doc = document as any;
+      if (!doc.fullscreenElement && !doc.webkitFullscreenElement) {
+        setIsFullscreen(false);
+      }
+    };
+    document.addEventListener('fullscreenchange', handler);
+    document.addEventListener('webkitfullscreenchange', handler);
+    return () => {
+      document.removeEventListener('fullscreenchange', handler);
+      document.removeEventListener('webkitfullscreenchange', handler);
+    };
+  }, []);
+
   // Fullscreen stopwatch state
   const [swRunning, setSwRunning] = useState(false);
   const [swDisplay, setSwDisplay] = useState(climbTime ?? 0);
@@ -375,7 +410,7 @@ export const FieldCanvas: FC<FieldCanvasProps> = ({ path, onPathChange, alliance
     return (
       <div ref={fullscreenRef} className="fixed inset-0 z-[9999] bg-black" style={{ width: '100dvw', height: '100dvh' }} data-swipe-ignore>
         {/* Exit fullscreen - top right, highest z-index */}
-        <button onClick={() => setIsFullscreen(false)}
+        <button onClick={exitFullscreen}
           className="absolute top-3 right-3 z-30 p-2.5 rounded-xl bg-black/60 border border-slate-500 text-white transition-all active:scale-95">
           <Minimize2 size={20} />
         </button>
@@ -466,7 +501,7 @@ export const FieldCanvas: FC<FieldCanvasProps> = ({ path, onPathChange, alliance
 
         {/* Fullscreen button */}
         <button
-          onClick={() => setIsFullscreen(true)}
+          onClick={enterFullscreen}
           className="absolute top-2 right-2 p-1.5 rounded bg-slate-900/70 border border-slate-600 text-slate-300 hover:text-white z-20 transition-all active:scale-95"
         >
           <Maximize2 size={16} />
