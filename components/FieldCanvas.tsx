@@ -432,8 +432,8 @@ export const FieldCanvas: FC<FieldCanvasProps> = ({ path, onPathChange, alliance
           </div>
         </div>
 
-        {/* Fullscreen left bar - vertical controls */}
-        <div className="absolute bottom-3 left-3 z-30 flex flex-col gap-2">
+        {/* Fullscreen left bar - vertical centered */}
+        <div className="absolute left-3 top-1/2 -translate-y-1/2 z-30 flex flex-col items-center gap-2 bg-black/60 rounded-2xl p-2">
           <button onClick={handleClear} disabled={path.length === 0}
             className="p-3 rounded-xl text-red-400 disabled:opacity-30 transition-all active:scale-95">
             <Trash2 size={20} />
