@@ -1,4 +1,5 @@
 import { useRef, useEffect, useState, useCallback, PointerEvent, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import type { FC } from 'react';
 import { Trash2, Undo2, Share2, AlertTriangle, Maximize2, Minimize2, Play, Square } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -371,9 +372,9 @@ export const FieldCanvas: FC<FieldCanvasProps> = ({ path, onPathChange, alliance
     URL.revokeObjectURL(url);
   };
 
-  // Fullscreen overlay
+  // Fullscreen overlay - portal to document.body to escape parent stacking contexts (header/footer z-index)
   if (isFullscreen) {
-    return (
+    return createPortal(
       <div className="fixed inset-0 z-[9999] bg-black flex items-center justify-center" style={{ width: '100dvw', height: '100dvh' }} data-swipe-ignore>
         {/* Exit fullscreen - top right, highest z-index */}
         <button onClick={() => setIsFullscreen(false)}
@@ -437,7 +438,8 @@ export const FieldCanvas: FC<FieldCanvasProps> = ({ path, onPathChange, alliance
             </>
           )}
         </div>
-      </div>
+      </div>,
+      document.body
     );
   }
 
