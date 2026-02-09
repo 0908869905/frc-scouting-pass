@@ -9,7 +9,7 @@ import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { ScouterNameInput } from './ui/ScouterNameInput';
 import { PhaseTimeIndicator } from './ui/PhaseTimeIndicator';
 import { EventCodeSelect } from './ui/EventCodeSelect';
-import { QuickTeamSelect } from './ui/QuickTeamSelect';
+import { getMatchTeams } from '../data/eventSchedule';
 
 const triggerHaptic = () => {
   Haptics.impact({ style: ImpactStyle.Light }).catch(() => {});
@@ -395,11 +395,24 @@ export const PreMatchTab: FC<TabProps> = ({ data, update }) => {
           {ALLIANCE_OPTIONS.map((alliance: Alliance) => {
             const isSelected = data.alliance === alliance;
             const isRed = alliance.startsWith('R');
+            // Show team number from schedule if available
+            const matchTeams = getMatchTeams(data.eventCode, data.matchNumber);
+            const allianceIndex = parseInt(alliance.slice(1)) - 1;
+            const scheduledTeam = matchTeams
+              ? (isRed ? matchTeams.red[allianceIndex] : matchTeams.blue[allianceIndex])
+              : null;
             return (
               <button
                 key={alliance}
-                onClick={() => update({ alliance })}
-                className={`p-4 rounded-xl text-xl font-bold border-2 transition-all active:scale-[0.97] ${
+                onClick={() => {
+                  const updates: Partial<ScoutingData> = { alliance };
+                  // Auto-fill team number from schedule
+                  if (scheduledTeam) {
+                    updates.teamNumber = scheduledTeam;
+                  }
+                  update(updates);
+                }}
+                className={`p-4 rounded-xl border-2 transition-all active:scale-[0.97] flex flex-col items-center ${
                   isSelected
                     ? isRed
                       ? 'bg-red-500/25 border-red-500 text-red-400 shadow-[0_0_30px_rgba(239,68,68,0.3)]'
@@ -409,21 +422,17 @@ export const PreMatchTab: FC<TabProps> = ({ data, update }) => {
                       : 'bg-slate-900 border-slate-700 text-slate-400 hover:border-blue-500/50 hover:text-blue-400'
                 }`}
               >
-                {alliance}
+                <span className="text-xl font-bold">{alliance}</span>
+                {scheduledTeam && (
+                  <span className={`text-sm font-display font-bold ${isSelected ? 'text-white' : 'text-slate-500'}`}>
+                    {scheduledTeam}
+                  </span>
+                )}
               </button>
             );
           })}
         </div>
       </div>
-
-      {/* Quick Team Select (from embedded schedule) */}
-      <QuickTeamSelect
-        eventCode={data.eventCode}
-        matchNumber={data.matchNumber}
-        currentTeamNumber={data.teamNumber}
-        currentAlliance={data.alliance}
-        onSelect={(teamNumber, alliance) => update({ teamNumber, alliance })}
-      />
 
       {/* Team Number - Large & Prominent with Validation */}
       <div className="space-y-2">
@@ -474,6 +483,9 @@ export const AutonTab: FC<TabProps> = ({ data, update, handedness, showMatchTime
         path={data.autoPath}
         onPathChange={(path) => update({ autoPath: path })}
         alliance={alliance}
+        climbTime={data.autoClimbStatus !== AutoClimbStatus.None ? data.autoClimbTime : undefined}
+        onClimbTimeChange={data.autoClimbStatus !== AutoClimbStatus.None ? (val) => update({ autoClimbTime: val }) : undefined}
+        climbLabel={t('autoClimbTime')}
       />
 
       {/* Main Content */}

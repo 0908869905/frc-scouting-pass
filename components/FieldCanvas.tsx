@@ -1,6 +1,6 @@
 import { useRef, useEffect, useState, useCallback, PointerEvent, useMemo } from 'react';
 import type { FC } from 'react';
-import { Trash2, Undo2, Share2, AlertTriangle } from 'lucide-react';
+import { Trash2, Undo2, Share2, AlertTriangle, Maximize2, Minimize2, Play, Square } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { PathPoint } from '../types';
 import { STARTING_ZONE_WIDTH, RED_STARTING_ZONE_OFFSET, BLUE_STARTING_ZONE_OFFSET } from '../constants';
@@ -10,6 +10,9 @@ interface FieldCanvasProps {
   path: PathPoint[];
   onPathChange: (path: PathPoint[]) => void;
   alliance: 'red' | 'blue';
+  climbTime?: number;
+  onClimbTimeChange?: (val: number) => void;
+  climbLabel?: string;
 }
 
 // Full-field aspect ratio (height/width) - 2:1 matching scanner's aspectRatio: '2/1'
@@ -26,7 +29,7 @@ const POINT_RADIUS_RATIO = 0.02;
 const POINT_STROKE_RATIO = 0.005;
 const MID_POINT_RADIUS_RATIO = 0.01;
 
-export const FieldCanvas: FC<FieldCanvasProps> = ({ path, onPathChange, alliance }) => {
+export const FieldCanvas: FC<FieldCanvasProps> = ({ path, onPathChange, alliance, climbTime, onClimbTimeChange, climbLabel }) => {
   const { t } = useLanguage();
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -34,6 +37,41 @@ export const FieldCanvas: FC<FieldCanvasProps> = ({ path, onPathChange, alliance
   const [currentStroke, setCurrentStroke] = useState<PathPoint[]>([]);
   const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
   const [loadedFieldImage, setLoadedFieldImage] = useState<HTMLImageElement | null>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // Fullscreen stopwatch state
+  const [swRunning, setSwRunning] = useState(false);
+  const [swDisplay, setSwDisplay] = useState(climbTime ?? 0);
+  const swStartRef = useRef<number>(0);
+  const swIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Sync external climbTime when not running
+  useEffect(() => {
+    if (!swRunning && climbTime !== undefined) {
+      setSwDisplay(climbTime);
+    }
+  }, [climbTime, swRunning]);
+
+  const swStartStop = useCallback(() => {
+    if (swRunning) {
+      if (swIntervalRef.current) { clearInterval(swIntervalRef.current); swIntervalRef.current = null; }
+      const rounded = Math.round(swDisplay * 100) / 100;
+      onClimbTimeChange?.(rounded);
+      setSwDisplay(rounded);
+      setSwRunning(false);
+    } else {
+      swStartRef.current = Date.now() - swDisplay * 1000;
+      swIntervalRef.current = setInterval(() => {
+        setSwDisplay((Date.now() - swStartRef.current) / 1000);
+      }, 10);
+      setSwRunning(true);
+    }
+  }, [swRunning, swDisplay, onClimbTimeChange]);
+
+  // Cleanup stopwatch on unmount
+  useEffect(() => {
+    return () => { if (swIntervalRef.current) clearInterval(swIntervalRef.current); };
+  }, []);
 
   // Get alliance-specific starting zone offset
   const startingZoneOffset = alliance === 'red' ? RED_STARTING_ZONE_OFFSET : BLUE_STARTING_ZONE_OFFSET;
@@ -61,17 +99,34 @@ export const FieldCanvas: FC<FieldCanvasProps> = ({ path, onPathChange, alliance
     if (!container) return;
 
     const updateSize = () => {
-      const width = container.clientWidth;
-      const height = Math.round(width * FIELD_ASPECT_RATIO);
-      setCanvasSize({ width, height });
+      if (isFullscreen) {
+        const vw = window.innerWidth;
+        const vh = window.innerHeight;
+        // Fit field into viewport maintaining aspect ratio
+        let width = vw;
+        let height = Math.round(vw * FIELD_ASPECT_RATIO);
+        if (height > vh) {
+          height = vh;
+          width = Math.round(vh / FIELD_ASPECT_RATIO);
+        }
+        setCanvasSize({ width, height });
+      } else {
+        const width = container.clientWidth;
+        const height = Math.round(width * FIELD_ASPECT_RATIO);
+        setCanvasSize({ width, height });
+      }
     };
 
     updateSize();
     const resizeObserver = new ResizeObserver(updateSize);
     resizeObserver.observe(container);
+    if (isFullscreen) window.addEventListener('resize', updateSize);
 
-    return () => resizeObserver.disconnect();
-  }, []);
+    return () => {
+      resizeObserver.disconnect();
+      if (isFullscreen) window.removeEventListener('resize', updateSize);
+    };
+  }, [isFullscreen]);
 
   // Draw path on canvas
   useEffect(() => {
@@ -316,6 +371,77 @@ export const FieldCanvas: FC<FieldCanvasProps> = ({ path, onPathChange, alliance
     URL.revokeObjectURL(url);
   };
 
+  // Fullscreen overlay
+  if (isFullscreen) {
+    return (
+      <div className="fixed inset-0 z-50 bg-black flex flex-col items-center justify-center" data-swipe-ignore>
+        {/* Field container - centered */}
+        <div
+          ref={containerRef}
+          className="relative overflow-hidden"
+          style={{ touchAction: 'none', width: canvasSize.width, height: canvasSize.height }}
+        >
+          <img src={fieldImage} alt="FRC Field" className="absolute inset-0 w-full h-full object-fill pointer-events-none" draggable={false} />
+          <div className={`absolute top-2 left-2 px-2 py-1 rounded text-xs font-bold z-20 ${alliance === 'red' ? 'bg-red-500/30 text-red-400' : 'bg-blue-500/30 text-blue-400'}`}>
+            {alliance === 'red' ? 'RED' : 'BLUE'}
+          </div>
+          <canvas
+            ref={canvasRef}
+            width={canvasSize.width}
+            height={canvasSize.height}
+            className="absolute inset-0 z-10 cursor-crosshair"
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerUp}
+            onPointerLeave={handlePointerUp}
+            onPointerCancel={handlePointerUp}
+          />
+          {path.length === 0 && currentStroke.length === 0 && (
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
+              <span className="text-slate-500 text-sm bg-slate-900/80 px-3 py-1 rounded-full">{t('drawPathHint')}</span>
+            </div>
+          )}
+          <div className="absolute top-2 px-2 py-1 rounded text-xs font-medium bg-green-500/20 text-green-400 pointer-events-none z-20"
+            style={{ left: `${startingZoneOffset + STARTING_ZONE_WIDTH / 2}%`, transform: 'translateX(-50%)' }}>
+            {t('startingZone')}
+          </div>
+        </div>
+
+        {/* Fullscreen bottom bar - controls + stopwatch */}
+        <div className="absolute bottom-0 left-0 right-0 p-3 bg-black/80 backdrop-blur flex items-center gap-2">
+          {/* Path controls */}
+          <button onClick={handleClear} disabled={path.length === 0}
+            className="p-3 rounded-xl bg-red-500/20 border border-red-500/50 text-red-400 disabled:opacity-30 transition-all active:scale-95">
+            <Trash2 size={20} />
+          </button>
+          <button onClick={handleUndo} disabled={path.length === 0}
+            className="p-3 rounded-xl bg-orange-500/20 border border-orange-500/50 text-orange-400 disabled:opacity-30 transition-all active:scale-95">
+            <Undo2 size={20} />
+          </button>
+
+          {/* Climb Time Stopwatch - in fullscreen */}
+          {onClimbTimeChange && (
+            <div className="flex items-center gap-1.5 ml-auto mr-2">
+              <div className={`text-lg font-display font-black tabular-nums min-w-[56px] text-center ${swRunning ? 'text-amber-400' : 'text-white'}`}>
+                {swDisplay.toFixed(2)}
+              </div>
+              <button onClick={swStartStop}
+                className={`p-2.5 rounded-xl border-2 font-bold transition-all active:scale-95 ${swRunning ? 'bg-red-500/20 border-red-500 text-red-400' : 'bg-amber-500/20 border-amber-500 text-amber-400'}`}>
+                {swRunning ? <Square size={16} fill="currentColor" /> : <Play size={16} fill="currentColor" />}
+              </button>
+            </div>
+          )}
+
+          {/* Exit fullscreen - always far right */}
+          <button onClick={() => setIsFullscreen(false)}
+            className={`p-3 rounded-xl bg-slate-700/50 border border-slate-600 text-white transition-all active:scale-95 ${onClimbTimeChange ? '' : 'ml-auto'}`}>
+            <Minimize2 size={20} />
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-2">
       {/* Canvas Container */}
@@ -339,6 +465,14 @@ export const FieldCanvas: FC<FieldCanvasProps> = ({ path, onPathChange, alliance
         }`}>
           {alliance === 'red' ? 'RED' : 'BLUE'}
         </div>
+
+        {/* Fullscreen button */}
+        <button
+          onClick={() => setIsFullscreen(true)}
+          className="absolute top-2 right-2 p-1.5 rounded bg-slate-900/70 border border-slate-600 text-slate-300 hover:text-white z-20 transition-all active:scale-95"
+        >
+          <Maximize2 size={16} />
+        </button>
 
         {/* Drawing Canvas */}
         <canvas
