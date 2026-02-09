@@ -432,29 +432,28 @@ export const FieldCanvas: FC<FieldCanvasProps> = ({ path, onPathChange, alliance
           </div>
         </div>
 
-        {/* Fullscreen bottom bar - controls + stopwatch */}
-        <div className="absolute bottom-0 left-0 right-0 p-3 bg-black/80 backdrop-blur flex items-center gap-2">
-          {/* Path controls */}
+        {/* Fullscreen left bar - vertical controls */}
+        <div className="absolute bottom-3 left-3 z-30 flex flex-col gap-2">
           <button onClick={handleClear} disabled={path.length === 0}
-            className="p-3 rounded-xl bg-red-500/20 border border-red-500/50 text-red-400 disabled:opacity-30 transition-all active:scale-95">
+            className="p-3 rounded-xl text-red-400 disabled:opacity-30 transition-all active:scale-95">
             <Trash2 size={20} />
           </button>
           <button onClick={handleUndo} disabled={path.length === 0}
-            className="p-3 rounded-xl bg-orange-500/20 border border-orange-500/50 text-orange-400 disabled:opacity-30 transition-all active:scale-95">
+            className="p-3 rounded-xl text-orange-400 disabled:opacity-30 transition-all active:scale-95">
             <Undo2 size={20} />
           </button>
 
-          {/* Climb Time Stopwatch - in fullscreen */}
+          {/* Climb Time Stopwatch */}
           {onClimbTimeChange && (
-            <div className="flex items-center gap-1.5 ml-auto">
-              <div className={`text-lg font-display font-black tabular-nums min-w-[56px] text-center ${swRunning ? 'text-amber-400' : 'text-white'}`}>
+            <>
+              <div className={`text-lg font-display font-black tabular-nums text-center ${swRunning ? 'text-amber-400' : 'text-white'}`}>
                 {swDisplay.toFixed(2)}
               </div>
               <button onClick={swStartStop}
-                className={`p-2.5 rounded-xl border-2 font-bold transition-all active:scale-95 ${swRunning ? 'bg-red-500/20 border-red-500 text-red-400' : 'bg-amber-500/20 border-amber-500 text-amber-400'}`}>
-                {swRunning ? <Square size={16} fill="currentColor" /> : <Play size={16} fill="currentColor" />}
+                className={`p-3 rounded-xl transition-all active:scale-95 ${swRunning ? 'text-red-400' : 'text-amber-400'}`}>
+                {swRunning ? <Square size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" />}
               </button>
-            </div>
+            </>
           )}
         </div>
       </div>
