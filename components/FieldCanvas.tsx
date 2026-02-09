@@ -101,29 +101,25 @@ export const FieldCanvas: FC<FieldCanvasProps> = ({ path, onPathChange, alliance
 
     const updateSize = () => {
       if (isFullscreen) {
-        // Fit field with original aspect ratio inside viewport
         const fs = fullscreenRef.current;
-        if (fs) {
-          const vw = fs.clientWidth;
-          const vh = fs.clientHeight;
-          let w = vw;
-          let h = Math.round(vw * FIELD_ASPECT_RATIO);
-          if (h > vh) {
-            h = vh;
-            w = Math.round(vh / FIELD_ASPECT_RATIO);
-          }
-          setCanvasSize({ width: w, height: h });
-        }
+        if (!fs) return;
+        const vw = fs.clientWidth;
+        const vh = fs.clientHeight;
+        // Fit 2:1 field inside viewport, maintaining exact ratio
+        let w = vw;
+        let h = Math.round(vw * FIELD_ASPECT_RATIO);
+        if (h > vh) { h = vh; w = Math.round(vh / FIELD_ASPECT_RATIO); }
+        setCanvasSize({ width: w, height: h });
       } else {
-        const width = container.clientWidth;
-        const height = Math.round(width * FIELD_ASPECT_RATIO);
-        setCanvasSize({ width, height });
+        const w = container.clientWidth;
+        setCanvasSize({ width: w, height: Math.round(w * FIELD_ASPECT_RATIO) });
       }
     };
 
-    // Delay first measure in fullscreen to let CSS render
     if (isFullscreen) {
-      requestAnimationFrame(updateSize);
+      // Double RAF to ensure overlay is fully laid out
+      requestAnimationFrame(() => requestAnimationFrame(updateSize));
+      window.addEventListener('resize', updateSize);
     } else {
       updateSize();
     }
@@ -132,6 +128,7 @@ export const FieldCanvas: FC<FieldCanvasProps> = ({ path, onPathChange, alliance
 
     return () => {
       resizeObserver.disconnect();
+      window.removeEventListener('resize', updateSize);
     };
   }, [isFullscreen]);
 
@@ -388,7 +385,7 @@ export const FieldCanvas: FC<FieldCanvasProps> = ({ path, onPathChange, alliance
           <Minimize2 size={20} />
         </button>
 
-        {/* Field container - original aspect ratio, centered */}
+        {/* Field container - exact 2:1 ratio, centered in viewport */}
         <div
           ref={containerRef}
           className="relative overflow-hidden"
