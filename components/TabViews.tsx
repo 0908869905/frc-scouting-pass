@@ -7,7 +7,6 @@ import { MATCH_LEVEL_OPTIONS, ALLIANCE_OPTIONS, AUTO_CLIMB_OPTIONS, TELE_CLIMB_O
 import { FieldCanvas } from './FieldCanvas';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { ScouterNameInput } from './ui/ScouterNameInput';
-import { PhaseTimeIndicator } from './ui/PhaseTimeIndicator';
 import { EventCodeSelect } from './ui/EventCodeSelect';
 import { getMatchTeams } from '../data/eventSchedule';
 
@@ -19,7 +18,6 @@ interface TabProps {
   data: ScoutingData;
   update: (fields: Partial<ScoutingData>) => void;
   handedness?: Handedness;
-  showMatchTimer?: boolean;
 }
 
 // Team number validation helper (must be positive integer)
@@ -461,7 +459,7 @@ export const PreMatchTab: FC<TabProps> = ({ data, update }) => {
 // Auton Tab - Green Theme
 // -----------------------------------------------------------------------------
 
-export const AutonTab: FC<TabProps> = ({ data, update, handedness, showMatchTimer = true }) => {
+export const AutonTab: FC<TabProps> = ({ data, update, handedness }) => {
   const { t } = useLanguage();
 
   const alliance: 'red' | 'blue' = data.alliance.startsWith('R') ? 'red' : 'blue';
@@ -474,9 +472,6 @@ export const AutonTab: FC<TabProps> = ({ data, update, handedness, showMatchTime
         <h2 className="text-2xl font-display font-bold text-brand-400">{t('autoHeader')}</h2>
         <Zap className="text-brand-500" size={20} />
       </div>
-
-      {/* Phase Time Indicator */}
-      <PhaseTimeIndicator phase="auto" showTimer={showMatchTimer} />
 
       {/* Field Canvas for Path Drawing */}
       <FieldCanvas
@@ -561,7 +556,7 @@ export const AutonTab: FC<TabProps> = ({ data, update, handedness, showMatchTime
 // Teleop Tab - Blue Theme
 // -----------------------------------------------------------------------------
 
-export const TeleopTab: FC<TabProps> = ({ data, update, handedness, showMatchTimer = true }) => {
+export const TeleopTab: FC<TabProps> = ({ data, update, handedness }) => {
   const { t } = useLanguage();
 
   return (
@@ -571,9 +566,6 @@ export const TeleopTab: FC<TabProps> = ({ data, update, handedness, showMatchTim
         <div className="w-3 h-3 rounded-full bg-blue-500 animate-pulse"></div>
         <h2 className="text-2xl font-display font-bold text-blue-400">{t('teleopHeader')}</h2>
       </div>
-
-      {/* Phase Time Indicator */}
-      <PhaseTimeIndicator phase="teleop" showTimer={showMatchTimer} />
 
       {/* Main Content */}
       <div className="grid grid-cols-1 gap-5">

@@ -39,12 +39,6 @@ function AppContent() {
     return (localStorage.getItem('handedness') as Handedness) || 'right';
   });
 
-  // Match timer setting
-  const [showMatchTimer, setShowMatchTimer] = useState<boolean>(() => {
-    const saved = localStorage.getItem('match_timer_enabled');
-    return saved !== null ? saved === 'true' : true;
-  });
-
   // Simple poller to update unsynced badge on header
   const [unsyncedCount, setUnsyncedCount] = useState(0);
 
@@ -67,10 +61,6 @@ function AppContent() {
   useEffect(() => {
     localStorage.setItem('handedness', handedness);
   }, [handedness]);
-
-  useEffect(() => {
-    localStorage.setItem('match_timer_enabled', String(showMatchTimer));
-  }, [showMatchTimer]);
 
   const updateData = (fields: Partial<ScoutingData>) => {
     setData(prev => ({ ...prev, ...fields }));
@@ -224,23 +214,6 @@ function AppContent() {
                 </div>
               </div>
 
-              {/* Match Timer Toggle */}
-              <div>
-                <label className="block text-sm text-slate-400 font-bold uppercase mb-3">{t('showTimer')}</label>
-                <button
-                  onClick={() => setShowMatchTimer(!showMatchTimer)}
-                  className={`w-full p-4 rounded-xl border-2 transition-all font-medium flex items-center justify-between ${
-                    showMatchTimer
-                      ? 'border-brand-500 bg-brand-900/20 text-white'
-                      : 'border-slate-700 bg-slate-800 text-slate-400'
-                  }`}
-                >
-                  <span>{t('showTimer')}</span>
-                  <div className={`w-12 h-6 rounded-full relative transition-colors ${showMatchTimer ? 'bg-brand-500' : 'bg-slate-600'}`}>
-                    <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${showMatchTimer ? 'right-1' : 'left-1'}`} />
-                  </div>
-                </button>
-              </div>
             </div>
 
             <div className="mt-8">
@@ -312,8 +285,8 @@ function AppContent() {
         onTouchEnd={swipeHandlers.onTouchEnd}
       >
         {currentPhase === 'PreMatch' && <PreMatchTab data={data} update={updateData} handedness={handedness} />}
-        {currentPhase === 'Auton' && <AutonTab data={data} update={updateData} handedness={handedness} showMatchTimer={showMatchTimer} />}
-        {currentPhase === 'Teleop' && <TeleopTab data={data} update={updateData} handedness={handedness} showMatchTimer={showMatchTimer} />}
+        {currentPhase === 'Auton' && <AutonTab data={data} update={updateData} handedness={handedness} />}
+        {currentPhase === 'Teleop' && <TeleopTab data={data} update={updateData} handedness={handedness} />}
         {currentPhase === 'PostMatch' && <PostMatchTab data={data} update={updateData} handedness={handedness} />}
         {currentPhase === 'QRCode' && <QRCodeTab data={data} onReset={handleReset} />}
       </main>
