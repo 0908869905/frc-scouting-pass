@@ -10,7 +10,7 @@
  * To update: Ask Claude to refresh from TBA API with command:
  *   "請更新 2026mslr 賽程"
  *
- * Generated: 2026-02-05 (sample data - will be updated when schedule is published)
+ * Generated: 2026-02-10 (team list real, match schedule TBD - event starts 2026-03-18)
  */
 
 export interface MatchAlliances {
@@ -23,27 +23,26 @@ export interface EventSchedule {
   eventName: string;
   generatedAt: string;
   totalMatches: number;
+  teams: string[];  // all registered team numbers
   matches: Record<number, MatchAlliances>;
 }
 
-// Malaysia Regional 2026 - Sample schedule (will be replaced with real data)
+// Magnolia Regional 2026 - 45 teams registered (match schedule TBD)
 export const SCHEDULE_2026MSLR: EventSchedule = {
   eventKey: '2026mslr',
-  eventName: 'Malaysia Regional',
-  generatedAt: '2026-02-05',
-  totalMatches: 50,
+  eventName: 'Magnolia Regional',
+  generatedAt: '2026-02-10',
+  totalMatches: 0,
+  teams: [
+    '364', '456', '538', '590', '1421', '1912', '1927', '2221', '2556', '2992',
+    '3039', '3606', '3616', '3753', '4087', '4107', '4336', '4400', '5045', '5863',
+    '5971', '6184', '6998', '7094', '7474', '8044', '8808', '9153', '9309', '9405',
+    '9503', '9717', '9734', '10101', '10217', '10309', '10661', '10929', '10943', '10961',
+    '11107', '11265', '11287', '11343', '11345',
+  ],
   matches: {
-    1: { red: ['6998', '7870', '8084'], blue: ['7421', '8513', '9254'] },
-    2: { red: ['7169', '8255', '9012'], blue: ['6998', '7654', '8123'] },
-    3: { red: ['7421', '8084', '9254'], blue: ['7169', '7870', '8513'] },
-    4: { red: ['8123', '8255', '9012'], blue: ['6998', '7654', '8084'] },
-    5: { red: ['7169', '7421', '8513'], blue: ['7870', '9012', '9254'] },
-    6: { red: ['6998', '8084', '8255'], blue: ['7654', '8123', '7421'] },
-    7: { red: ['7870', '9254', '7169'], blue: ['8513', '9012', '8123'] },
-    8: { red: ['7654', '8084', '7421'], blue: ['6998', '8255', '7870'] },
-    9: { red: ['9012', '9254', '8513'], blue: ['7169', '8123', '8084'] },
-    10: { red: ['6998', '7421', '7654'], blue: ['8255', '7870', '9254'] },
-    // ... more matches would be added when real schedule is available
+    // Match schedule will be available after 2026-03-18
+    // Run "/tba matches 2026mslr" to update
   }
 };
 
@@ -60,6 +59,16 @@ export function getMatchTeams(eventKey: string, matchNumber: number): MatchAllia
   const schedule = ALL_SCHEDULES[eventKey.toLowerCase()];
   if (!schedule) return null;
   return schedule.matches[matchNumber] || null;
+}
+
+/**
+ * Get all registered teams for an event
+ * @returns team number array or empty array
+ */
+export function getEventTeams(eventKey: string): string[] {
+  const schedule = ALL_SCHEDULES[eventKey.toLowerCase()];
+  if (!schedule) return [];
+  return schedule.teams;
 }
 
 /**

@@ -92,7 +92,6 @@ const BLUE_STARTING_ZONE_OFFSET = 71.5;   // Blue zone: X = 71.5-75%
 - `data/eventSchedule.ts` - Match schedule schema + demo data
 - `components/ui/AutoSaveIndicator.tsx` - Auto-save timestamp display
 - `components/ui/ScouterNameInput.tsx` - Scouter name input with recent suggestions
-- `components/ui/PhaseTimeIndicator.tsx` - Match phase countdown timer
 - `components/ui/EventCodeSelect.tsx` - Searchable event code selector
 - `components/ui/QuickTeamSelect.tsx` - Quick team selection from match schedule
 - `components/HistoryEditForm.tsx` - History record editing form
@@ -125,7 +124,7 @@ All form tabs use `TabProps` interface: `{ data: ScoutingData, update: (updates)
 - `vite.config.ts` - Tailwind CSS Vite plugin configuration
 - `vercel.json` - SPA rewrite rules
 - `capacitor.config.ts` - iOS app configuration + native plugins (SplashScreen, StatusBar)
-- `public/manifest.json` - PWA metadata
+- `public/manifest.json` - PWA metadata (orientation: "any" for landscape support)
 - `public/privacy.html` - Privacy Policy (App Store requirement)
 
 ## Development Notes
@@ -137,7 +136,6 @@ All form tabs use `TabProps` interface: `{ data: ScoutingData, update: (updates)
   - `frc_offline_queue` - Offline sync queue
   - `frc_match_history` - Match history records
   - `recent_scouters` - Recent 3 scouter names (for quick selection)
-  - `match_timer_enabled` - Match phase timer toggle
 - **i18n**: All user-facing text through `useLanguage()` hook
 - **State**: React hooks only (useState, useContext) - no external state management
 - **Google Sheets**: Uses no-cors mode; data transmitted as TSV with unicode escaping
@@ -155,6 +153,7 @@ All form tabs use `TabProps` interface: `{ data: ScoutingData, update: (updates)
 - ⚠️ **未使用的 imports/functions**: 定期執行 `/simplify` 清理死碼
 - ⚠️ **iOS 打包前**: 必須先執行 `npm run build`，再執行 `npx cap sync`
 - ⚠️ **起始區域常數**: `STARTING_ZONE_WIDTH` 和 `STARTING_ZONE_OFFSET` 必須在 `App.tsx` 和 `FieldCanvas.tsx` 保持一致
+- ⚠️ **FieldCanvas 全螢幕**: 使用 React `createPortal` 渲染到 `document.body`，尺寸用 `window.innerWidth/Height` 計算（不使用 ref 量測 DOM）
 
 ## Before Committing
 

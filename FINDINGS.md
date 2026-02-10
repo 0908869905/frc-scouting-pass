@@ -328,5 +328,78 @@ Teleop 碼表在運行時出現「原始的秒數留在底層，新的秒數在�
 - **解決**: 移除重複的 import 行
 
 ---
-*Last updated: 2026-02-05*
+
+## 全螢幕場地圖三項修復 (2026-02-09)
+
+### 問題 1: 全螢幕尺寸計算不可靠
+- **症狀**: 手機上進入全螢幕後場地圖尺寸異常（過小或錯位）
+- **原因**: 使用 `fullscreenRef` + double `requestAnimationFrame` 量測 DOM 尺寸，時機依賴瀏覽器渲染排程，在手機上經常在 DOM 還未完成 layout 時就量測
+- **解決**: 在點擊全螢幕按鈕時直接用 `window.innerWidth` / `window.innerHeight` 計算尺寸，移除 `fullscreenRef`
+- **選擇理由**: `window.innerWidth/Height` 是同步可用的，不依賴 DOM 渲染完成，第一次渲染就能拿到正確尺寸
+
+### 問題 2: 全螢幕 z-index 被父層覆蓋
+- **症狀**: 進入全螢幕後，header 和 footer（Next/Prev 按鈕）仍顯示在全螢幕 overlay 之上
+- **原因**: 全螢幕 overlay 渲染在 `<main>` 內部，而 `<main>` 有 `overflow-y-auto`，這會建立新的 stacking context。overlay 的 `z-index: 50` 只在 `<main>` 的 stacking context 內有效，無法與外層的 header/footer 競爭
+- **解決**: 使用 React `createPortal(overlay, document.body)` 直接渲染到 `<body>`，跳出父層 stacking context
+
+| 方案 | 優點 | 缺點 |
+|------|------|------|
+| **React Portal** (選用) | 完全跳出父層 stacking context，z-index 在全域生效 | 需要 import createPortal |
+| 提高 z-index 值 | 簡單 | 無法解決，因為 stacking context 隔離問題不是 z-index 值大小的問題 |
+| 移除 overflow-y-auto | 解決 stacking context | 破壞頁面滾動功能 |
+
+- **選擇理由**: React Portal 是 React 官方推薦的方式處理 modal/overlay 類元素，從根本上解決 stacking context 問題
+
+### 問題 3: 全螢幕碼錶不顯示
+- **症狀**: 進入全螢幕後看不到碼錶（Stopwatch），即使已選擇攀爬狀態
+- **原因**: `TabViews.tsx` 中 `onClimbTimeChange` 只在 `autoClimbStatus !== 'None'` 時才傳入 FieldCanvas。當碼錶在全螢幕中渲染時，如果使用者尚未選擇攀爬狀態，碼錶 prop 為 undefined 導致不渲染
+- **解決**: 永遠傳入 `climbTime` 和 `onClimbTimeChange`，讓全螢幕碼錶始終可見
+- **選擇理由**: 使用者可能想在全螢幕中操作碼錶，不應受外部狀態限制
+
+### 適用場景
+- **DOM 量測替代方案**: 當需要全螢幕尺寸時，優先使用 `window.innerWidth/Height` 而非 ref 量測，避免時序問題
+- **React Portal 應用場景**: 任何需要脫離父層 CSS 限制的 overlay/modal/tooltip 都應考慮使用 Portal
+- **Prop 傳遞原則**: 子組件的功能不應被父組件的條件邏輯意外截斷，特別是 UI 可見性相關的 prop
+
+---
+
+## PWA orientation 限制導致 Android 無法橫向 (2026-02-10)
+
+### 問題
+Android PWA 加到主畫面後，無法旋轉到橫向模式，導致全螢幕場地圖無法利用橫向空間。
+
+### 原因
+`manifest.json` 設定了 `"orientation": "portrait"`，在 Android PWA 模式下強制鎖定為直向。一般瀏覽器不受此設定影響，但「加到主畫面」後的 PWA 會嚴格遵守 manifest 的 orientation 限制。
+
+### 解決方案
+將 `"orientation": "portrait"` 改為 `"orientation": "any"`，允許使用者自由旋轉裝置。
+
+### 選擇理由
+- 全螢幕場地圖在橫向模式下有更大的繪圖空間，是核心使用場景
+- `"any"` 而非移除 orientation 鍵，保持 manifest 結構完整性
+- iOS PWA 不受此設定影響（iOS 透過 meta viewport 控制）
+
+---
+
+## 移除 PhaseTimeIndicator 計時器的架構清理 (2026-02-10)
+
+### 問題
+Auto/Teleop 階段的倒數計時器（PhaseTimeIndicator）功能被決定移除。
+
+### 影響範圍
+移除涉及多層架構：
+1. **組件**: `components/ui/PhaseTimeIndicator.tsx` — 整個檔案刪除
+2. **State**: `App.tsx` 的 `showMatchTimer` state — 移除
+3. **Props**: `TabViews.tsx` 的 `showMatchTimer` prop 傳遞鏈 — 移除
+4. **Settings UI**: Settings 面板中的 Match Timer Toggle — 移除
+5. **localStorage**: `match_timer_enabled` key — 不再寫入/讀取
+6. **翻譯鍵**: 相關 i18n keys（如有）
+
+### 清理原則
+- **由外而內**: 先移除 state 持有者 (App.tsx)，再移除使用者 (TabViews.tsx)，最後刪除組件檔案
+- **localStorage**: 舊版本寫入的 `match_timer_enabled` key 不需要主動清除，只要代碼不再讀取即可
+- **確認無引用**: 刪除檔案前用 grep 確認沒有其他地方 import 該組件
+
+---
+*Last updated: 2026-02-10*
 *Note: Video Analyzer 相關內容已移至獨立專案*

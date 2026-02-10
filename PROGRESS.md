@@ -1578,3 +1578,129 @@ Scouting PASS 8 項 UX 改進功能實作 — 震動確認、自動保存、Scou
 
 ---
 *Last updated: 2026-02-05*
+
+---
+
+## Session: 2026-02-09
+
+### Overview
+全螢幕場地圖修復 — 修復尺寸計算時機不可靠、z-index 被父層覆蓋、碼錶不顯示三個問題。
+
+---
+
+### Phase 32: 全螢幕場地圖修復
+- **Status:** ✅ complete
+- **Completed:** 2026-02-09
+
+#### Task 32.1: 修復全螢幕尺寸計算
+- **問題**: 之前用 `fullscreenRef` + double `requestAnimationFrame` 量測 DOM 尺寸，時機不可靠導致手機顯示異常
+- **解決**: 在點擊全螢幕按鈕時直接用 `window.innerWidth/Height` 算好尺寸，確保第一次渲染就正確
+- **移除**: `fullscreenRef`（不再需要 DOM 量測）
+
+#### Task 32.2: 用 React Portal 修復 z-index 問題
+- **問題**: 全螢幕 overlay 渲染在 `<main>` 內部（有 `overflow-y-auto`），受父層 stacking context 影響，header 和 footer（Next/Prev 按鈕）仍顯示在全螢幕之上
+- **解決**: 改用 `createPortal(overlay, document.body)` 直接渲染到 body，跳出父層 stacking context
+
+#### Task 32.3: 碼錶永遠顯示
+- **問題**: `onClimbTimeChange` 只在 `autoClimbStatus !== None` 時才傳入 FieldCanvas，導致全螢幕碼錶不顯示
+- **解決**: 永遠傳入 `climbTime` 和 `onClimbTimeChange`，不受 autoClimbStatus 限制
+
+---
+
+### 完成項目
+- [x] 修復全螢幕尺寸計算 — 改用 `window.innerWidth/Height` 直接計算
+- [x] 用 React Portal 渲染全螢幕 overlay 到 `document.body`
+- [x] 全螢幕碼錶永遠顯示，不受 autoClimbStatus 限制
+
+### 修改檔案
+- `FRC/components/FieldCanvas.tsx` - 移除 fullscreenRef、改用 window 直接計算尺寸、用 createPortal 渲染到 document.body
+- `FRC/components/TabViews.tsx` - FieldCanvas 的 climbTime/onClimbTimeChange 永遠傳入
+
+### Git Commits
+- `3d57274` - fix: 修復全螢幕場地圖尺寸計算 - 改用 window 直接計算
+- `708f48f` - fix: 用 React Portal 渲染全螢幕 overlay 到 document.body
+- `ef887d1` - fix: 全螢幕碼錶永遠顯示，不受 autoClimbStatus 限制
+
+---
+
+## 5-Question Reboot Check
+
+1. **做什麼？** 修復全螢幕場地圖三個問題（尺寸計算、z-index、碼錶顯示）
+2. **進度？** ✅ 全部完成，3 個 commit 已提交
+3. **下一步？** 測試不同手機裝置上的全螢幕場地圖顯示效果
+4. **阻礙？** 無
+5. **檔案？** `FRC/components/FieldCanvas.tsx`, `FRC/components/TabViews.tsx`
+
+---
+*Last updated: 2026-02-09*
+
+---
+
+## Session: 2026-02-10
+
+### Overview
+延續上一 session 的全螢幕場地圖修復，本次完成 PWA orientation 解鎖、碼錶永遠顯示、移除 Auto/Teleop 計時器及相關設定。
+
+---
+
+### Phase 32 (續): 全螢幕場地圖收尾
+- **Status:** ✅ complete
+- **Completed:** 2026-02-10
+
+#### Task 32.4: 碼錶永遠顯示
+- `onClimbTimeChange` 之前只在 `autoClimbStatus !== None` 時傳入
+- 改為永遠傳入 `climbTime` 和 `onClimbTimeChange`，碼錶始終可用
+
+#### Task 32.5: PWA orientation 解鎖
+- `manifest.json` 的 `"orientation": "portrait"` 改為 `"any"`
+- 修復 Android PWA 加到主畫面後無法轉橫向的問題
+
+---
+
+### Phase 33: 移除 Auto/Teleop 計時器
+- **Status:** ✅ complete
+- **Completed:** 2026-02-10
+
+#### Task 33.1: 刪除 PhaseTimeIndicator 組件
+- 刪除 `components/ui/PhaseTimeIndicator.tsx` 組件
+- 移除 AutonTab 和 TeleopTab 中的 `<PhaseTimeIndicator>` 呼叫
+
+#### Task 33.2: 移除 Settings 計時器開關
+- 移除 Settings 中的 Match Timer Toggle
+- 清理所有 `showMatchTimer` 相關 state、prop、localStorage (`match_timer_enabled`)
+
+---
+
+### 完成項目
+- [x] 碼錶永遠顯示，不受 autoClimbStatus 限制
+- [x] PWA orientation 改為 any，允許橫向旋轉
+- [x] 刪除 `PhaseTimeIndicator.tsx` 組件
+- [x] 移除 AutonTab/TeleopTab 的 `<PhaseTimeIndicator>` 呼叫
+- [x] 移除 Settings 計時器開關 (showMatchTimer state + localStorage)
+
+### 修改檔案
+- `FRC/components/FieldCanvas.tsx` - Portal 渲染 + window 尺寸計算（延續上一 session）
+- `FRC/components/TabViews.tsx` - 移除計時器、碼錶永遠傳入
+- `FRC/App.tsx` - 移除 showMatchTimer state/settings/props
+- `FRC/public/manifest.json` - orientation: any
+- `FRC/components/ui/PhaseTimeIndicator.tsx` - **已刪除**
+
+### Git Commits
+- `3d57274` - fix: 修復全螢幕場地圖尺寸計算 - 改用 window 直接計算
+- `708f48f` - fix: 用 React Portal 渲染全螢幕 overlay 到 document.body
+- `ef887d1` - fix: 全螢幕碼錶永遠顯示，不受 autoClimbStatus 限制
+- `86950f4` - fix: PWA orientation 改為 any，允許橫向旋轉
+- `10b0ca0` - feat: 移除 Auto/Teleop 計時器及相關設定
+
+---
+
+## 5-Question Reboot Check
+
+1. **做什麼？** 全螢幕場地圖收尾 + PWA orientation 解鎖 + 移除計時器功能
+2. **進度？** ✅ 全部完成，5 個 commit 已提交
+3. **下一步？** 測試 Android PWA 橫向旋轉、驗證移除計時器後無殘留 UI
+4. **阻礙？** 無
+5. **檔案？** `FRC/components/TabViews.tsx`, `FRC/App.tsx`, `FRC/public/manifest.json`
+
+---
+*Last updated: 2026-02-10*
