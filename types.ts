@@ -34,7 +34,7 @@ export enum TeleClimbStatus {
 }
 
 // Climb position options (5 positions)
-export type ClimbPosition = 'LeftSide' | 'Left' | 'Center' | 'Right' | 'RightSide';
+export type ClimbPosition = 'None' | 'LeftSide' | 'Left' | 'Center' | 'Right' | 'RightSide';
 
 // Path point for autonomous route tracking (percentage-based coordinates 0-100)
 export interface PathPoint {
@@ -112,12 +112,12 @@ export const INITIAL_DATA: ScoutingData = {
   autoPath: [],
   autoClimbStatus: AutoClimbStatus.None,
   autoClimbTime: 0,
-  autoClimbPosition: 'Center',
+  autoClimbPosition: 'None',
 
   // Teleop
   teleClimbStatus: TeleClimbStatus.None,
   teleClimbTime: 0,
-  teleClimbPosition: 'Center',
+  teleClimbPosition: 'None',
   bumpCount: 0,
   trenchCount: 0,
   fuelDroppedOnBumpCount: 0,

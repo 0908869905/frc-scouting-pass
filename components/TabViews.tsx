@@ -497,7 +497,7 @@ export const AutonTab: FC<TabProps> = ({ data, update, handedness }) => {
                   key={status}
                   onClick={() => {
                     const updates: Partial<ScoutingData> = { autoClimbStatus: status as AutoClimbStatus };
-                    if (status === 'None') { updates.autoClimbTime = 0; updates.autoClimbPosition = 'Center'; }
+                    if (status === 'None') { updates.autoClimbTime = 0; updates.autoClimbPosition = 'None'; }
                     update(updates);
                   }}
                   className={`p-4 rounded-xl text-sm font-bold border-2 transition-all active:scale-[0.97] ${
@@ -639,7 +639,7 @@ export const TeleopTab: FC<TabProps> = ({ data, update, handedness }) => {
                 key={status}
                 onClick={() => {
                   const updates: Partial<ScoutingData> = { teleClimbStatus: status as TeleClimbStatus };
-                  if (status === 'None') { updates.teleClimbTime = 0; updates.teleClimbPosition = 'Center'; }
+                  if (status === 'None') { updates.teleClimbTime = 0; updates.teleClimbPosition = 'None'; }
                   update(updates);
                 }}
                 className={`p-4 rounded-xl text-sm font-bold border-2 transition-all active:scale-[0.97] ${
