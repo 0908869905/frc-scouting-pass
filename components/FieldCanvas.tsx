@@ -109,6 +109,23 @@ export const FieldCanvas: FC<FieldCanvasProps> = ({ path, onPathChange, alliance
     setIsFullscreen(true);
   }, [calcFullscreenSize]);
 
+  // Auto enter/exit fullscreen based on device orientation
+  // Landscape → fullscreen, Portrait → normal tab view
+  useEffect(() => {
+    const mql = window.matchMedia('(orientation: landscape)');
+    const applyOrientation = () => {
+      if (mql.matches) {
+        setCanvasSize(calcFullscreenSize());
+        setIsFullscreen(true);
+      } else {
+        setIsFullscreen(false);
+      }
+    };
+    applyOrientation();
+    mql.addEventListener('change', applyOrientation);
+    return () => mql.removeEventListener('change', applyOrientation);
+  }, [calcFullscreenSize]);
+
   // Resize handling
   useEffect(() => {
     if (isFullscreen) {
