@@ -102,7 +102,7 @@ export interface MatchRecord {
 export const INITIAL_DATA: ScoutingData = {
   mode: 'Match',
   scouterName: '',
-  eventCode: '2026MSLR',
+  eventCode: '2026cmptx',
   matchLevel: MatchLevel.Quals,
   matchNumber: 1,
   alliance: 'R1',
