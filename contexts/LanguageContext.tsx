@@ -49,6 +49,50 @@ const translations = {
     ridingOnBall: "Riding on Fuel",
     comments: "Comments",
     commentsPlaceholder: "Strategy, strengths, weaknesses...",
+
+    // Post Match Checklist - section headers
+    issuesHeader: "Robot Issues",
+    performanceHeader: "Performance",
+    collisionSubHeader: "Hard collision",
+    ratingsSubHeader: "Action Ratings",
+
+    // Post Match Checklist - issues
+    issue_noShow: "No show",
+    issue_crashed: "Crashed",
+    issue_eStop: "E-stop",
+    issue_aStop: "A-stop",
+    issue_lowVoltage: "Low voltage",
+    issue_intakeStuck: "Intake not picking up",
+    issue_shooterOff: "Shooter inaccurate",
+    issue_stuckBump: "Stuck on bump",
+    issue_hitTrench: "Hit trench",
+    issue_partFell: "Parts fell off",
+    issue_movement: "Movement issue",
+
+    // Post Match Checklist - flags
+    flag_yellowCard: "Yellow card",
+    flag_redCard: "Red card",
+    flag_belowExpected: "Below expected",
+    flag_tipped: "Tipped",
+    flag_ridingFuel: "Riding on FUEL",
+    flag_stuckBall: "Stuck on ball",
+
+    // Post Match Checklist - collision
+    collision_toggle: "Hard collision",
+    collision_field: "Field",
+    collision_robot: "Robot",
+    collision_teamNumbers: "Teammate/Opponent team #",
+
+    // Post Match Checklist - ratings
+    rating_pushTrench: "Push ball to Alliance Zone (from trench)",
+    rating_pushBump: "Push ball to Alliance Zone (from bump)",
+    rating_shoot: "Shoot ball to Alliance Zone",
+    rating_human: "Feed Human Player (Outpost)",
+    rating_defense: "Defense",
+    rating_good: "Good",
+    rating_ok: "OK",
+    rating_bad: "Poor",
+
     // Climb Position (5 positions)
     climbPosition: "Climb Position",
     LeftSide: "Left Side",
@@ -196,6 +240,50 @@ const translations = {
     ridingOnBall: "騎在 Fuel 上",
     comments: "備註",
     commentsPlaceholder: "策略、優勢、劣勢...",
+
+    // Post Match Checklist - section headers
+    issuesHeader: "機器異常",
+    performanceHeader: "機器表現",
+    collisionSubHeader: "劇烈撞擊",
+    ratingsSubHeader: "動作評分",
+
+    // Post Match Checklist - issues
+    issue_noShow: "No show",
+    issue_crashed: "死機",
+    issue_eStop: "E-stop",
+    issue_aStop: "A-stop",
+    issue_lowVoltage: "低電壓",
+    issue_intakeStuck: "intake 吸不起來",
+    issue_shooterOff: "shooter 不準",
+    issue_stuckBump: "過 bump 會卡住",
+    issue_hitTrench: "撞到 trench",
+    issue_partFell: "有部件掉下來",
+    issue_movement: "移動有問題",
+
+    // Post Match Checklist - flags
+    flag_yellowCard: "yellow card",
+    flag_redCard: "red card",
+    flag_belowExpected: "不符合預期表現",
+    flag_tipped: "翻車",
+    flag_ridingFuel: "騎在 FUEL 上",
+    flag_stuckBall: "卡在球上",
+
+    // Post Match Checklist - collision
+    collision_toggle: "有過劇烈撞擊",
+    collision_field: "場地",
+    collision_robot: "機器",
+    collision_teamNumbers: "隊友/對手隊號",
+
+    // Post Match Checklist - ratings
+    rating_pushTrench: "推球回 Alliance Zone (從 trench)",
+    rating_pushBump: "推球回 Alliance Zone (從 bump)",
+    rating_shoot: "射球回 Alliance Zone",
+    rating_human: "給 human (Outpost)",
+    rating_defense: "Defense",
+    rating_good: "很好",
+    rating_ok: "還不錯",
+    rating_bad: "差",
+
     // Climb Position (5 positions)
     climbPosition: "攀爬位置",
     LeftSide: "左側",
