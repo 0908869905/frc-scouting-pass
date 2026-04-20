@@ -36,6 +36,33 @@ export enum TeleClimbStatus {
 // Climb position options (5 positions)
 export type ClimbPosition = 'None' | 'LeftSide' | 'Left' | 'Center' | 'Right' | 'RightSide';
 
+// Rating for subjective action assessment
+export type ChecklistRating = '' | 'good' | 'ok' | 'bad';
+
+// PostMatch structured checklist - drives the UI; serialized into ScoutingData.comments
+export interface PostMatchChecklist {
+  // 機器異常 - multi-select keys (see ISSUE_KEYS in utils/checklistSerializer.ts)
+  issues: string[];
+
+  // 機器表現 flags - multi-select keys (see FLAG_KEYS in utils/checklistSerializer.ts)
+  flags: string[];
+
+  // 有過劇烈撞擊
+  hasCollision: boolean;
+  collisionField: boolean;
+  collisionRobot: boolean;
+  collisionTeamNumbers: string;
+
+  // 動作評分
+  ratings: {
+    pushTrench: ChecklistRating;
+    pushBump:   ChecklistRating;
+    shoot:      ChecklistRating;
+    human:      ChecklistRating;
+    defense:    ChecklistRating;
+  };
+}
+
 // Path point for autonomous route tracking (percentage-based coordinates 0-100)
 export interface PathPoint {
   x: number;
@@ -76,7 +103,8 @@ export interface ScoutingData {
   robotDied: boolean;            // Robot died/disabled (incl. tipped)
   almostTipped: boolean;         // Almost tipped (near miss)
   ridingOnBall: boolean;         // Riding on ball
-  comments: string;              // Comments (single field)
+  comments: string;              // Serialized summary of postMatchChecklist
+  postMatchChecklist?: PostMatchChecklist; // Structured state driving comments (optional for legacy records)
 
   // --- Pit Scouting Fields ---
   pitDriveTrain: string;
@@ -131,6 +159,21 @@ export const INITIAL_DATA: ScoutingData = {
   almostTipped: false,
   ridingOnBall: false,
   comments: '',
+  postMatchChecklist: {
+    issues: [],
+    flags: [],
+    hasCollision: false,
+    collisionField: false,
+    collisionRobot: false,
+    collisionTeamNumbers: '',
+    ratings: {
+      pushTrench: '',
+      pushBump: '',
+      shoot: '',
+      human: '',
+      defense: '',
+    },
+  },
 
   // Pit defaults
   pitDriveTrain: 'Swerve',
