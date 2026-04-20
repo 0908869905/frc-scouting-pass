@@ -9,6 +9,18 @@ import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { ScouterNameInput } from './ui/ScouterNameInput';
 import { EventCodeSelect } from './ui/EventCodeSelect';
 import { getMatchTeams } from '../data/eventSchedule';
+import {
+  serializeChecklist,
+  toggleInArray,
+  ISSUE_KEYS,
+  FLAG_KEYS,
+  RATING_ROW_KEYS,
+  RATING_VALUES,
+  type IssueKey,
+  type FlagKey,
+  type RatingRow,
+} from '../utils/checklistSerializer';
+import type { PostMatchChecklist, ChecklistRating } from '../types';
 
 const triggerHaptic = () => {
   Haptics.impact({ style: ImpactStyle.Light }).catch(() => {});
@@ -700,6 +712,38 @@ export const TeleopTab: FC<TabProps> = ({ data, update, handedness }) => {
 export const PostMatchTab: FC<TabProps> = ({ data, update }) => {
   const { t } = useLanguage();
 
+  const checklist: PostMatchChecklist = data.postMatchChecklist ?? {
+    issues: [],
+    flags: [],
+    hasCollision: false,
+    collisionField: false,
+    collisionRobot: false,
+    collisionTeamNumbers: '',
+    ratings: { pushTrench: '', pushBump: '', shoot: '', human: '', defense: '' },
+  };
+
+  const updateChecklist = (patch: Partial<PostMatchChecklist>) => {
+    const next: PostMatchChecklist = { ...checklist, ...patch };
+    update({ postMatchChecklist: next, comments: serializeChecklist(next, t as (k: string) => string) });
+  };
+
+  const toggleIssue = (key: IssueKey) => {
+    updateChecklist({ issues: toggleInArray(checklist.issues, key) });
+  };
+
+  const toggleFlag = (key: FlagKey) => {
+    updateChecklist({ flags: toggleInArray(checklist.flags, key) });
+  };
+
+  const setRating = (row: RatingRow, value: ChecklistRating) => {
+    updateChecklist({ ratings: { ...checklist.ratings, [row]: value } });
+  };
+
+  const chipBase =
+    'px-3 py-2 rounded-lg border-2 text-sm font-semibold transition-all active:scale-95';
+
+  const tAny = t as (k: string) => string;
+
   return (
     <div className="space-y-5 animate-in fade-in slide-in-from-right-8 duration-500 pb-20">
       {/* Phase Header */}
@@ -708,22 +752,155 @@ export const PostMatchTab: FC<TabProps> = ({ data, update }) => {
         <h2 className="text-2xl font-display font-bold text-orange-400">{t('postMatchHeader')}</h2>
       </div>
 
-      {/* Quick Flags */}
+      {/* Quick Flags (existing toggles) */}
       <div className="grid grid-cols-1 gap-3">
         <Toggle label={t('robotDied')} checked={data.robotDied} onChange={v => update({ robotDied: v })} variant="danger" />
         <Toggle label={t('almostTipped')} checked={data.almostTipped} onChange={v => update({ almostTipped: v })} variant="warning" />
         <Toggle label={t('ridingOnBall')} checked={data.ridingOnBall} onChange={v => update({ ridingOnBall: v })} variant="warning" />
       </div>
 
-      {/* Comments - Single field */}
-      <div className="space-y-1.5">
-        <label className="text-xs font-bold text-slate-400 uppercase">{t('comments')}</label>
-        <textarea
-          className="w-full h-32 bg-slate-900 border-2 border-slate-700 rounded-xl p-3.5 text-white focus:ring-2 focus:ring-orange-500 outline-none resize-none"
-          placeholder={t('commentsPlaceholder')}
-          value={data.comments}
-          onChange={e => update({ comments: e.target.value })}
-        />
+      {/* Section: 機器異常 */}
+      <div className="space-y-2">
+        <label className="text-xs font-bold text-slate-400 uppercase">{t('issuesHeader')}</label>
+        <div className="flex flex-wrap gap-2">
+          {ISSUE_KEYS.map(key => {
+            const active = checklist.issues.includes(key);
+            return (
+              <button
+                key={key}
+                type="button"
+                onClick={() => toggleIssue(key)}
+                className={`${chipBase} ${
+                  active
+                    ? 'bg-red-500/20 border-red-500 text-red-300'
+                    : 'bg-slate-900 border-slate-700 text-slate-400 hover:border-slate-500'
+                }`}
+              >
+                {tAny(`issue_${key}`)}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Section: 機器表現 */}
+      <div className="space-y-3">
+        <label className="text-xs font-bold text-slate-400 uppercase">{t('performanceHeader')}</label>
+
+        {/* Flag chips */}
+        <div className="flex flex-wrap gap-2">
+          {FLAG_KEYS.map(key => {
+            const active = checklist.flags.includes(key);
+            return (
+              <button
+                key={key}
+                type="button"
+                onClick={() => toggleFlag(key)}
+                className={`${chipBase} ${
+                  active
+                    ? 'bg-amber-500/20 border-amber-500 text-amber-300'
+                    : 'bg-slate-900 border-slate-700 text-slate-400 hover:border-slate-500'
+                }`}
+              >
+                {tAny(`flag_${key}`)}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Collision toggle + sub-options */}
+        <div className="space-y-2 rounded-xl border border-slate-800 bg-slate-900/40 p-3">
+          <Toggle
+            label={t('collision_toggle')}
+            checked={checklist.hasCollision}
+            onChange={v => updateChecklist({
+              hasCollision: v,
+              ...(v ? {} : { collisionField: false, collisionRobot: false, collisionTeamNumbers: '' }),
+            })}
+            variant="warning"
+          />
+          {checklist.hasCollision && (
+            <div className="space-y-2 pl-2">
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => updateChecklist({ collisionField: !checklist.collisionField })}
+                  className={`${chipBase} ${
+                    checklist.collisionField
+                      ? 'bg-amber-500/20 border-amber-500 text-amber-300'
+                      : 'bg-slate-900 border-slate-700 text-slate-400'
+                  }`}
+                >
+                  {t('collision_field')}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => updateChecklist({
+                    collisionRobot: !checklist.collisionRobot,
+                    ...(checklist.collisionRobot ? { collisionTeamNumbers: '' } : {}),
+                  })}
+                  className={`${chipBase} ${
+                    checklist.collisionRobot
+                      ? 'bg-amber-500/20 border-amber-500 text-amber-300'
+                      : 'bg-slate-900 border-slate-700 text-slate-400'
+                  }`}
+                >
+                  {t('collision_robot')}
+                </button>
+              </div>
+              {checklist.collisionRobot && (
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  placeholder={t('collision_teamNumbers')}
+                  value={checklist.collisionTeamNumbers}
+                  onChange={e => updateChecklist({ collisionTeamNumbers: e.target.value })}
+                  className="w-full bg-slate-900 border-2 border-slate-700 rounded-lg p-2.5 text-white text-sm focus:ring-2 focus:ring-amber-500 outline-none"
+                />
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Ratings */}
+        <div className="space-y-2 rounded-xl border border-slate-800 bg-slate-900/40 p-3">
+          <div className="text-xs font-bold text-slate-400 uppercase">{t('ratingsSubHeader')}</div>
+          {RATING_ROW_KEYS.map(row => (
+            <div key={row} className="space-y-1">
+              <div className="text-sm text-slate-300">{tAny(`rating_${row}`)}</div>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setRating(row, '')}
+                  className={`flex-1 py-2 rounded-lg border-2 text-xs font-semibold transition-all active:scale-95 ${
+                    checklist.ratings[row] === ''
+                      ? 'bg-slate-700 border-slate-500 text-white'
+                      : 'bg-slate-900 border-slate-700 text-slate-500'
+                  }`}
+                >
+                  —
+                </button>
+                {RATING_VALUES.map(v => {
+                  const active = checklist.ratings[row] === v;
+                  const colorClass =
+                    v === 'good' ? (active ? 'bg-green-500/30 border-green-500 text-green-300' : 'bg-slate-900 border-slate-700 text-slate-400') :
+                    v === 'ok'   ? (active ? 'bg-amber-500/30 border-amber-500 text-amber-300' : 'bg-slate-900 border-slate-700 text-slate-400') :
+                                   (active ? 'bg-red-500/30 border-red-500 text-red-300'     : 'bg-slate-900 border-slate-700 text-slate-400');
+                  return (
+                    <button
+                      key={v}
+                      type="button"
+                      onClick={() => setRating(row, v)}
+                      className={`flex-1 py-2 rounded-lg border-2 text-xs font-semibold transition-all active:scale-95 ${colorClass}`}
+                    >
+                      {tAny(`rating_${v}`)}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
