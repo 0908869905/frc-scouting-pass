@@ -65,10 +65,11 @@ const pathToString = (path: PathPoint[]): string => {
   return simplified.map(p => `${Math.round(p.x)},${Math.round(p.y)}`).join('|');
 };
 
-// Helper to format comments
-// Returns the raw comment text. Supports Chinese and other Unicode characters.
-const formatComments = (data: ScoutingData): string => {
-  return (data.comments && data.comments.trim() !== '') ? data.comments.trim() : 'None';
+// Helper to format free-text fields (robotIssues / performance / comments)
+// Returns 'None' if empty; otherwise the trimmed text (Unicode preserved).
+const formatTextField = (value: unknown): string => {
+  const s = typeof value === 'string' ? value.trim() : '';
+  return s !== '' ? s : 'None';
 };
 
 // Safely stringify JSON with Unicode escaping to ensure correct transmission
@@ -95,12 +96,10 @@ export const generateTSV = (data: ScoutingData): string => {
   const schema = data.mode === 'Pit' ? TSV_SCHEMA_PIT : TSV_SCHEMA_MATCH;
   
   return schema.map(key => {
-    // Custom formatted fields
-    if (key === 'comments') {
-        // Replace tabs and newlines to maintain TSV structure
-        // We DO NOT escape unicode here, as TSV is not JSON.
-        // We want raw Chinese characters in the QR Code.
-        return formatComments(data).replace(/\t/g, ' ').replace(/\n/g, ' ');
+    // Custom formatted text fields - sanitize for TSV structure but keep raw Unicode.
+    if (key === 'comments' || key === 'robotIssues' || key === 'performance') {
+        const raw = data[key as keyof ScoutingData];
+        return formatTextField(raw).replace(/\t/g, ' ').replace(/\n/g, ' ');
     }
 
     if (key === 'autoPath') {
@@ -154,8 +153,10 @@ export const uploadToGoogleSheets = async (data: ScoutingData): Promise<boolean>
       payload.robotPosition = ROBOT_POS_ABBREV[payload.robotPosition];
   }
 
-  // Format Comments - Raw for uploadToGoogleSheets because safeJsonStringify handles escaping
-  payload.comments = formatComments(data);
+  // Format PostMatch text columns - safeJsonStringify handles Unicode escaping.
+  payload.robotIssues = formatTextField(data.robotIssues);
+  payload.performance = formatTextField(data.performance);
+  payload.comments = formatTextField(data.comments);
 
   // Convert autoPath to string format
   payload.autoPath = pathToString(data.autoPath);

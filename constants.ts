@@ -44,7 +44,7 @@ export const TSV_SCHEMA_MATCH = [
   'teleClimbStatus', 'teleClimbTime', 'teleClimbPosition',
   // PostMatch
   'robotDied', 'almostTipped', 'ridingOnBall',
-  'comments'
+  'robotIssues', 'performance', 'comments'
 ];
 
 // Schema for path-only QR code (identifier + path data)

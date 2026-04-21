@@ -106,8 +106,10 @@ export interface ScoutingData {
   robotDied: boolean;            // Robot died/disabled (incl. tipped)
   almostTipped: boolean;         // Almost tipped (near miss)
   ridingOnBall: boolean;         // Riding on ball
-  comments: string;              // Serialized summary of postMatchChecklist
-  postMatchChecklist?: PostMatchChecklist; // Structured state driving comments (optional for legacy records)
+  robotIssues: string;           // Serialized issues list (機器異常)
+  performance: string;           // Serialized performance (flags + collision + ratings)
+  comments: string;              // Free-text comments (extraComments only)
+  postMatchChecklist?: PostMatchChecklist; // Structured state driving the three fields above
 
   // --- Pit Scouting Fields ---
   pitDriveTrain: string;
@@ -161,6 +163,8 @@ export const INITIAL_DATA: ScoutingData = {
   robotDied: false,
   almostTipped: false,
   ridingOnBall: false,
+  robotIssues: '',
+  performance: '',
   comments: '',
   postMatchChecklist: {
     issues: [],
