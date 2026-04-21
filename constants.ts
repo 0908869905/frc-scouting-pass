@@ -31,20 +31,34 @@ export const CLIMB_POSITION_OPTIONS: ClimbPosition[] = ['LeftSide', 'Left', 'Cen
 
 // TSV column order for Match scouting - MUST match ScoutingData keys
 // Note: autoPath is excluded - it goes in a separate QR code
+// v1.6.0 (2026-04-21): 23 → 44 columns. First 17 unchanged; post 27 flattened
+// (11 issue + 6 flag + 3 collision bool + 1 collision text + 5 rating + 1 comments).
+// Removed legacy: robotDied / almostTipped / ridingOnBall / robotIssues / performance.
 export const TSV_SCHEMA_MATCH = [
-  // PreMatch
+  // PreMatch (6)
   'scouterName', 'eventCode', 'matchLevel', 'matchNumber', 'alliance', 'teamNumber',
-  // Auto
+  // Auto (3)
   'autoClimbStatus', 'autoClimbTime', 'autoClimbPosition',
-  // Teleop
+  // Teleop (3)
   'bumpCount', 'trenchCount', 'fuelDroppedOnBumpCount',
-  // Penalty (within Teleop)
+  // Penalty (2)
   'minorPenalty', 'majorPenalty',
-  // Climb (end of Teleop)
+  // Climb (3)
   'teleClimbStatus', 'teleClimbTime', 'teleClimbPosition',
-  // PostMatch
-  'robotDied', 'almostTipped', 'ridingOnBall',
-  'robotIssues', 'performance', 'comments'
+  // --- 17 above unchanged ---
+  // PostMatch Issues (11) — 0/1
+  'issueNoShow', 'issueCrashed', 'issueEStop', 'issueAStop', 'issueLowVoltage',
+  'issueIntakeStuck', 'issueShooterOff', 'issueStuckBump', 'issueHitTrench',
+  'issuePartFell', 'issueMovement',
+  // PostMatch Flags (6) — 0/1
+  'flagYellowCard', 'flagRedCard', 'flagBelowExpected', 'flagTipped',
+  'flagRidingFuel', 'flagStuckBall',
+  // PostMatch Collision (3 bool + 1 text)
+  'hasCollision', 'collisionField', 'collisionRobot', 'collisionTeamNumbers',
+  // PostMatch Ratings (5) — good/ok/bad or empty
+  'ratingPushTrench', 'ratingPushBump', 'ratingShoot', 'ratingHuman', 'ratingDefense',
+  // PostMatch free-text (1)
+  'comments',
 ];
 
 // Schema for path-only QR code (identifier + path data)

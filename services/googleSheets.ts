@@ -65,12 +65,23 @@ const pathToString = (path: PathPoint[]): string => {
   return simplified.map(p => `${Math.round(p.x)},${Math.round(p.y)}`).join('|');
 };
 
-// Helper to format free-text fields (robotIssues / performance / comments)
-// Returns 'None' if empty; otherwise the trimmed text (Unicode preserved).
+// Trim a string value; returns '' for blank/non-string. Caller decides fallback.
 const formatTextField = (value: unknown): string => {
-  const s = typeof value === 'string' ? value.trim() : '';
-  return s !== '' ? s : 'None';
+  return typeof value === 'string' ? value.trim() : '';
 };
+
+// TSV keys whose empty/blank value should output '' (not 'None').
+// All other empty string/null/undefined values keep the legacy 'None' fallback
+// so PreMatch fields (scouterName, teamNumber, etc.) still surface as 'None' when blank.
+const PRESERVE_EMPTY_KEYS = new Set<string>([
+  'comments',
+  'collisionTeamNumbers',
+  'ratingPushTrench',
+  'ratingPushBump',
+  'ratingShoot',
+  'ratingHuman',
+  'ratingDefense',
+]);
 
 // Safely stringify JSON with Unicode escaping to ensure correct transmission
 // across no-cors requests to Google Apps Script (which can sometimes mangle raw UTF-8).
@@ -96,10 +107,9 @@ export const generateTSV = (data: ScoutingData): string => {
   const schema = data.mode === 'Pit' ? TSV_SCHEMA_PIT : TSV_SCHEMA_MATCH;
   
   return schema.map(key => {
-    // Custom formatted text fields - sanitize for TSV structure but keep raw Unicode.
-    if (key === 'comments' || key === 'robotIssues' || key === 'performance') {
-        const raw = data[key as keyof ScoutingData];
-        return formatTextField(raw).replace(/\t/g, ' ').replace(/\n/g, ' ');
+    // Custom formatted text field - sanitize for TSV structure but keep raw Unicode.
+    if (key === 'comments') {
+        return formatTextField(data.comments).replace(/\t/g, ' ').replace(/\n/g, ' ');
     }
 
     if (key === 'autoPath') {
@@ -116,10 +126,9 @@ export const generateTSV = (data: ScoutingData): string => {
        return val.length > 0 ? val.join(',') : 'None';
     }
 
-    // 3. Empty/Null/Undefined -> None
-    // This catches empty strings like defendedBy="", comments="", etc.
+    // 3. Empty/Null/Undefined -> None (or '' for PRESERVE_EMPTY_KEYS)
     if (val === undefined || val === null || String(val).trim() === '') {
-        return 'None';
+        return PRESERVE_EMPTY_KEYS.has(key) ? '' : 'None';
     }
 
     // 4. Abbreviations
@@ -153,10 +162,9 @@ export const uploadToGoogleSheets = async (data: ScoutingData): Promise<boolean>
       payload.robotPosition = ROBOT_POS_ABBREV[payload.robotPosition];
   }
 
-  // Format PostMatch text columns - safeJsonStringify handles Unicode escaping.
-  payload.robotIssues = formatTextField(data.robotIssues);
-  payload.performance = formatTextField(data.performance);
+  // PostMatch free-text: trim; PRESERVE_EMPTY_KEYS keeps it as '' below instead of 'None'.
   payload.comments = formatTextField(data.comments);
+  payload.collisionTeamNumbers = formatTextField(data.collisionTeamNumbers);
 
   // Convert autoPath to string format
   payload.autoPath = pathToString(data.autoPath);
@@ -173,10 +181,9 @@ export const uploadToGoogleSheets = async (data: ScoutingData): Promise<boolean>
     else if (Array.isArray(val)) {
         payload[key] = val.length > 0 ? val.join(',') : 'None';
     }
-    // Empty/Null -> 'None'
-    // comments is already formatted and non-empty, so it skips this
+    // Empty/Null -> 'None' (or '' for PRESERVE_EMPTY_KEYS)
     else if (val === undefined || val === null || String(val).trim() === '') {
-        payload[key] = 'None';
+        payload[key] = PRESERVE_EMPTY_KEYS.has(key) ? '' : 'None';
     }
   });
 

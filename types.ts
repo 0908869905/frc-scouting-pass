@@ -102,14 +102,40 @@ export interface ScoutingData {
   minorPenalty: number;          // Minor penalty count
   majorPenalty: number;          // Major penalty count
 
-  // --- PostMatch (Other + Subjective) ---
-  robotDied: boolean;            // Robot died/disabled (incl. tipped)
-  almostTipped: boolean;         // Almost tipped (near miss)
-  ridingOnBall: boolean;         // Riding on ball
-  robotIssues: string;           // Serialized issues list (機器異常)
-  performance: string;           // Serialized performance (flags + collision + ratings)
-  comments: string;              // Free-text comments (extraComments only)
-  postMatchChecklist?: PostMatchChecklist; // Structured state driving the three fields above
+  // --- PostMatch (Flat Fields, mirrored from postMatchChecklist) ---
+  // PostMatch Issues (11)
+  issueNoShow: boolean;
+  issueCrashed: boolean;
+  issueEStop: boolean;
+  issueAStop: boolean;
+  issueLowVoltage: boolean;
+  issueIntakeStuck: boolean;
+  issueShooterOff: boolean;
+  issueStuckBump: boolean;
+  issueHitTrench: boolean;
+  issuePartFell: boolean;
+  issueMovement: boolean;
+  // PostMatch Flags (6)
+  flagYellowCard: boolean;
+  flagRedCard: boolean;
+  flagBelowExpected: boolean;
+  flagTipped: boolean;
+  flagRidingFuel: boolean;
+  flagStuckBall: boolean;
+  // PostMatch Collision
+  hasCollision: boolean;
+  collisionField: boolean;
+  collisionRobot: boolean;
+  collisionTeamNumbers: string;
+  // PostMatch Ratings (5)
+  ratingPushTrench: ChecklistRating;
+  ratingPushBump: ChecklistRating;
+  ratingShoot: ChecklistRating;
+  ratingHuman: ChecklistRating;
+  ratingDefense: ChecklistRating;
+  // PostMatch free-text (mirrors postMatchChecklist.extraComments)
+  comments: string;
+  postMatchChecklist?: PostMatchChecklist; // UI single source of truth; flat fields derived from it
 
   // --- Pit Scouting Fields ---
   pitDriveTrain: string;
@@ -159,12 +185,37 @@ export const INITIAL_DATA: ScoutingData = {
   minorPenalty: 0,
   majorPenalty: 0,
 
-  // PostMatch
-  robotDied: false,
-  almostTipped: false,
-  ridingOnBall: false,
-  robotIssues: '',
-  performance: '',
+  // PostMatch Issues (all false by default)
+  issueNoShow: false,
+  issueCrashed: false,
+  issueEStop: false,
+  issueAStop: false,
+  issueLowVoltage: false,
+  issueIntakeStuck: false,
+  issueShooterOff: false,
+  issueStuckBump: false,
+  issueHitTrench: false,
+  issuePartFell: false,
+  issueMovement: false,
+  // PostMatch Flags (all false by default)
+  flagYellowCard: false,
+  flagRedCard: false,
+  flagBelowExpected: false,
+  flagTipped: false,
+  flagRidingFuel: false,
+  flagStuckBall: false,
+  // PostMatch Collision
+  hasCollision: false,
+  collisionField: false,
+  collisionRobot: false,
+  collisionTeamNumbers: '',
+  // PostMatch Ratings
+  ratingPushTrench: '',
+  ratingPushBump: '',
+  ratingShoot: '',
+  ratingHuman: '',
+  ratingDefense: '',
+  // PostMatch free-text
   comments: '',
   postMatchChecklist: {
     issues: [],

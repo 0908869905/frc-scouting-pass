@@ -43,54 +43,71 @@ export type FlagKey   = typeof FLAG_KEYS[number];
 export type RatingRow = typeof RATING_ROW_KEYS[number];
 
 // -----------------------------------------------------------------------------
-// Serializers
-// Produce separate human-readable strings for the three spreadsheet columns:
-// robotIssues (機器異常), performance (機器表現 = flags + collision + ratings),
-// and comments (free-text extraComments only).
+// Flat-field derivation
+// Maps the UI's PostMatchChecklist into a Partial<ScoutingData> containing the
+// 26 flat PostMatch fields. Written on every checklist mutation so TSV export
+// can read them directly without re-serializing.
 // -----------------------------------------------------------------------------
 
-type TFunc = (key: string) => string;
+import type { ScoutingData } from '../types';
 
-export function serializeIssues(c: PostMatchChecklist, t: TFunc): string {
-  if (c.issues.length === 0) return '';
-  return c.issues.map(k => t(`issue_${k}`)).join(', ');
-}
+const ISSUE_FIELD_MAP: Record<IssueKey, keyof ScoutingData> = {
+  noShow:       'issueNoShow',
+  crashed:      'issueCrashed',
+  eStop:        'issueEStop',
+  aStop:        'issueAStop',
+  lowVoltage:   'issueLowVoltage',
+  intakeStuck:  'issueIntakeStuck',
+  shooterOff:   'issueShooterOff',
+  stuckBump:    'issueStuckBump',
+  hitTrench:    'issueHitTrench',
+  partFell:     'issuePartFell',
+  movement:     'issueMovement',
+};
 
-export function serializePerformance(c: PostMatchChecklist, t: TFunc): string {
-  const parts: string[] = [];
+const FLAG_FIELD_MAP: Record<FlagKey, keyof ScoutingData> = {
+  yellowCard:    'flagYellowCard',
+  redCard:       'flagRedCard',
+  belowExpected: 'flagBelowExpected',
+  tipped:        'flagTipped',
+  ridingFuel:    'flagRidingFuel',
+  stuckBall:     'flagStuckBall',
+};
 
-  if (c.flags.length > 0) {
-    parts.push(c.flags.map(k => t(`flag_${k}`)).join(', '));
-  }
+const RATING_FIELD_MAP: Record<RatingRow, keyof ScoutingData> = {
+  pushTrench: 'ratingPushTrench',
+  pushBump:   'ratingPushBump',
+  shoot:      'ratingShoot',
+  human:      'ratingHuman',
+  defense:    'ratingDefense',
+};
 
-  if (c.hasCollision) {
-    const coll: string[] = [];
-    if (c.collisionField) coll.push(t('collision_field'));
-    if (c.collisionRobot) {
-      const teams = c.collisionTeamNumbers.trim();
-      coll.push(teams ? `${t('collision_robot')}(${teams})` : t('collision_robot'));
-    }
-    if (coll.length > 0) {
-      parts.push(`[${t('collision_toggle')}] ${coll.join(', ')}`);
-    }
-  }
+// hasCollision clamp: when collision toggle is off, sub-fields do not leak to TSV.
+export function checklistToFlatFields(c: PostMatchChecklist): Partial<ScoutingData> {
+  const out: Partial<ScoutingData> = {};
 
-  const labelRating = (k: RatingRow): string | null => {
-    const v = c.ratings[k];
-    if (v === '') return null;
-    return `${t(`rating_${k}`)}:${t(`rating_${v}`)}`;
-  };
+  const issueSet = new Set(c.issues);
+  (ISSUE_KEYS as readonly IssueKey[]).forEach(k => {
+    (out as Record<string, unknown>)[ISSUE_FIELD_MAP[k]] = issueSet.has(k);
+  });
 
-  const ratings = (RATING_ROW_KEYS as readonly RatingRow[])
-    .map(labelRating)
-    .filter((s): s is string => s !== null);
-  if (ratings.length > 0) parts.push(ratings.join(' | '));
+  const flagSet = new Set(c.flags);
+  (FLAG_KEYS as readonly FlagKey[]).forEach(k => {
+    (out as Record<string, unknown>)[FLAG_FIELD_MAP[k]] = flagSet.has(k);
+  });
 
-  return parts.join(' | ');
-}
+  out.hasCollision         = c.hasCollision;
+  out.collisionField       = c.hasCollision && c.collisionField;
+  out.collisionRobot       = c.hasCollision && c.collisionRobot;
+  out.collisionTeamNumbers = c.hasCollision ? (c.collisionTeamNumbers ?? '').trim() : '';
 
-export function serializeComments(c: PostMatchChecklist): string {
-  return (c.extraComments ?? '').trim();
+  (RATING_ROW_KEYS as readonly RatingRow[]).forEach(row => {
+    (out as Record<string, unknown>)[RATING_FIELD_MAP[row]] = c.ratings[row];
+  });
+
+  out.comments = (c.extraComments ?? '').trim();
+
+  return out;
 }
 
 // -----------------------------------------------------------------------------

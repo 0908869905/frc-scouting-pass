@@ -44,9 +44,6 @@ const translations = {
     defenseRating: "Defense Rating (0-5)",
     driverSkill: "Driver Skill (0-5)",
     speedRating: "Speed Rating (0-5)",
-    robotDied: "Robot Died/Disabled",
-    almostTipped: "Almost Tipped",
-    ridingOnBall: "Riding on Fuel",
     comments: "Comments",
     commentsPlaceholder: "Strategy, strengths, weaknesses...",
 
@@ -235,9 +232,6 @@ const translations = {
     defenseRating: "防守評分 (0-5)",
     driverSkill: "駕駛技術 (0-5)",
     speedRating: "速度評分 (0-5)",
-    robotDied: "機器人死亡/失效",
-    almostTipped: "差點翻車",
-    ridingOnBall: "騎在 Fuel 上",
     comments: "備註",
     commentsPlaceholder: "策略、優勢、劣勢...",
 

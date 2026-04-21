@@ -164,37 +164,6 @@ export const HistoryEditForm: FC<HistoryEditFormProps> = ({ record, onSave, onCa
         </div>
       </div>
 
-      {/* PostMatch Flags */}
-      <div className="grid grid-cols-3 gap-3">
-        <label className="flex items-center gap-2 p-2 bg-slate-800 rounded-lg cursor-pointer">
-          <input
-            type="checkbox"
-            checked={editData.robotDied}
-            onChange={e => updateField({ robotDied: e.target.checked })}
-            className="w-4 h-4"
-          />
-          <span className="text-sm text-white">{t('robotDied')}</span>
-        </label>
-        <label className="flex items-center gap-2 p-2 bg-slate-800 rounded-lg cursor-pointer">
-          <input
-            type="checkbox"
-            checked={editData.almostTipped}
-            onChange={e => updateField({ almostTipped: e.target.checked })}
-            className="w-4 h-4"
-          />
-          <span className="text-sm text-white">{t('almostTipped')}</span>
-        </label>
-        <label className="flex items-center gap-2 p-2 bg-slate-800 rounded-lg cursor-pointer">
-          <input
-            type="checkbox"
-            checked={editData.ridingOnBall}
-            onChange={e => updateField({ ridingOnBall: e.target.checked })}
-            className="w-4 h-4"
-          />
-          <span className="text-sm text-white">{t('ridingOnBall')}</span>
-        </label>
-      </div>
-
       {/* Comments */}
       <div>
         <label className="text-xs text-slate-500 uppercase font-bold">{t('comments')}</label>

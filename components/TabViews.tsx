@@ -10,9 +10,7 @@ import { ScouterNameInput } from './ui/ScouterNameInput';
 import { EventCodeSelect } from './ui/EventCodeSelect';
 import { getMatchTeams } from '../data/eventSchedule';
 import {
-  serializeIssues,
-  serializePerformance,
-  serializeComments,
+  checklistToFlatFields,
   toggleInArray,
   ISSUE_KEYS,
   FLAG_KEYS,
@@ -729,12 +727,9 @@ export const PostMatchTab: FC<TabProps> = ({ data, update }) => {
 
   const updateChecklist = (patch: Partial<PostMatchChecklist>) => {
     const next: PostMatchChecklist = { ...checklist, ...patch };
-    const T = t as (k: string) => string;
     update({
       postMatchChecklist: next,
-      robotIssues: serializeIssues(next, T),
-      performance: serializePerformance(next, T),
-      comments: serializeComments(next),
+      ...checklistToFlatFields(next),
     });
   };
 
