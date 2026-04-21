@@ -91,6 +91,9 @@ export function serializeChecklist(c: PostMatchChecklist, t: TFunc): string {
     .join(' | ');
   if (otherLine) lines.push(otherLine);
 
+  const extra = (c.extraComments ?? '').trim();
+  if (extra) lines.push(extra);
+
   return lines.join('\n');
 }
 

@@ -711,6 +711,8 @@ export const TeleopTab: FC<TabProps> = ({ data, update, handedness }) => {
 
 export const PostMatchTab: FC<TabProps> = ({ data, update }) => {
   const { t } = useLanguage();
+  const [showIssues, setShowIssues] = useState(false);
+  const [showPerformance, setShowPerformance] = useState(false);
 
   const checklist: PostMatchChecklist = data.postMatchChecklist ?? {
     issues: [],
@@ -720,6 +722,7 @@ export const PostMatchTab: FC<TabProps> = ({ data, update }) => {
     collisionRobot: false,
     collisionTeamNumbers: '',
     ratings: { pushTrench: '', pushBump: '', shoot: '', human: '', defense: '' },
+    extraComments: '',
   };
 
   const updateChecklist = (patch: Partial<PostMatchChecklist>) => {
@@ -752,155 +755,195 @@ export const PostMatchTab: FC<TabProps> = ({ data, update }) => {
         <h2 className="text-2xl font-display font-bold text-orange-400">{t('postMatchHeader')}</h2>
       </div>
 
-      {/* Quick Flags (existing toggles) */}
-      <div className="grid grid-cols-1 gap-3">
-        <Toggle label={t('robotDied')} checked={data.robotDied} onChange={v => update({ robotDied: v })} variant="danger" />
-        <Toggle label={t('almostTipped')} checked={data.almostTipped} onChange={v => update({ almostTipped: v })} variant="warning" />
-        <Toggle label={t('ridingOnBall')} checked={data.ridingOnBall} onChange={v => update({ ridingOnBall: v })} variant="warning" />
+      {/* Section: 機器異常 (collapsible) */}
+      <div className="rounded-xl border border-slate-800 bg-slate-900/40 overflow-hidden">
+        <button
+          type="button"
+          onClick={() => setShowIssues(v => !v)}
+          className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-slate-800/50 transition-colors"
+        >
+          <span className="text-sm font-bold text-slate-300 uppercase">
+            {t('issuesHeader')}
+            {checklist.issues.length > 0 && (
+              <span className="ml-2 px-2 py-0.5 rounded-full bg-red-500/20 text-red-300 text-xs">
+                {checklist.issues.length}
+              </span>
+            )}
+          </span>
+          <span className={`text-slate-400 transition-transform ${showIssues ? 'rotate-180' : ''}`}>▾</span>
+        </button>
+        {showIssues && (
+          <div className="px-4 pb-4">
+            <div className="flex flex-wrap gap-2">
+              {ISSUE_KEYS.map(key => {
+                const active = checklist.issues.includes(key);
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => toggleIssue(key)}
+                    className={`${chipBase} ${
+                      active
+                        ? 'bg-red-500/20 border-red-500 text-red-300'
+                        : 'bg-slate-900 border-slate-700 text-slate-400 hover:border-slate-500'
+                    }`}
+                  >
+                    {tAny(`issue_${key}`)}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Section: 機器異常 */}
-      <div className="space-y-2">
-        <label className="text-xs font-bold text-slate-400 uppercase">{t('issuesHeader')}</label>
-        <div className="flex flex-wrap gap-2">
-          {ISSUE_KEYS.map(key => {
-            const active = checklist.issues.includes(key);
-            return (
-              <button
-                key={key}
-                type="button"
-                onClick={() => toggleIssue(key)}
-                className={`${chipBase} ${
-                  active
-                    ? 'bg-red-500/20 border-red-500 text-red-300'
-                    : 'bg-slate-900 border-slate-700 text-slate-400 hover:border-slate-500'
-                }`}
-              >
-                {tAny(`issue_${key}`)}
-              </button>
-            );
-          })}
-        </div>
-      </div>
+      {/* Section: 機器表現 (collapsible) */}
+      <div className="rounded-xl border border-slate-800 bg-slate-900/40 overflow-hidden">
+        <button
+          type="button"
+          onClick={() => setShowPerformance(v => !v)}
+          className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-slate-800/50 transition-colors"
+        >
+          <span className="text-sm font-bold text-slate-300 uppercase">
+            {t('performanceHeader')}
+            {(checklist.flags.length + (checklist.hasCollision ? 1 : 0)) > 0 && (
+              <span className="ml-2 px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-xs">
+                {checklist.flags.length + (checklist.hasCollision ? 1 : 0)}
+              </span>
+            )}
+          </span>
+          <span className={`text-slate-400 transition-transform ${showPerformance ? 'rotate-180' : ''}`}>▾</span>
+        </button>
+        {showPerformance && (
+          <div className="px-4 pb-4 space-y-3">
+            {/* Flag chips */}
+            <div className="flex flex-wrap gap-2">
+              {FLAG_KEYS.map(key => {
+                const active = checklist.flags.includes(key);
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => toggleFlag(key)}
+                    className={`${chipBase} ${
+                      active
+                        ? 'bg-amber-500/20 border-amber-500 text-amber-300'
+                        : 'bg-slate-900 border-slate-700 text-slate-400 hover:border-slate-500'
+                    }`}
+                  >
+                    {tAny(`flag_${key}`)}
+                  </button>
+                );
+              })}
+            </div>
 
-      {/* Section: 機器表現 */}
-      <div className="space-y-3">
-        <label className="text-xs font-bold text-slate-400 uppercase">{t('performanceHeader')}</label>
-
-        {/* Flag chips */}
-        <div className="flex flex-wrap gap-2">
-          {FLAG_KEYS.map(key => {
-            const active = checklist.flags.includes(key);
-            return (
-              <button
-                key={key}
-                type="button"
-                onClick={() => toggleFlag(key)}
-                className={`${chipBase} ${
-                  active
-                    ? 'bg-amber-500/20 border-amber-500 text-amber-300'
-                    : 'bg-slate-900 border-slate-700 text-slate-400 hover:border-slate-500'
-                }`}
-              >
-                {tAny(`flag_${key}`)}
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Collision toggle + sub-options */}
-        <div className="space-y-2 rounded-xl border border-slate-800 bg-slate-900/40 p-3">
-          <Toggle
-            label={t('collision_toggle')}
-            checked={checklist.hasCollision}
-            onChange={v => updateChecklist({
-              hasCollision: v,
-              ...(v ? {} : { collisionField: false, collisionRobot: false, collisionTeamNumbers: '' }),
-            })}
-            variant="warning"
-          />
-          {checklist.hasCollision && (
-            <div className="space-y-2 pl-2">
-              <div className="flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  onClick={() => updateChecklist({ collisionField: !checklist.collisionField })}
-                  className={`${chipBase} ${
-                    checklist.collisionField
-                      ? 'bg-amber-500/20 border-amber-500 text-amber-300'
-                      : 'bg-slate-900 border-slate-700 text-slate-400'
-                  }`}
-                >
-                  {t('collision_field')}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => updateChecklist({
-                    collisionRobot: !checklist.collisionRobot,
-                    ...(checklist.collisionRobot ? { collisionTeamNumbers: '' } : {}),
-                  })}
-                  className={`${chipBase} ${
-                    checklist.collisionRobot
-                      ? 'bg-amber-500/20 border-amber-500 text-amber-300'
-                      : 'bg-slate-900 border-slate-700 text-slate-400'
-                  }`}
-                >
-                  {t('collision_robot')}
-                </button>
-              </div>
-              {checklist.collisionRobot && (
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  placeholder={t('collision_teamNumbers')}
-                  value={checklist.collisionTeamNumbers}
-                  onChange={e => updateChecklist({ collisionTeamNumbers: e.target.value })}
-                  className="w-full bg-slate-900 border-2 border-slate-700 rounded-lg p-2.5 text-white text-sm focus:ring-2 focus:ring-amber-500 outline-none"
-                />
+            {/* Collision toggle + sub-options */}
+            <div className="space-y-2 rounded-xl border border-slate-800 bg-slate-900/40 p-3">
+              <Toggle
+                label={t('collision_toggle')}
+                checked={checklist.hasCollision}
+                onChange={v => updateChecklist({
+                  hasCollision: v,
+                  ...(v ? {} : { collisionField: false, collisionRobot: false, collisionTeamNumbers: '' }),
+                })}
+                variant="warning"
+              />
+              {checklist.hasCollision && (
+                <div className="space-y-2 pl-2">
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => updateChecklist({ collisionField: !checklist.collisionField })}
+                      className={`${chipBase} ${
+                        checklist.collisionField
+                          ? 'bg-amber-500/20 border-amber-500 text-amber-300'
+                          : 'bg-slate-900 border-slate-700 text-slate-400'
+                      }`}
+                    >
+                      {t('collision_field')}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => updateChecklist({
+                        collisionRobot: !checklist.collisionRobot,
+                        ...(checklist.collisionRobot ? { collisionTeamNumbers: '' } : {}),
+                      })}
+                      className={`${chipBase} ${
+                        checklist.collisionRobot
+                          ? 'bg-amber-500/20 border-amber-500 text-amber-300'
+                          : 'bg-slate-900 border-slate-700 text-slate-400'
+                      }`}
+                    >
+                      {t('collision_robot')}
+                    </button>
+                  </div>
+                  {checklist.collisionRobot && (
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      placeholder={t('collision_teamNumbers')}
+                      value={checklist.collisionTeamNumbers}
+                      onChange={e => updateChecklist({ collisionTeamNumbers: e.target.value })}
+                      className="w-full bg-slate-900 border-2 border-slate-700 rounded-lg p-2.5 text-white text-sm focus:ring-2 focus:ring-amber-500 outline-none"
+                    />
+                  )}
+                </div>
               )}
             </div>
-          )}
-        </div>
 
-        {/* Ratings */}
-        <div className="space-y-2 rounded-xl border border-slate-800 bg-slate-900/40 p-3">
-          <div className="text-xs font-bold text-slate-400 uppercase">{t('ratingsSubHeader')}</div>
-          {RATING_ROW_KEYS.map(row => (
-            <div key={row} className="space-y-1">
-              <div className="text-sm text-slate-300">{tAny(`rating_${row}`)}</div>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => setRating(row, '')}
-                  className={`flex-1 py-2 rounded-lg border-2 text-xs font-semibold transition-all active:scale-95 ${
-                    checklist.ratings[row] === ''
-                      ? 'bg-slate-700 border-slate-500 text-white'
-                      : 'bg-slate-900 border-slate-700 text-slate-500'
-                  }`}
-                >
-                  —
-                </button>
-                {RATING_VALUES.map(v => {
-                  const active = checklist.ratings[row] === v;
-                  const colorClass =
-                    v === 'good' ? (active ? 'bg-green-500/30 border-green-500 text-green-300' : 'bg-slate-900 border-slate-700 text-slate-400') :
-                    v === 'ok'   ? (active ? 'bg-amber-500/30 border-amber-500 text-amber-300' : 'bg-slate-900 border-slate-700 text-slate-400') :
-                                   (active ? 'bg-red-500/30 border-red-500 text-red-300'     : 'bg-slate-900 border-slate-700 text-slate-400');
-                  return (
+            {/* Ratings */}
+            <div className="space-y-2 rounded-xl border border-slate-800 bg-slate-900/40 p-3">
+              <div className="text-xs font-bold text-slate-400 uppercase">{t('ratingsSubHeader')}</div>
+              {RATING_ROW_KEYS.map(row => (
+                <div key={row} className="space-y-1">
+                  <div className="text-sm text-slate-300">{tAny(`rating_${row}`)}</div>
+                  <div className="flex gap-2">
                     <button
-                      key={v}
                       type="button"
-                      onClick={() => setRating(row, v)}
-                      className={`flex-1 py-2 rounded-lg border-2 text-xs font-semibold transition-all active:scale-95 ${colorClass}`}
+                      onClick={() => setRating(row, '')}
+                      className={`flex-1 py-2 rounded-lg border-2 text-xs font-semibold transition-all active:scale-95 ${
+                        checklist.ratings[row] === ''
+                          ? 'bg-slate-700 border-slate-500 text-white'
+                          : 'bg-slate-900 border-slate-700 text-slate-500'
+                      }`}
                     >
-                      {tAny(`rating_${v}`)}
+                      —
                     </button>
-                  );
-                })}
-              </div>
+                    {RATING_VALUES.map(v => {
+                      const active = checklist.ratings[row] === v;
+                      const colorClass =
+                        v === 'good' ? (active ? 'bg-green-500/30 border-green-500 text-green-300' : 'bg-slate-900 border-slate-700 text-slate-400') :
+                        v === 'ok'   ? (active ? 'bg-amber-500/30 border-amber-500 text-amber-300' : 'bg-slate-900 border-slate-700 text-slate-400') :
+                                       (active ? 'bg-red-500/30 border-red-500 text-red-300'     : 'bg-slate-900 border-slate-700 text-slate-400');
+                      return (
+                        <button
+                          key={v}
+                          type="button"
+                          onClick={() => setRating(row, v)}
+                          className={`flex-1 py-2 rounded-lg border-2 text-xs font-semibold transition-all active:scale-95 ${colorClass}`}
+                        >
+                          {tAny(`rating_${v}`)}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+          </div>
+        )}
+      </div>
+
+      {/* Free-text comments */}
+      <div className="space-y-2">
+        <label className="text-xs font-bold text-slate-400 uppercase">{t('comments')}</label>
+        <textarea
+          value={checklist.extraComments ?? ''}
+          onChange={e => updateChecklist({ extraComments: e.target.value })}
+          placeholder={t('commentsPlaceholder')}
+          rows={4}
+          className="w-full bg-slate-900 border-2 border-slate-700 rounded-lg p-3 text-white text-sm focus:ring-2 focus:ring-orange-500 outline-none resize-y"
+        />
       </div>
     </div>
   );

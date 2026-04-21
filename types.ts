@@ -61,6 +61,9 @@ export interface PostMatchChecklist {
     human:      ChecklistRating;
     defense:    ChecklistRating;
   };
+
+  // 自由輸入備註
+  extraComments?: string;
 }
 
 // Path point for autonomous route tracking (percentage-based coordinates 0-100)

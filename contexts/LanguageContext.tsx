@@ -58,7 +58,7 @@ const translations = {
 
     // Post Match Checklist - issues
     issue_noShow: "No show",
-    issue_crashed: "Crashed",
+    issue_crashed: "Robot Died/Disabled",
     issue_eStop: "E-stop",
     issue_aStop: "A-stop",
     issue_lowVoltage: "Low voltage",
