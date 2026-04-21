@@ -34,6 +34,9 @@ export const RATING_ROW_KEYS = [
   'shoot',
   'human',
   'defense',
+  'intakeFuel',
+  'transportFuel',
+  'shootFuel',
 ] as const;
 
 export const RATING_VALUES: Exclude<ChecklistRating, ''>[] = ['good', 'ok', 'bad'];
@@ -75,11 +78,14 @@ const FLAG_FIELD_MAP: Record<FlagKey, keyof ScoutingData> = {
 };
 
 const RATING_FIELD_MAP: Record<RatingRow, keyof ScoutingData> = {
-  pushTrench: 'ratingPushTrench',
-  pushBump:   'ratingPushBump',
-  shoot:      'ratingShoot',
-  human:      'ratingHuman',
-  defense:    'ratingDefense',
+  pushTrench:    'ratingPushTrench',
+  pushBump:      'ratingPushBump',
+  shoot:         'ratingShoot',
+  human:         'ratingHuman',
+  defense:       'ratingDefense',
+  intakeFuel:    'ratingIntakeFuel',
+  transportFuel: 'ratingTransportFuel',
+  shootFuel:     'ratingShootFuel',
 };
 
 // hasCollision clamp: when collision toggle is off, sub-fields do not leak to TSV.

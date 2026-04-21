@@ -34,6 +34,8 @@ export const CLIMB_POSITION_OPTIONS: ClimbPosition[] = ['LeftSide', 'Left', 'Cen
 // v1.6.0 (2026-04-21): 23 → 44 columns. First 17 unchanged; post 27 flattened
 // (11 issue + 6 flag + 3 collision bool + 1 collision text + 5 rating + 1 comments).
 // Removed legacy: robotDied / almostTipped / ridingOnBall / robotIssues / performance.
+// v1.7.0 (2026-04-21): 44 → 47 columns. Add 3 fuel-action ratings
+// (ratingIntakeFuel / ratingTransportFuel / ratingShootFuel) before `comments`.
 export const TSV_SCHEMA_MATCH = [
   // PreMatch (6)
   'scouterName', 'eventCode', 'matchLevel', 'matchNumber', 'alliance', 'teamNumber',
@@ -55,8 +57,9 @@ export const TSV_SCHEMA_MATCH = [
   'flagRidingFuel', 'flagStuckBall',
   // PostMatch Collision (3 bool + 1 text)
   'hasCollision', 'collisionField', 'collisionRobot', 'collisionTeamNumbers',
-  // PostMatch Ratings (5) — good/ok/bad or empty
+  // PostMatch Ratings (8) — good/ok/bad or empty
   'ratingPushTrench', 'ratingPushBump', 'ratingShoot', 'ratingHuman', 'ratingDefense',
+  'ratingIntakeFuel', 'ratingTransportFuel', 'ratingShootFuel',
   // PostMatch free-text (1)
   'comments',
 ];

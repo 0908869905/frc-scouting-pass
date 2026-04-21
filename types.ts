@@ -55,11 +55,14 @@ export interface PostMatchChecklist {
 
   // 動作評分
   ratings: {
-    pushTrench: ChecklistRating;
-    pushBump:   ChecklistRating;
-    shoot:      ChecklistRating;
-    human:      ChecklistRating;
-    defense:    ChecklistRating;
+    pushTrench:    ChecklistRating;
+    pushBump:      ChecklistRating;
+    shoot:         ChecklistRating;  // 射回 Alliance Zone
+    human:         ChecklistRating;
+    defense:       ChecklistRating;
+    intakeFuel:    ChecklistRating;
+    transportFuel: ChecklistRating;
+    shootFuel:     ChecklistRating;
   };
 
   // 自由輸入備註
@@ -127,12 +130,15 @@ export interface ScoutingData {
   collisionField: boolean;
   collisionRobot: boolean;
   collisionTeamNumbers: string;
-  // PostMatch Ratings (5)
+  // PostMatch Ratings (8)
   ratingPushTrench: ChecklistRating;
   ratingPushBump: ChecklistRating;
-  ratingShoot: ChecklistRating;
+  ratingShoot: ChecklistRating;  // 射回 Alliance Zone
   ratingHuman: ChecklistRating;
   ratingDefense: ChecklistRating;
+  ratingIntakeFuel: ChecklistRating;
+  ratingTransportFuel: ChecklistRating;
+  ratingShootFuel: ChecklistRating;
   // PostMatch free-text (mirrors postMatchChecklist.extraComments)
   comments: string;
   postMatchChecklist?: PostMatchChecklist; // UI single source of truth; flat fields derived from it
@@ -215,6 +221,9 @@ export const INITIAL_DATA: ScoutingData = {
   ratingShoot: '',
   ratingHuman: '',
   ratingDefense: '',
+  ratingIntakeFuel: '',
+  ratingTransportFuel: '',
+  ratingShootFuel: '',
   // PostMatch free-text
   comments: '',
   postMatchChecklist: {
@@ -230,6 +239,9 @@ export const INITIAL_DATA: ScoutingData = {
       shoot: '',
       human: '',
       defense: '',
+      intakeFuel: '',
+      transportFuel: '',
+      shootFuel: '',
     },
   },
 
