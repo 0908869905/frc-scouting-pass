@@ -401,5 +401,334 @@ Auto/Teleop 階段的倒數計時器（PhaseTimeIndicator）功能被決定移�
 - **確認無引用**: 刪除檔案前用 grep 確認沒有其他地方 import 該組件
 
 ---
-*Last updated: 2026-02-10*
+
+## 2026 FRC 賽事地理發現 (2026-02-10)
+
+### 問題
+Team 6998（台灣南科國際實驗高中）需要確認 2026 年的比賽報名狀態和賽事地點。
+
+### 發現
+透過 The Blue Alliance API 查詢 2026 年完整賽事列表後發現：
+
+1. **2026 年沒有 Malaysia Regional 也沒有 Taiwan Regional**
+   - 亞洲地區賽事極少，Shanghai Regional (2026cnsh) 是亞洲僅有的賽事之一
+   - 東南亞/台灣隊伍需要到其他地區參賽
+
+2. **`2026mslr` 代碼的真正身分**
+   - 原本假設是 Malaysia Regional
+   - 實際是 **Magnolia Regional**（美國密西西比州 Laurel）
+   - 比賽日期：3/18-21（Week 3）
+
+3. **Team 6998 今年報名了 Magnolia Regional**
+   - 45 支已註冊隊伍中包含 Team 6998 Unipards
+   - 這是隊伍首次前往美國密西西比州參賽
+
+4. **Championship 資訊**
+   - 地點：Houston, TX
+   - 日期：4/29-5/2
+   - 8 個 Division（Archimedes, Curie, Daly, Galileo, Hopper, Johnson, Milstein, Newton）
+
+### 選擇理由
+- 使用 TBA 官方 API 作為資料來源，確保準確性
+- 內建 221 個完整賽事到 `events2026.ts`，支援離線查詢
+- `eventSchedule.ts` 新增 `teams` 欄位和 `getEventTeams()` 函數，為隊伍資訊查詢提供基礎
+
+### 對專案的影響
+- `data/events2026.ts`：從 7 個 placeholder → 221 個官方賽事
+- `data/eventSchedule.ts`：新增 teams 陣列和 getEventTeams() 函數
+- 賽程（matches）尚未公布，待 3/18 比賽開始前更新
+
+---
+
+## FieldCanvas 方向自動切換 fullscreen (2026-04-15)
+
+### 問題
+FieldCanvas 全螢幕原本只能手動點按鈕進入，但橫握手機時使用者預期自動進入全螢幕以獲得最大繪圖空間；而轉回直向時也應自動回到分頁視圖。
+
+### 選擇：`window.matchMedia('(orientation: landscape)')`
+
+| 方案 | 優點 | 缺點 |
+|------|------|------|
+| `matchMedia('(orientation: landscape)')` ✅ | 語意明確（專為方向設計）、有專屬 `change` event、支援好 | 需要掛載 listener |
+| `window.innerWidth > innerHeight` | 直觀、無需 API | 語意不精準（軟鍵盤彈出會誤判）、需自己監聽 resize |
+| Screen Orientation API (`screen.orientation`) | 官方方向 API | iOS Safari 相容性較差 |
+
+選 `matchMedia` 是因為它就是為 CSS media query `orientation` 設計的 JS 對應 API，語意對齊且跨瀏覽器穩定。
+
+### 實作要點
+1. 掛載時立即 `applyOrientation()` 一次 — 避免使用者橫握進頁面時需要旋轉一次才觸發
+2. `mql.addEventListener('change', fn)` 而非 deprecated 的 `mql.addListener`
+3. Return cleanup 函數移除 listener — 避免記憶體洩漏
+4. 復用既有 `calcFullscreenSize()` + `setIsFullscreen(true)` 機制，不另寫 fullscreen 邏輯
+
+### 刻意不動的部分
+- **保留手動 `handleEnterFullscreen` 按鈕**：使用者直向時仍可主動進入 fullscreen，保留彈性
+- **Exit 按鈕行為不改**：橫向時按 exit 會被下次 orientation change 的 `applyOrientation()` 覆蓋回 fullscreen，這是預期的 — 如果使用者真的不想要 fullscreen，應該把手機轉直
+
+### 對專案的影響
+- `components/FieldCanvas.tsx` 新增 17 行 useEffect（line 112-127）
+- 不影響桌機版（桌機通常橫向但不會觸發 portrait change，行為維持原樣）
+- PWA manifest 已設定 `orientation: "any"` 所以橫向可正常顯示
+
+---
+
+## PostMatch 結構化勾選清單 (2026-04-20)
+
+### 問題
+使用者要求把 `scouting 最後一頁.md` 的勾選清單套用到 PostMatch 頁面的 comments 區塊。舊版僅有自由輸入 textarea，資料難以統計分析；新需求要列出常見機器異常、表現 flag、撞擊、動作評分等。
+
+### 關鍵決策：序列化到既有欄位 vs 展開成多欄位
+
+| 方案 | 優點 | 缺點 |
+|------|------|------|
+| A. 序列化進既有 `comments` ✅ | TSV schema 不變、code.gs 不需動、後端無痛；舊紀錄相容（optional 欄位） | `comments` 變成混合內容，純文字分析較難 |
+| B. 展開成多個 TSV 欄位 | 資料結構化、方便 SQL/Sheet 分析 | 必須改 `TSV_SCHEMA_MATCH` 與後端 Google Apps Script；打破既有匯出結構 |
+| C. 新增獨立 JSON 欄位 | 保留結構 | 仍需改 schema、code.gs；多加一欄位容易壞 |
+
+選 A 是因為比賽即將開始，任何對 `TSV_SCHEMA` / code.gs 的動作都會阻塞資料流；序列化字串保留讀寫相容性，未來要轉 B 只需 parse 字串即可。
+
+### 選擇：Optional `PostMatchChecklist` + `comments` 為序列化輸出
+- `ScoutingData.postMatchChecklist?` — 設為 optional，UI 內部結構化編輯
+- 每次 update 呼叫 `serializeChecklist(checklist)` 同步寫回 `comments`
+- 舊 localStorage 記錄載入時沒有 `postMatchChecklist`，UI 用空預設值 fallback
+
+### 實作要點
+1. **單一真相來源**：UI 改 `postMatchChecklist` 時，同一個 `update()` 呼叫同時覆寫 `comments` — 避免兩欄位脫節
+2. **常數表分離**：`ISSUE_KEYS`、`FLAG_KEYS`、`RATING_ROW_KEYS` 放在 `utils/checklistSerializer.ts`，UI 渲染與序列化共用同一份，避免 chip 清單與輸出內容對不齊
+3. **條件展開**：Hard collision 選「機器」後才顯示隊號 text input — 減少視覺雜訊
+
+### React 快速連續 click 的 stale state
+測試時觀察到：快速連續點擊 chip toggle，React 批次更新可能讀到 stale state，導致 chip 狀態沒完全進 state。改用 localStorage 直接寫入 + reload 驗證 serializer 輸出，才能確認 5 個評分列都正確分行。生產情境下使用者不會快速連點，屬測試框架方面的限制而非功能性 bug。
+
+### 刻意不動的部分
+- **`HistoryEditForm.tsx`**：YAGNI — 歷史編輯頁仍使用 `comments` textarea 直接編輯。若未來使用者需要在歷史頁重建 checklist UI，再擴充。
+- **TSV schema / code.gs**：完全不動，確保不會阻塞賽事資料匯出流程。
+
+### 對專案的影響
+- `types.ts`：新增 `PostMatchChecklist` interface + 一個 optional 欄位
+- `utils/checklistSerializer.ts`：新檔（~60 行）
+- `contexts/LanguageContext.tsx`：+30 key（雙語）
+- `components/TabViews.tsx`：PostMatchTab comments 段落重寫
+- Bundle：+6.5 kB（291.38 kB gzip）
+
+---
+
+## PostMatch UI 清理 + Comments 拆欄 (2026-04-21)
+
+### 問題
+Phase 38 把 checklist 全部序列化進單一 `comments` 欄位是**暫時**避免動 schema 的權宜之計。實際使用後兩個問題浮現：
+
+1. PostMatch 頁面太擁擠：11 個 issue chips + 6 個 performance chips 永遠全部展開，加上頂部 3 個 Toggle（robotDied / almostTipped / ridingOnBall）功能重複於 issue chips
+2. 匯出到 Sheets 時，單一 `comments` 欄位混合了 Issues / Performance / Collision / Ratings / Free-text，OPR / 分析難以拆分
+
+### 選擇 A：拆成 3 欄 TSV（breaking change），仍保留 UI 結構化
+
+| 方案 | 優點 | 缺點 |
+|------|------|------|
+| 保留單欄 + 改用 JSON | schema 不破 | JSON 對 Google Sheets 不友善，仍需後端 parse |
+| **3 欄：robotIssues / performance / comments** ✅ | 分析友善、free-text 與結構化分離、可直接 SQL | 需改 TSV_SCHEMA（21 → 23）+ 既有試算表要遷移標頭 |
+| 7+ 欄（每個子區段獨立） | 最極致的結構化 | 欄位爆炸、QR 長度壓力、schema 維護成本高 |
+
+選 3 欄是因為 `performance` 在分析時通常整體評估（flag+collision+ratings 綁在一起），分開成 7 欄過度正規化；但把 free-text 從結構化資料中抽離是關鍵 — 自由文字永遠要獨立欄，否則 regex 拆解很脆弱。
+
+### TSV Schema 變更（21 → 23 欄）
+
+```
+舊:  ..., robotDied, almostTipped, ridingOnBall, comments                              (21)
+新:  ..., robotDied, almostTipped, ridingOnBall, robotIssues, performance, comments    (23)
+```
+
+`robotDied` / `almostTipped` / `ridingOnBall` 雖然 UI Toggle 移除，欄位**保留在 schema 中且永遠為 false** — 這是刻意保留以避免再次動 schema（未來若要復原 UI 直接補回 Toggle 即可）。
+
+### 遷移陷阱：既有 Google Sheets 仍是 21 欄標頭
+
+部署新 `Code.gs` 後，試算表的第一行 header 還是舊 21 欄。`getOrCreateSheet` 只在工作表**不存在**或標頭**全空**時才會寫入標頭，對已有資料的試算表不會自動更新。
+
+**解法**：手動 GET `?action=fixHeaders` 觸發一次。Scanner repo 的 `fixHeaders` 已設計為「讀取 SCHEMA 常數並覆寫第一行」— 所以只要 Code.gs 檔案是新版，呼叫一次就能把既有試算表升級到 23 欄。
+
+**未來若再遇到 schema 擴充**，記得在 PR description / PROGRESS.md 明確標註「部署後須跑 `?action=fixHeaders` 一次」，避免 scouter 上傳資料後欄位錯位。
+
+### UI Pattern：可摺疊區段 + 數量 badge
+
+11 + 6 個 chip 永遠展開會讓 PostMatch 頁面視覺過重。改為預設收合，header 顯示啟用項目數量 badge（例：`機器異常 (2)`），scouter 一眼就知道有沒有勾選東西，不需每次展開檢查。
+
+這個 pattern 可推廣到未來任何有「多 chip toggle」的頁面（例如 Pit Scouting 的可選機構陣列）。
+
+### 刻意不動的部分
+- `robotDied` / `almostTipped` / `ridingOnBall` boolean 欄位保留於 `types.ts` + `TSV_SCHEMA_MATCH`，避免「有一天想復原 Toggle」時再次動 schema
+- `HistoryEditForm.tsx` 再次 YAGNI — 歷史頁面仍用最原始 textarea 編輯 `comments`，不重建三欄 UI
+
+### 對專案的影響
+- `types.ts`：`ScoutingData` +2 欄（robotIssues / performance），`PostMatchChecklist.extraComments?` 新欄位
+- `constants.ts`：TSV_SCHEMA_MATCH 21 → 23
+- `utils/checklistSerializer.ts`：1 函數 → 3 函數（serializeIssues / serializePerformance / serializeComments）
+- `services/googleSheets.ts`：formatComments → 通用 formatTextField（3 個欄位共用同一函數）
+- `components/TabViews.tsx`：PostMatchTab 減 3 Toggle + 加 2 collapse + 1 textarea
+- **遷移成本**：需 Google Sheets 端呼叫 `?action=fixHeaders` 一次（Scanner repo Code.gs 已準備好）
+
+---
+
+## Scanner 長度 23 QR 歧義與雙用 schema (2026-04-21)
+
+### 問題
+Scouting PASS 的 Match Data 從 21 欄擴充到 23 欄後，Scanner 的 `detectQRType()` 遇到碰撞：
+- Match (v1.5.0)：23 欄
+- Pit External V2 legacy：23 欄（含 stability）
+- Pit External 新 V2：23 欄（含 version 前綴）
+
+三者長度完全一樣，純靠 `values.length` 無法區分。
+
+### 選擇：用 `values[0]` 格式規則區分
+
+Pit External 的 `values[0]` 一定是：
+- 新 V2 → 以 `v` 開頭的字串（`v2`, `v3`, ...）
+- legacy V1 → 純數字（teamNumber，如 `6998`）
+
+Match 的 `values[0]` 是 `scouterName` — 字串，不會以 `v + 數字` 開頭（掃員名字通常不是 `v1` `v2`），也不會是純數字。
+
+**Decoder 規則**（`src/utils/decoder.ts`）：
+```
+length === 23:
+  values[0] matches /^v\d/i       → pit-external (新 V2)
+  values[0] matches /^\d+$/       → pit-external (legacy)
+  otherwise                        → match
+```
+
+### 邊緣情況（不擔心）
+- Scouter 把名字寫成 `v3cool` → 會被誤判為 pit-external。但這是極端命名，且後端 Code.gs 的欄位名稱匹配會導致資料寫錯工作表時立刻發現 — 在實戰中先不處理
+- 純數字掃員名字（如 `6998`）→ 會被判為 pit-external。實際團隊慣例用姓名或綽號，不會發生
+
+### 為什麼不加 QR 類型標頭
+歷史 QR 不能重編碼，要維持向下相容。且現有 QR 長度非常緊（壓縮率敏感），加 1~2 char 前綴會增加 LZ-String 壓縮負擔。格式規則判斷已足夠實用。
+
+---
+
+## PostMatch 扁平化欄位設計決策 (2026-04-21 第二段)
+
+### 問題
+Phase 40 把 `comments` 拆成 `robotIssues` / `performance` / `comments` 三欄後，`robotIssues` 和 `performance` 仍是「逗號串接的彙總文字」（例：`Low voltage, Stuck on bump`）。實際分析時要對單一項目（例：有多少場 `lowVoltage`？）做 COUNTIF / SUMIF 都要靠 regex，非常脆弱。需要進一步扁平化到獨立欄位。
+
+### 三個設計決策與選擇理由
+
+#### Decision 1: Ratings 保留文字，不拆 0/1
+- **選項 A**：5 × 3 = 15 欄 one-hot（`ratingPushTrenchGood`, `ratingPushTrenchOk`, ...）
+- **選項 B**：5 欄數字 0/1/2（空=未評）
+- **選項 C ✅**：5 欄文字 `good` / `ok` / `bad` / 空
+
+**為何選 C**：
+- rating 是**有序 enum**，one-hot 太稀疏（1 場只有 1 個欄位是 1，其他 2 欄是 0，每列浪費 10 欄）
+- 文字欄位 Google Sheets `COUNTIF(A:A, "good")` 即可統計，比數字 0/1/2 對分析者更直觀（不用記 0=bad 還是 0=good）
+- 「空」本身就代表「未評分」，不需要額外的 null 表示
+
+#### Decision 2: Collision 用 3 bool + 1 text 組合
+- **選項 A**：單欄文字 `Robot(1234,5678)` 或 `Field`
+- **選項 B ✅**：`hasCollision` (0/1) + `collisionField` (0/1) + `collisionRobot` (0/1) + `collisionTeamNumbers` (text)
+- **選項 C**：完全拆（每個隊號一欄）— 不可行，隊號數量不定
+
+**為何選 B**：
+- `hasCollision` 當主 filter：`FILTER(data, hasCollision=1)` 一行搞定
+- `collisionField` / `collisionRobot` 分開統計「場地碰撞」vs「機器碰撞」頻率
+- 隊號作為 detail 資料放 text 欄，分析時再 parse（通常 drill-down 才需要）
+- 關鍵原則：**布林旗標 + 文字細節** 比 **單欄混合字串** 更 pivot-friendly
+
+#### Decision 3: 一刀清掉 `robotDied` / `almostTipped` / `ridingOnBall`
+- **選項 A ✅**：直接從 schema 移除 3 欄
+- **選項 B**：保留為永遠 false 的 dead 欄位（Phase 40 的做法）
+
+**為何選 A**：
+- Phase 39 移除 UI Toggle 後，這三欄 **確認永遠寫不到**（新資料永遠 false，舊 localStorage 資料雖有值但 UI 也改不到）
+- 留著只會讓後續 schema 擴充（例如這次 23 → 44）多 3 欄雜訊
+- 「同功能已在 issue chips / flag chips 裡」— `robotDied` = `issueCrashed`、`almostTipped` = `flagTipped`、`ridingOnBall` = `flagRidingFuel`，保留 = 資訊重複
+- **原則**：dead 欄位要**趁 schema 本來就要大改時一起清**，比之後單獨清更省遷移成本
+
+### 通用原則（可推廣）
+1. **文字 enum vs one-hot**：值域 ≤ 3-4 且有序時，文字欄更緊湊；值域大或無序時才考慮 one-hot
+2. **布林 + 細節 text**：比單欄混合字串（含條件性內容）更利於 pivot / filter
+3. **Dead schema 清理時機**：跟其他 breaking change 一起做，避免多次遷移（使用者只要跑一次 `?action=fixHeaders`）
+
+### 相關文件
+- Spec: `FRC/docs/superpowers/specs/2026-04-21-postmatch-flat-fields-design.md`
+- Commit: `33c87f5` — `docs: add PostMatch flat-fields design spec`（尚未 push）
+
+---
+
+## FRC 6998 Championship eventCode 大小寫 (2026-04-21)
+
+TBA event key 慣例是全小寫（`2026cmptx`），但 Scouting PASS 的 `events2026.ts` 存的是官方大寫（`2026CMPTX`）。原本 `INITIAL_DATA.eventCode` 用小寫會導致 UI 下拉選單顯示未選中狀態（雖然 `EventCodeSelect` 有 case-insensitive fallback 比對，仍有視覺不一致）。
+
+統一改為大寫存入 state。上傳 TSV 時若後端需要小寫可再轉（目前 Code.gs 對 eventCode 做 case-insensitive 比對，無需轉）。
+
+---
+
+## PostMatch 扁平化 collision clamp 設計 (2026-04-21 第三段)
+
+### 問題
+`checklistToFlatFields(c: PostMatchChecklist)` 產出 26 個 flat 欄位時，3 個 collision bool (`collisionField / collisionRobot` 等) + 1 個 text (`collisionTeamNumbers`) 在**使用者先勾選 Hard collision → 填隊號 → 取消 Hard collision** 的流程下，`PostMatchChecklist` 內部仍殘留 `collisionField=true / collisionTeamNumbers='1234'` 等值（因為 UI 只是把 `hasCollision` 切回 false，沒清子欄位）。若直接輸出，TSV / Sheets 會寫入「主旗標 0、細節欄卻有內容」的矛盾資料。
+
+### 選擇：以 `hasCollision` 為主的 clamp 邏輯
+在 serializer 內部：
+```
+hasCollision: c.hasCollision ? 1 : 0,
+collisionField: (c.hasCollision && c.collisionField) ? 1 : 0,
+collisionRobot: (c.hasCollision && c.collisionRobot) ? 1 : 0,
+collisionTeamNumbers: c.hasCollision ? (c.collisionTeamNumbers ?? '') : '',
+```
+
+每個 collision 子欄位都跟 `hasCollision` AND 起來，關閉主旗標即全部歸零。這樣 UI 狀態保留（使用者再次勾 Hard collision 時隊號還在），但輸出永遠一致。
+
+### 選擇理由
+- **簡單優於乾淨**：另一種做法是在 UI 切 `hasCollision=false` 時同時清子欄位，但這會把「使用者暫時取消」變成「資料永久遺失」，體驗變差
+- **輸出層比輸入層更適合做 consistency**：reactor pattern — 讓 state 容忍不一致，在序列化這道關卡統一規範化
+- 與 `PRESERVE_EMPTY_KEYS` 搭配：子欄位 clamp 成 `0` / `''` 後，Sheets 端看到空字串而非 `'None'`（避免分析時 `COUNTIF(..., "None")` 混在 legit None 裡）
+
+### 可推廣的原則
+**主旗標 + 細節欄位**的 schema（這次 collision、未來任何類似 pattern），在 serializer 層用主旗標 clamp 所有細節欄位，比在 UI 層做 cascading reset 穩定且可測。
+
+---
+
+## Scanner repo Schema 三處鏡像（2026-04-21 第三段）
+
+### 問題現象
+Phase 44 完成 Scouting PASS 端 47 欄 schema 後，僅同步 scanner repo 的 `google-apps-script/Code.gs`（後端）。使用者掃 QR 時報：
+```
+[detectQRType] Unknown field count: 47, expected: match=23
+```
+且下游出現「路徑 QR 抓不到對應 Match 的資料」症狀。
+
+### 根因分析
+Scanner repo 的 TSV schema 有**三個鏡像位置**：
+
+| 位置 | 功能 | 漏同步的後果 |
+|------|------|-------------|
+| `google-apps-script/Code.gs` | 後端接收並寫入 Sheets（doPost + fixHeaders） | Sheets 欄位錯位（但本次已同步） |
+| `src/constants/schema.ts` | 前端解 QR 時用來 mapping values[] → 命名物件 | **未同步**：47 欄 QR 的 values 無法映射到物件欄位 |
+| `src/utils/decoder.ts` | `detectQRType` 用長度比對決定 QR 種類 | **未同步**：length 47 不匹配 23 → 回 `'unknown'` |
+
+本次事件是 2 + 3 都漏，`detectQRType` 先 fail → QR 歸類 `'unknown'` → `src/constants/schema.ts` 的映射邏輯根本走不到。即使映射也失敗，因為 schema 仍是 23 欄。
+
+下游「路徑抓不到資料」的表面症狀，其實是因為 Match QR 解碼失敗 → `getMatchKey()` 從 `unknown` 物件的 `field1/field2/...` 取值 → 空殼 key → Path QR 無法用 `(eventCode, matchNumber, teamNumber)` 找到任何 Match 配對。**是 Match 解碼失敗的下游症狀，不是路徑查詢邏輯的 bug**。
+
+### 修復（commit `31d7844`）
+- `src/constants/schema.ts` — `TSV_SCHEMA_MATCH` 完整替換為 47 欄；`FIELD_LABELS` 重建（11 issue + 6 flag + 4 collision + 8 rating 對應 label）
+- `src/utils/decoder.ts` — `detectQRType` 簡化：match 現在 47 欄不再與 pit-external-v2/legacy 23 欄衝突；原本的 length-23 三重歧義規則（`values[0]` 正則區分）現在簡化為「23-col 直接 pit-external」
+- `src/i18n/locales/en.ts` + `zh-TW.ts` — `fields` 字典完全重建（保留舊 key 會讓編輯器混亂）
+
+### 為何選 `PRESERVE_EMPTY_KEYS` 而非擴充 `formatTextField`
+選擇設計時的 trade-off：
+
+| 方案 | 優點 | 缺點 |
+|------|------|------|
+| **A. `PRESERVE_EMPTY_KEYS` Set** ✅ | 明確列舉哪些 key 要保留空字串（whitelist 語意）；不影響其他欄位（PreMatch 的 scouterName 等仍可保留原 `'None'` fallback 行為） | 新增 key 時要記得加入 Set |
+| B. 擴充 `formatTextField` 多一個 flag 參數 | 邏輯集中 | 呼叫點要重新決定每個欄位的 flag；容易忘；廣泛影響 |
+| C. 完全移除 `'None'` fallback | 最乾淨 | breaking change — PreMatch 欄位很多分析公式預期 `'None'` 代表未填，直接改會連動出錯 |
+
+**為何選 A**：PostMatch 扁平欄位是**新增的**，可以完全自訂空值規則；既有 PreMatch 欄位則應維持 `'None'` 相容性避免破壞下游分析。Set 化既聚焦變更範圍，也讓未來新增欄位時有明確 opt-in/opt-out 位置。
+
+### 預防措施（已存 memory）
+1. 改 `TSV_SCHEMA_*` 時跑一次「三處鏡像 checklist」：Code.gs / schema.ts / decoder.ts 必須同時更新
+2. `detectQRType` 改動後，拿 47-col real QR 跑一次端對端解碼驗證，而非只信 Code.gs build pass
+3. i18n locales 漏更新不會 block 功能（會 fallback 到 raw key），但顯示會變醜，不屬於阻斷性漏點
+
+---
+*Last updated: 2026-04-21 (第三段 session — flat-fields impl + scanner schema mirror discovery)*
 *Note: Video Analyzer 相關內容已移至獨立專案*

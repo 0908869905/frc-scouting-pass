@@ -1704,3 +1704,640 @@ Scouting PASS 8 項 UX 改進功能實作 — 震動確認、自動保存、Scou
 
 ---
 *Last updated: 2026-02-10*
+
+---
+
+## Session: 2026-02-10 (Part 2)
+
+### Overview
+更新 2026 FRC 官方賽事資料 -- 從 TBA 取得 221 個賽事、Magnolia Regional 45 支隊伍
+
+---
+
+### Phase 34: 2026 FRC 官方賽事資料更新
+- **Status:** ✅ complete
+- **Completed:** 2026-02-10
+
+#### Task 34.1: 取得 2026 完整賽事列表
+- 從 The Blue Alliance 網站取得 2026 年完整 221 個官方 FRC 賽事
+- 更新 `data/events2026.ts`：7 個 placeholder 事件 → 221 個官方賽事
+- 按 Week 分組：Preseason + Week 1-7 + Championship
+
+#### Task 34.2: 更新 Magnolia Regional 賽程資料
+- 假的 Malaysia Regional → 真實的 Magnolia Regional (2026mslr)
+- 加入 45 支已註冊隊伍（含 Team 6998 Unipards）
+- 新增 `teams` 欄位和 `getEventTeams()` 函數
+- 賽程尚未公布（比賽 3/18 開始）
+
+#### Task 34.3: TBA API Key 更新
+- 更新 `C:\Users\USER\.claude.json` 中的 TBA API Key
+
+#### Task 34.4: Build 驗證
+- `npm run build` 通過
+- JS bundle: 284 KB
+
+---
+
+### 重要發現
+- 2026 年沒有 Malaysia Regional 也沒有 Taiwan Regional
+- `2026mslr` 代碼現在是 Magnolia Regional（美國密西西比州 Laurel）
+- Team 6998 今年報名了 Magnolia Regional，3/18-21（Week 3）
+- Shanghai Regional (2026cnsh) 是亞洲唯一的賽事之一
+- Championship 在 Houston，4/29-5/2，有 8 個 Division
+
+### 完成項目
+- [x] 從 TBA 取得 2026 年 221 個官方 FRC 賽事
+- [x] 更新 `data/events2026.ts`（7 → 221 個賽事，按 Week 分組）
+- [x] 更新 `data/eventSchedule.ts`（Magnolia Regional + 45 支隊伍 + getEventTeams()）
+- [x] TBA API Key 更新
+- [x] Build 驗證通過（JS bundle: 284 KB）
+- [x] Git commit & push
+
+### 修改檔案
+- `FRC/data/events2026.ts` - 221 個官方賽事（來源：TBA）
+- `FRC/data/eventSchedule.ts` - Magnolia Regional 45 支隊伍 + getEventTeams()
+- `FRC/PROGRESS.md` - session 記錄
+- `FRC/CLAUDE.md` - 文件更新
+- `FRC/FINDINGS.md` - 文件更新
+- `C:\Users\USER\.claude.json` - TBA API Key 更新
+
+### Git Commits
+- `fe4fb59` - feat: update 2026 event data from TBA (221 events, Magnolia Regional teams)
+
+---
+
+## 5-Question Reboot Check
+
+1. **做什麼？** 更新 2026 FRC 官方賽事資料（221 個賽事 + Magnolia Regional 45 支隊伍）
+2. **進度？** ✅ 全部完成，已 commit & push
+3. **下一步？** 等賽程公布後更新 `eventSchedule.ts` 的 matches 資料（Magnolia Regional 3/18 開始）
+4. **阻礙？** 賽程尚未公布（比賽 3/18 才開始）
+5. **檔案？** `FRC/data/events2026.ts`, `FRC/data/eventSchedule.ts`
+
+---
+*Last updated: 2026-02-10*
+
+---
+
+## Session: 2026-03-05
+
+### Overview
+Climb Position 預設值修正 — climb status 為 None 時 position 改為 None
+
+---
+
+### Phase 35: Climb Position 預設值修正
+- **Status:** ✅ complete
+- **Completed:** 2026-03-05
+
+#### Task 35.1: ClimbPosition 類型加入 None
+- ClimbPosition 類型新增 'None' 選項
+- INITIAL_DATA 的 autoClimbPosition 和 teleClimbPosition 預設從 'Center' 改為 'None'
+
+#### Task 35.2: Climb Status None 重置邏輯
+- Auto climb status 選 None 時，position 重置為 'None'（原 'Center'）
+- Teleop climb status 選 None 時，position 重置為 'None'（原 'Center'）
+
+---
+
+### 完成項目
+- [x] ClimbPosition 類型加入 'None'
+- [x] INITIAL_DATA autoClimbPosition 預設改為 'None'
+- [x] INITIAL_DATA teleClimbPosition 預設改為 'None'
+- [x] Auto climb None 重置 position 為 'None'
+- [x] Teleop climb None 重置 position 為 'None'
+
+### 修改檔案
+- `types.ts` - ClimbPosition 加入 'None'，INITIAL_DATA 預設值更新
+- `components/TabViews.tsx` - climb status None 重置邏輯更新
+
+### Git Commits
+- `d98922d` - fix: climb position defaults to None when climb status is None
+
+---
+
+## Session: 2026-04-15
+
+### Overview
+FieldCanvas 自動路徑畫布根據裝置方向自動切換全螢幕 — 橫向進入 fullscreen，直向退出回到分頁視圖
+
+---
+
+### Phase 36: FieldCanvas 方向自動切換全螢幕
+- **Status:** ✅ complete
+- **Completed:** 2026-04-15
+
+#### Task 36.1: 方向偵測 useEffect
+- 在 `components/FieldCanvas.tsx` line 112-127 新增 useEffect
+- 使用 `window.matchMedia('(orientation: landscape)')` 偵測裝置方向
+- 橫向 → `setCanvasSize(calcFullscreenSize())` + `setIsFullscreen(true)`（復用既有 fullscreen 機制）
+- 直向 → `setIsFullscreen(false)`
+- 掛載時立即執行一次 `applyOrientation()` 確認初始狀態
+- 使用 `mql.addEventListener('change', ...)` 監聽方向變更
+- 回傳 cleanup function 正確移除 listener 避免記憶體洩漏
+
+#### Task 36.2: 技術決策
+- 選用 `matchMedia` 而非 `window.innerWidth > innerHeight` — 語意更精準，且有專屬的 change event
+- 保留手動 `handleEnterFullscreen` 按鈕 — 使用者仍可在直向模式主動進入 fullscreen
+- Exit 按鈕行為未修改 — 在橫向時點 exit 會被下一次 orientation change 覆蓋回來，這是預期行為
+
+---
+
+### 完成項目
+- [x] 新增 orientation 偵測 useEffect
+- [x] 橫向自動進入 fullscreen
+- [x] 直向自動退出 fullscreen
+- [x] 掛載時立即檢查當前方向
+- [x] Cleanup listener 避免記憶體洩漏
+- [x] `npm run build` 通過（2.59s，無 TypeScript 錯誤）
+
+### 修改檔案
+- `components/FieldCanvas.tsx` - 新增方向自動切換 fullscreen 的 useEffect（+17 行）
+
+### Git Commits
+- `fb6b2d6` - feat: auto fullscreen FieldCanvas on landscape orientation
+- 已 push 到 origin/main（`d98922d..fb6b2d6`）
+- 1 file changed, 17 insertions(+)
+- 註：其他未 commit 的 md 檔案（CLAUDE.md/FINDINGS.md/PROGRESS.md）本次未處理
+
+---
+
+## 5-Question Reboot Check
+
+1. **做什麼？** FieldCanvas 方向自動切換全螢幕
+2. **進度？** ✅ 完成並 push（commit fb6b2d6）
+3. **下一步？** 實機測試確認橫向/直向切換行為；無其他明確後續
+4. **阻礙？** 無
+5. **檔案？** `components/FieldCanvas.tsx`
+
+---
+
+## Session: 2026-04-15 (Part 2)
+
+### Overview
+修改預設賽事代碼 — 從 `2026MSLR`（Magnolia Regional）改為 `2026cmptx`（FIRST Championship, Houston）
+
+---
+
+### Phase 37: 預設 eventCode 更新為 Championship
+- **Status:** ✅ complete
+- **Completed:** 2026-04-15
+
+#### Task 37.1: 確認目標賽事代碼
+- 在 `data/events2026.ts:241` 找到 `2026cmptx`
+- FIRST Championship, Houston, 2026-04-29 ~ 2026-05-02
+- 屬於 Championship 分類
+
+#### Task 37.2: 修改 INITIAL_DATA.eventCode
+- `types.ts:105` 預設值從 `'2026MSLR'` 改為 `'2026cmptx'`
+- 單行變更（+1 −1）
+
+#### Task 37.3: Build 驗證
+- `npm run build` 通過（5.29s）
+- JS bundle: 284.67 kB
+- 無 TypeScript 錯誤
+
+---
+
+### 完成項目
+- [x] 在 events2026.ts 確認 Championship 賽事代碼
+- [x] 更新 `types.ts:105` INITIAL_DATA.eventCode 預設值
+- [x] `npm run build` 通過（5.29s，bundle 284.67 kB）
+- [x] Git commit & push 到 origin/main
+
+### 修改檔案
+- `FRC/types.ts` line 105 - eventCode 預設 `'2026MSLR'` → `'2026cmptx'`
+
+### Git Commits
+- `2f58849` - fix: default eventCode to 2026cmptx (FIRST Championship)
+- 已 push 到 origin/main（`fb6b2d6..2f58849`）
+- 1 file changed, 1 insertion(+), 1 deletion(-)
+- 註：僅 commit `types.ts`；CLAUDE.md/FINDINGS.md/PROGRESS.md 的既有未 commit 變更保持未動（延續上次 session 作法）
+
+---
+
+## 5-Question Reboot Check
+
+1. **做什麼？** 將預設 eventCode 從 2026MSLR 改為 2026cmptx (FIRST Championship)
+2. **進度？** ✅ 完成並 push（commit 2f58849）
+3. **下一步？** 無明確後續；視需要可 commit 累積的 md 檔案變更
+4. **阻礙？** 無
+5. **檔案？** `FRC/types.ts:105`, `FRC/data/events2026.ts:241`
+
+---
+
+## Session: 2026-04-20 (Part 3)
+
+### Overview
+PostMatch Comments 改為結構化勾選清單 — 依 `scouting 最後一頁.md` 內容加入機器異常、機器表現、劇烈撞擊、動作評分四個區段，序列化回既有 `comments` 欄位（TSV schema 不變、code.gs 不需更動）
+
+---
+
+### Phase 38: PostMatch 勾選清單改造
+- **Status:** ✅ complete
+- **Completed:** 2026-04-20
+
+#### Task 38.1: Brainstorming 與 Spec
+- 確認三個關鍵設計決策：
+  - 儲存方式 A — 序列化字串寫回既有 `comments`（避免動 TSV schema / code.gs）
+  - 自由文字 C — 不保留整體 free-form，只保留「隊友/對手隊號」單一 input
+  - i18n A — 新增雙語 key（英文 + 繁中）
+- 撰寫 spec：`FRC/docs/superpowers/specs/2026-04-20-postmatch-checklist-design.md`
+
+#### Task 38.2: 型別與預設值（types.ts）
+- 新增 `ChecklistRating` type（`'' | 'good' | 'ok' | 'bad'`）
+- 新增 `PostMatchChecklist` interface（issues/flags/collision/collisionTeams/ratings）
+- `ScoutingData.postMatchChecklist?` 設為 optional — 舊 localStorage 資料可 fallback
+- `INITIAL_DATA.postMatchChecklist` 預設空集合
+
+#### Task 38.3: 序列化工具（utils/checklistSerializer.ts）
+- 新增常數：`ISSUE_KEYS`（11）、`FLAG_KEYS`（6）、`RATING_ROW_KEYS`（5）、`RATING_VALUES`
+- `serializeChecklist()` — 把 checklist 轉成多行 `[Section] value` 字串，寫回 `comments`
+- `toggleInArray()` — chip 切換 helper
+
+#### Task 38.4: i18n（LanguageContext.tsx）
+- 新增 ~30 個雙語 key：
+  - Section header：issuesHeader / performanceHeader / collisionSubHeader / ratingsSubHeader
+  - Issue chips：11 個 `issue_*`
+  - Performance flags：6 個 `flag_*`
+  - Collision：4 個 `collision_*`（toggle label、field/robot、team input placeholder）
+  - Rating：5 個評分列 label + 3 個評分值（good / ok / bad）
+
+#### Task 38.5: UI 重寫（TabViews.tsx → PostMatchTab）
+- 移除舊有 comments textarea，改為結構化 UI：
+  1. 機器異常（Robot Issues）— 11 個紅色 chip toggle
+  2. 機器表現（Performance）— 6 個琥珀 chip toggle
+  3. 劇烈撞擊（Hard collision）— toggle + field/robot chips + 條件顯示的隊號 text input
+  4. 動作評分（Action Ratings）— 5 行 4 段式 segmented button（—/很好/還不錯/差）
+- 所有變更透過 `update({ postMatchChecklist, comments: serializeChecklist(...) })` 同步回 state
+
+#### Task 38.6: 驗證
+- `npm run build` 通過（1.77s，bundle 291.38 kB，+6.5 kB）
+- 瀏覽器自動化實測：chip toggle、collision 條件顯示、隊號 input、localStorage 序列化
+- 確認 TSV schema 未變 → code.gs 不需動
+
+---
+
+### 完成項目
+- [x] Brainstorming 三個設計決策（儲存 A / 自由文字 C / i18n A）
+- [x] 撰寫 spec 文件
+- [x] 新增 `PostMatchChecklist` type 與 `INITIAL_DATA` 預設值
+- [x] 新增 `utils/checklistSerializer.ts`（常數 + 序列化 + toggle helper）
+- [x] 新增 ~30 個雙語 i18n key
+- [x] 重寫 `PostMatchTab` 的 comments 區塊
+- [x] `npm run build` 通過
+- [x] 瀏覽器實測通過
+- [x] 5 個 feature commit 全部 push 到 origin/main
+
+### 修改檔案
+- `FRC/types.ts` — 新增 `ChecklistRating`、`PostMatchChecklist`、`ScoutingData.postMatchChecklist?`、`INITIAL_DATA.postMatchChecklist`
+- `FRC/utils/checklistSerializer.ts`（新檔）— 常數表 + `serializeChecklist()` + `toggleInArray()`
+- `FRC/contexts/LanguageContext.tsx` — 新增 ~30 個雙語 key
+- `FRC/components/TabViews.tsx` — 重寫 `PostMatchTab` comments 區塊為結構化 checklist UI
+- `FRC/docs/superpowers/specs/2026-04-20-postmatch-checklist-design.md`（新檔）
+- `FRC/docs/superpowers/plans/2026-04-20-postmatch-checklist.md`（新檔，未 commit）
+
+### Git Commits
+- 5 個 commit 已 push 到 origin/main (`2f58849..5a771f0`)
+- `94bec60` - docs: add PostMatch checklist design spec
+- `7ff22bc` - feat(types): add PostMatchChecklist interface and default
+- `f44e102` - feat(utils): add PostMatchChecklist serializer and key tables
+- `99dc5dc` - feat(i18n): add PostMatch checklist translation keys (en + zh)
+- `5a771f0` - feat(postmatch): replace comments textarea with structured checklist UI
+- 註：本次延續慣例未 commit 累積的 md 檔（CLAUDE.md / FINDINGS.md / PROGRESS.md）與 plan 檔
+
+### 序列化格式範例
+```
+[Robot Issues] Low voltage, Stuck on bump
+[Performance] Yellow card
+[Hard collision] Robot(1234, 5678)
+[Defense] Poor
+```
+
+### 向下相容
+- `postMatchChecklist` 為 optional — 舊 localStorage 記錄以空預設值 fallback
+- `HistoryEditForm.tsx` 暫維持 `comments` textarea 編輯（YAGNI — 歷史編輯頁不重建 checklist UI）
+
+---
+
+## 5-Question Reboot Check
+
+1. **做什麼？** PostMatch Comments 改為結構化勾選清單（issues / performance / collision / ratings）
+2. **進度？** ✅ 完成並 push（5 個 feature commit）
+3. **下一步？** 實機測試手機瀏覽器 + iOS App；視需要統一 commit 累積的 md 檔
+4. **阻礙？** 無
+5. **檔案？** `FRC/components/TabViews.tsx` (PostMatchTab), `FRC/utils/checklistSerializer.ts`, `FRC/types.ts`, `FRC/contexts/LanguageContext.tsx`
+
+---
+
+## Session: 2026-04-21 (PostMatch UI 清理：可摺疊區段 + 自由文字 + 三欄拆分)
+
+### Overview
+延續 2026-04-20 Phase 38 的 PostMatch 改造：(1) 移除 UI 頂部三個 Toggle（robotDied / almostTipped / ridingOnBall），(2) 機器異常與機器表現改為點擊展開的可摺疊區段並顯示數量 badge，(3) 恢復 free-text comments textarea，(4) 最後把單一 `comments` TSV 欄位拆成三個欄位：`robotIssues` / `performance` / `comments`（schema 21 → 23 欄，為 breaking change），(5) 預設 eventCode 改為 Championship。
+
+---
+
+### Phase 39: PostMatch UI 清理 + 自由文字恢復
+- **Status:** ✅ complete
+- **Completed:** 2026-04-21
+
+#### Task 39.1: 移除頂部三個 Toggle
+- `components/TabViews.tsx` 移除 `robotDied` / `almostTipped` / `ridingOnBall` 三個 Toggle UI
+- `types.ts` / `constants.ts` / `TSV_SCHEMA_MATCH` 的布林欄位保留（預設 `false`）— 不動資料 schema 保向下相容
+- 既有 localStorage 記錄仍能正常匯出 TSV，欄位位置不變
+
+#### Task 39.2: 可摺疊區段（機器異常 / 機器表現）
+- 兩個 Section 改為「按標題展開/收合」pattern，每個 section 顯示啟用項目數量 badge
+- 減少 PostMatch 頁面視覺雜訊（11 + 6 個 chip 預設全部收起）
+
+#### Task 39.3: 恢復 free-text comments
+- PostMatchTab 新增 `<textarea>`，寫入 `postMatchChecklist.extraComments`
+- `types.ts` `PostMatchChecklist` 新增 optional `extraComments?: string`
+- `utils/checklistSerializer.ts` `serializeChecklist()` 尾端附加 extraComments
+
+#### Task 39.4: i18n 標籤修正
+- `issue_crashed` 英文由 "Crashed" 改為 "Robot Died/Disabled"（更精準對應原 robotDied 布林涵義）
+
+### Git Commit: `7a67a01` — `feat(postmatch): collapsible sections + restore free-text comments`
+
+---
+
+### Phase 40: 拆分 PostMatch Comments 為 3 欄（Breaking Schema Change）
+- **Status:** ✅ complete
+- **Completed:** 2026-04-21
+
+#### 動機
+Phase 38 時為了不動後端 schema，把所有 checklist 結果序列化到單一 `comments` 欄位。實際使用後發現 Google Sheets 分析時難以拆分（混合內容），改為三欄位更利於後續 SQL/OPR 統計。
+
+#### Task 40.1: Schema 擴充（21 → 23 欄）
+- `constants.ts` `TSV_SCHEMA_MATCH` 長度 21 → 23
+- 新增欄位：`robotIssues`（機器異常條列）、`performance`（flags + collision + ratings）、`comments`（僅 free-text extraComments）
+- `types.ts` `ScoutingData` 與 `INITIAL_DATA` 新增 `robotIssues: string` + `performance: string`
+
+#### Task 40.2: Serializer 三分（utils/checklistSerializer.ts）
+- 移除舊 `serializeChecklist()`
+- 新增 `serializeIssues()` / `serializePerformance()` / `serializeComments()` 三函數
+- UI 每次 `updateChecklist` 同時覆寫三個欄位（單一 `update()` 呼叫避免脫節）
+
+#### Task 40.3: 上傳端更新（services/googleSheets.ts）
+- 原 `formatComments` 替換為通用 `formatTextField`
+- TSV 產生與 Google Apps Script payload 皆同步處理三欄
+
+#### Task 40.4: 遷移需求（重要！）
+- 既有 Google Sheets 仍是 21 欄標頭。部署新 `Code.gs` 後必須手動 GET `?action=fixHeaders` 一次，讓工作表自動更新為 23 欄標頭
+- 舊 localStorage 記錄無 `robotIssues` / `performance` / `extraComments`，載入時 fallback 空字串，匯出仍顯示 'None'
+
+### Git Commit: `b12fe22` — `feat(schema): split postmatch comments into 3 columns`
+
+---
+
+### Phase 41: 預設 eventCode 切到 Championship
+- **Status:** ✅ complete
+- **Completed:** 2026-04-21
+
+- `types.ts` `INITIAL_DATA.eventCode` 由 `'2026cmptx'` 改為 `'2026CMPTX'`（大寫統一）
+- `EventCodeSelect` 原本就是 case-insensitive 比對，events2026.ts 清單不需動
+
+### Git Commit: `ade753c` — `chore(config): default eventCode to 2026CMPTX (Championship)`
+
+---
+
+### 完成項目
+- [x] 移除 PostMatch 頂部 3 個 Toggle（UI only，資料欄位保留）
+- [x] 機器異常 / 機器表現 改為可摺疊區段 + 數量 badge
+- [x] 恢復 free-text comments textarea → `postMatchChecklist.extraComments`
+- [x] `issue_crashed` EN label → "Robot Died/Disabled"
+- [x] TSV_SCHEMA_MATCH 21 → 23 欄（新增 `robotIssues` + `performance`）
+- [x] `serializeChecklist` 拆為 `serializeIssues` / `serializePerformance` / `serializeComments`
+- [x] `googleSheets.ts` 改用通用 `formatTextField` 處理 3 個文字欄
+- [x] `INITIAL_DATA.eventCode` 改為 `'2026CMPTX'`
+- [x] 3 個 commit 已 push 到 origin/main
+
+### 修改檔案
+- `FRC/components/TabViews.tsx` — PostMatchTab 可摺疊區段 + free-text textarea + 移除 3 個 Toggle；`updateChecklist` 同時覆寫 robotIssues/performance/comments
+- `FRC/contexts/LanguageContext.tsx` — `issue_crashed` 英文改寫 + 新增 extraComments/section 相關 key
+- `FRC/types.ts` — `PostMatchChecklist.extraComments?`、`ScoutingData` 新增 `robotIssues` + `performance`、`INITIAL_DATA.eventCode` 大寫
+- `FRC/utils/checklistSerializer.ts` — 三個 serialize 函數替換 `serializeChecklist`
+- `FRC/constants.ts` — TSV_SCHEMA_MATCH 21 → 23
+- `FRC/services/googleSheets.ts` — `formatComments` → `formatTextField` 通用化、TSV 與 payload 三欄同步
+
+### Git Commits
+- `7a67a01` - feat(postmatch): collapsible sections + restore free-text comments
+- `b12fe22` - feat(schema): split postmatch comments into 3 columns
+- `ade753c` - chore(config): default eventCode to 2026CMPTX (Championship)
+
+### 向下相容與遷移
+- 舊 MatchRecord（localStorage）無新欄位 → 載入時 fallback 空字串 / undefined
+- `robotDied` / `almostTipped` / `ridingOnBall` 欄位 **保留在 TSV_SCHEMA_MATCH**，只是 UI 沒有編輯入口（永遠為 false）
+- **部署後必須手動呼叫 `?action=fixHeaders`** 讓既有 Google Sheets 升級到 23 欄標頭（見 scanner repo Code.gs）
+
+---
+
+## 5-Question Reboot Check
+
+1. **做什麼？** PostMatch UI 清理（移除 3 Toggle、摺疊區段、恢復自由文字）+ TSV schema 拆 comments 為 3 欄（21 → 23）+ 預設 eventCode 切 Championship
+2. **進度？** ✅ 3 個 commit 全部 push；配合的 scanner repo 也已同步（commit `686c1ff`）
+3. **下一步？** (1) 部署新 Code.gs 到 Google Sheets 並呼叫 `?action=fixHeaders` 升級標頭 (2) 全隊 scouter 在 Scanner Settings 確認 API URL (3) 實機測試 PostMatch 可摺疊 UI + 三欄匯出
+4. **阻礙？** 無程式碼阻礙；遷移要求：舊試算表必須手動觸發 fixHeaders 一次
+5. **檔案？** `FRC/components/TabViews.tsx`、`FRC/utils/checklistSerializer.ts`、`FRC/constants.ts`、`FRC/types.ts`、`FRC/services/googleSheets.ts`、`FRC/contexts/LanguageContext.tsx`
+
+---
+
+## Session: 2026-04-21 (第二段) — PostMatch 扁平化欄位設計
+
+### Overview
+延續 Phase 40 的 schema 擴充（21 → 23 欄），使用者進一步要求把 `robotIssues` 與 `performance` 兩個彙總文字欄位**完全拆成多個獨立欄位**，讓 Google Sheets / OPR 分析時每個 issue / flag / collision 都有獨立 0/1 欄位，rating 則以文字 (good/ok/bad/空) 呈現。
+
+**本段 session 僅完成設計決策 + spec 文件撰寫，尚未實作。**
+
+---
+
+### Phase 42: PostMatch 扁平化欄位設計（Design Only）
+- **Status:** ⏸️ design complete / implementation pending
+- **Started:** 2026-04-21
+
+#### 流程
+使用 `superpowers:brainstorming` skill 完成三個設計決策問題：
+
+1. **Ratings 格式** → **C**：保留 5 欄文字（good/ok/bad/空），**不拆**成 0/1
+   - 理由：rating 是有序 enum，文字比 one-hot 更緊湊且語意完整
+2. **Collision 處理** → **B**：3 欄 0/1（`hasCollision` / `collisionField` / `collisionRobot`）+ 1 欄文字 `collisionTeamNumbers`
+   - 理由：布林旗標 + 隊號 text 組合，比一欄寫「Robot(1234,5678)」更利於 pivot 統計
+3. **舊廢欄位** → **A**：一次清掉 `robotDied` / `almostTipped` / `ridingOnBall`
+   - 理由：Phase 39 UI Toggle 已移除後這三欄永遠為 false，是 dead data；一刀切後 schema 更乾淨
+
+#### Schema 變更摘要（待實作）
+- **TSV_SCHEMA_MATCH：23 欄 → 44 欄**
+- 前 17 欄（PreMatch / Auto / Teleop / Penalty / Climb）**完全不變**
+- 後段 27 欄拆為：
+  - 11 × issue (0/1)
+  - 6 × flag (0/1)
+  - 3 × collision boolean (0/1)
+  - 1 × collision text（隊號列表）
+  - 5 × rating text（good/ok/bad/空）
+  - 1 × comments（沿用，綁 `extraComments` free-text）
+
+#### 新增欄位命名
+- Issues: `issueNoShow`, `issueCrashed`, `issueEStop`, `issueAStop`, `issueLowVoltage`, `issueIntakeStuck`, `issueShooterOff`, `issueStuckBump`, `issueHitTrench`, `issuePartFell`, `issueMovement`
+- Flags: `flagYellowCard`, `flagRedCard`, `flagBelowExpected`, `flagTipped`, `flagRidingFuel`, `flagStuckBall`
+- Collision: `hasCollision`, `collisionField`, `collisionRobot`, `collisionTeamNumbers`
+- Ratings: `ratingPushTrench`, `ratingPushBump`, `ratingShoot`, `ratingHuman`, `ratingDefense`
+- Free-text: `comments`
+
+### 完成項目
+- [x] 用 `superpowers:brainstorming` skill 完成 3 個設計決策
+- [x] Spec 文件寫入 `FRC/docs/superpowers/specs/2026-04-21-postmatch-flat-fields-design.md`
+- [x] Commit `33c87f5` — `docs: add PostMatch flat-fields design spec`
+- [ ] ⏸️ **未 push** — 僅 local commit
+- [ ] ⏸️ writing-plans skill 尚未 invoke（下次 session 第一步）
+- [ ] ⏸️ 實作尚未開始
+
+### 將要修改的檔案（尚未動）
+- `FRC/constants.ts` — `TSV_SCHEMA_MATCH` 23 → 44 欄
+- `FRC/types.ts` — `ScoutingData` 移除 5 個舊 key、新增 26 個新 key；`PostMatchChecklist` 型別**不動**
+- `FRC/utils/checklistSerializer.ts` — 刪 3 個舊 serializer（serializeIssues / serializePerformance / serializeComments）、新增 `checklistToFlatFields()` 產生扁平欄位物件
+- `FRC/components/TabViews.tsx` — `PostMatchTab.updateChecklist` 同步扁平欄位
+- `FRC/services/googleSheets.ts` — `formatTextField` 擴充支援 boolean → '0'/'1'
+- scanner repo `Code.gs` — 標頭改 44 欄；部署後手動 `?action=fixHeaders`
+
+### 設計決策要點（為何這樣選）
+- Rating 保留文字：三值 enum (good/ok/bad/空) 拆 5×3=15 欄太稀疏，文字欄位直接可 `COUNTIF` 統計
+- Collision 用 bool + text 組合：`hasCollision` 可當主 filter，隊號再查 detail，分析彈性優於單欄 JSON
+- 舊廢欄位一刀切：Phase 39 確認 UI 永遠寫不到這三個布林，留著只會讓 schema 每次擴充都多 3 欄雜訊
+
+---
+
+## 5-Question Reboot Check（給明日接續用）
+
+1. **做什麼？** 接續 Phase 42：依 spec (`FRC/docs/superpowers/specs/2026-04-21-postmatch-flat-fields-design.md`) 實作 PostMatch 扁平化 44 欄 schema
+2. **進度？** 設計 ✅ 完成 + spec commit（`33c87f5`）；實作 ⏸️ 未開始
+3. **下一步？**
+   - (a) **先 push** `33c87f5` 到 origin/main（本段未 push）
+   - (b) **Invoke `superpowers:writing-plans` skill** 讀 spec 產生正式實作計畫（分階段 checkpoint）
+   - (c) 依計畫依序改 `constants.ts` → `types.ts` → `checklistSerializer.ts` → `TabViews.tsx` → `googleSheets.ts` → scanner `Code.gs`
+   - (d) 部署後執行 `?action=fixHeaders` 升級既有 Sheets 到 44 欄標頭
+4. **阻礙？** 無；但注意遷移順序 — 要先改完 Scouting PASS 前端（含新版 TSV 產生），再改 scanner / Code.gs，最後才 fixHeaders，避免 scouter 上傳到舊 44 欄 Sheets 出錯
+5. **檔案？**
+   - Spec: `FRC/docs/superpowers/specs/2026-04-21-postmatch-flat-fields-design.md`
+   - 待改: `FRC/constants.ts`、`FRC/types.ts`、`FRC/utils/checklistSerializer.ts`、`FRC/components/TabViews.tsx`、`FRC/services/googleSheets.ts`、scanner repo `Code.gs`
+
+---
+
+## Session: 2026-04-21 (第三段) — PostMatch flat-fields implementation + fuel ratings + scanner sync
+
+### Overview
+接續 Phase 42 的設計 spec，實作完整 PostMatch 扁平化欄位 pipeline（23 → 44 欄），再依使用者要求擴充 +3 fuel 動作評分（44 → 47 欄），最後同步 scanner repo 前後端並修復一個自己踩的漏同步 bug。
+
+本段 session 完成跨兩個 repo 共 6 個 commit 推送到 origin/main。
+
+---
+
+### Phase 43: PostMatch 扁平化欄位實作（23 → 44 欄）
+- **Status:** ✅ complete
+- **Completed:** 2026-04-21
+
+#### Tasks
+- [x] Push Phase 42 未 push 的 `33c87f5` spec 文件 commit 到 origin/main
+- [x] Invoke `superpowers:writing-plans` skill → 產出正式實作計畫 `FRC/docs/superpowers/plans/2026-04-21-postmatch-flat-fields.md`（併入主 commit）
+- [x] `constants.ts`：`TSV_SCHEMA_MATCH` 23 → 44；刪 5 個舊欄位（`robotDied` / `almostTipped` / `ridingOnBall` / `robotIssues` / `performance`）；新增 26 個扁平欄位（前 17 欄完全不動）
+- [x] `types.ts`：`ScoutingData` 同步增刪；`INITIAL_DATA` 同步；`PostMatchChecklist` 型別**不動**
+- [x] `utils/checklistSerializer.ts`：刪 `serializeIssues / serializePerformance / serializeComments`；改為單一 `checklistToFlatFields(c: PostMatchChecklist): Partial<ScoutingData>` 產出 26 個 flat 欄位；`ISSUE_FIELD_MAP / FLAG_FIELD_MAP / RATING_FIELD_MAP` 三個對應表；**collision clamp**（`hasCollision && collisionField` 等）避免關閉 collision 時子欄位洩漏
+- [x] `components/TabViews.tsx`：`PostMatchTab.updateChecklist` 改為 `update({ postMatchChecklist: next, ...checklistToFlatFields(next) })`，移除舊 serialize 三呼叫
+- [x] `components/HistoryEditForm.tsx`：刪 3 個舊 checkbox（robotDied / almostTipped / ridingOnBall），否則 TS 編不過
+- [x] `contexts/LanguageContext.tsx`：刪 6 個 orphan i18n key（EN + ZH × robotDied/almostTipped/ridingOnBall）
+- [x] `services/googleSheets.ts`：簡化 `formatTextField`（不再返回 `'None'`）；新增 `PRESERVE_EMPTY_KEYS` Set 讓 `comments / collisionTeamNumbers / rating*` 空值輸出 `''` 而非 `'None'`
+- [x] `npm run build` 通過
+
+#### 修改檔案
+- `FRC/constants.ts` — TSV_SCHEMA_MATCH 23 → 44
+- `FRC/types.ts` — `ScoutingData` / `INITIAL_DATA` 同步
+- `FRC/utils/checklistSerializer.ts` — 架構改寫（`checklistToFlatFields` 單一入口）
+- `FRC/components/TabViews.tsx` — PostMatchTab updateChecklist 改寫
+- `FRC/components/HistoryEditForm.tsx` — 刪 3 個 checkbox
+- `FRC/contexts/LanguageContext.tsx` — 刪 6 個 orphan key
+- `FRC/services/googleSheets.ts` — `PRESERVE_EMPTY_KEYS` 新增
+
+#### Git Commits
+- `33c87f5` — docs: add PostMatch flat-fields design spec（上段 session 的本地 commit，此次才 push）
+- `8e84556` — feat(schema): flatten postmatch to 44 columns（7 檔 + plan 文件）
+
+---
+
+### Phase 44: +3 fuel 動作評分（44 → 47 欄）
+- **Status:** ✅ complete
+- **Completed:** 2026-04-21
+
+#### 背景
+使用者要求新增 3 個 rating 細化 fuel 處理流程（吸 → 輸送 → 射擊）。同時澄清既有 `ratingShoot` 語意是「射球回 Alliance Zone」而非「射擊 fuel」（i18n label 本已正確，欄位名保留不改）。
+
+#### 使用者決策
+Option A — 保留舊 `ratingShoot`，新增 3 個 `ratingIntakeFuel / ratingTransportFuel / ratingShootFuel`，插在 `ratingDefense` 之後、`comments` 之前以維持 rating 群組連續。
+
+#### Tasks
+- [x] `constants.ts` — TSV_SCHEMA_MATCH 44 → 47，新增 3 rating key
+- [x] `types.ts` — `ScoutingData` + `INITIAL_DATA` + `PostMatchChecklist.ratings` 各加 3 key
+- [x] `utils/checklistSerializer.ts` — `RATING_ROW_KEYS` + `RATING_FIELD_MAP` 各加 3 entry
+- [x] `contexts/LanguageContext.tsx` — EN + ZH 新增 `rating_intakeFuel / rating_transportFuel / rating_shootFuel`；`rating_shoot` label 維持原有「射球回 Alliance Zone」不動
+- [x] `services/googleSheets.ts` — `PRESERVE_EMPTY_KEYS` 新增 3 個 rating key
+- [x] UI **不用動** — PostMatchTab rating section 是 schema-driven（迭代 RATING_ROW_KEYS），新 key 自動渲染 3 列
+
+#### 修改檔案
+- `FRC/constants.ts`、`FRC/types.ts`、`FRC/utils/checklistSerializer.ts`、`FRC/contexts/LanguageContext.tsx`、`FRC/services/googleSheets.ts`
+
+#### Git Commit
+- `d37c5b0` — feat(rating): add 3 fuel-action ratings (44 -> 47 columns)
+
+---
+
+### Phase 45: Scanner sync + bug fix
+- **Status:** ✅ complete
+- **Completed:** 2026-04-21
+
+#### Stage 3a — Code.gs 同步（scanner 後端）
+- `31b8396` — Code.gs `TSV_SCHEMA_MATCH` 23 → 44（配合 Scouting PASS v1.6.0）
+- `b5c8aba` — Code.gs 44 → 47（配合 Scouting PASS v1.7.0）
+- scanner 版本字串 `1.5.0` → `1.6.0` → `1.7.0`
+
+#### Stage 3b — Bug fix（scanner 前端漏同步）
+**問題：** 使用者掃 47 欄 QR 報 `[detectQRType] Unknown field count: 47, expected: match=23`，路徑抓不到資料。
+
+**根因：** Scanner repo **還有個前端**（`src/`）裡面也有獨立 TSV schema 鏡像，僅同步 Code.gs（後端）不夠。47 欄 QR 被 detectQRType 判為 `'unknown'` → `data.eventCode / matchNumber / teamNumber` 變 `field1/field2/...` → `getMatchKey()` 回傳空殼 key → Path QR 找不到配對的 Match → 「路徑抓不到資料」其實是 Match 解不出來的下游症狀。
+
+**修復：**
+- `src/constants/schema.ts` — `TSV_SCHEMA_MATCH` 替換為 47 欄；`FIELD_LABELS` 重建對應新 key
+- `src/utils/decoder.ts` — `detectQRType` 簡化（match 47 欄不再與 pit-external-v2/legacy 23 欄衝突；23-col 直接歸 `'pit-external'`）
+- `src/i18n/locales/en.ts` + `zh-TW.ts` — `fields` 字典重建（11 issue + 6 flag + 4 collision + 8 rating 共 29 個新 entries）
+
+#### Git Commit
+- `31d7844` — fix(schema): sync scanner frontend to v1.7.0 (47 columns)
+
+---
+
+### 關鍵學習（已存 memory）
+改 TSV schema 時 scanner repo 有**三個地方**都要同步：
+1. `google-apps-script/Code.gs` — backend 寫入 Sheets
+2. `src/constants/schema.ts` — frontend 解 QR 的 schema 常數
+3. `src/utils/decoder.ts` — `detectQRType` 的長度比對邏輯
+
+加 i18n（`src/i18n/locales/*.ts`）雖不 block 功能但顯示會 fallback 到 raw key。
+
+已存入 `C:\Users\USER\.claude\projects\D--FRC-frc-6998-scouting-pass\memory\`：兩個 memory 檔 + MEMORY.md index。
+
+---
+
+## 5-Question Reboot Check（給明日接續用）
+
+1. **做什麼？** Phase 43-45：PostMatch 扁平化 44 欄實作 + 3 fuel ratings 擴充（44 → 47） + scanner repo 三處鏡像同步 + 前端漏同步 bug 修復
+2. **進度？** ✅ 兩個 repo 共 6 commits 全數 push 到 origin/main（主 repo 3、scanner 3）；`npm run build` 通過
+3. **下一步？** 使用者手動外部操作：
+   - (a) 把 scanner 最新 `google-apps-script/Code.gs` 覆貼到 GAS project → 新版部署（版本 1.7.0）
+   - (b) 對每個活躍 Sheet GET `<webAppUrl>?action=fixHeaders` 升級標頭（47 schema + autoPath/scanTime/uploadTime = 50 欄）
+   - (c) 端對端 QR 掃描驗證（47 欄 Match QR 正確解碼 + Path QR 配對成功）
+4. **阻礙？** 無程式碼阻礙；僅外部部署步驟待使用者執行
+5. **檔案？**
+   - 主 repo: `FRC/constants.ts`、`FRC/types.ts`、`FRC/utils/checklistSerializer.ts`、`FRC/components/TabViews.tsx`、`FRC/components/HistoryEditForm.tsx`、`FRC/contexts/LanguageContext.tsx`、`FRC/services/googleSheets.ts`
+   - Plan 文件: `FRC/docs/superpowers/plans/2026-04-21-postmatch-flat-fields.md`
+   - Scanner repo: `src/constants/schema.ts`、`src/utils/decoder.ts`、`src/i18n/locales/en.ts`、`src/i18n/locales/zh-TW.ts`、`google-apps-script/Code.gs`
+
+---
+*Last updated: 2026-04-21 (third session — flat-fields implementation + fuel ratings + scanner sync bug fix)*
