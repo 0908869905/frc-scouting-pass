@@ -36,6 +36,8 @@ export const CLIMB_POSITION_OPTIONS: ClimbPosition[] = ['LeftSide', 'Left', 'Cen
 // Removed legacy: robotDied / almostTipped / ridingOnBall / robotIssues / performance.
 // v1.7.0 (2026-04-21): 44 → 47 columns. Add 3 fuel-action ratings
 // (ratingIntakeFuel / ratingTransportFuel / ratingShootFuel) before `comments`.
+// v1.8.0 (2026-04-26): 47 → 48 columns. Add issueShooterStutter
+// (射球不順 — 射到一半短暫卡頓後恢復) inserted after issueShooterOff.
 export const TSV_SCHEMA_MATCH = [
   // PreMatch (6)
   'scouterName', 'eventCode', 'matchLevel', 'matchNumber', 'alliance', 'teamNumber',
@@ -50,7 +52,7 @@ export const TSV_SCHEMA_MATCH = [
   // --- 17 above unchanged ---
   // PostMatch Issues (11) — 0/1
   'issueNoShow', 'issueCrashed', 'issueEStop', 'issueAStop', 'issueLowVoltage',
-  'issueIntakeStuck', 'issueShooterOff', 'issueStuckBump', 'issueHitTrench',
+  'issueIntakeStuck', 'issueShooterOff', 'issueShooterStutter', 'issueStuckBump', 'issueHitTrench',
   'issuePartFell', 'issueMovement',
   // PostMatch Flags (6) — 0/1
   'flagYellowCard', 'flagRedCard', 'flagBelowExpected', 'flagTipped',

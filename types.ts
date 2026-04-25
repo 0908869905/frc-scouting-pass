@@ -106,7 +106,7 @@ export interface ScoutingData {
   majorPenalty: number;          // Major penalty count
 
   // --- PostMatch (Flat Fields, mirrored from postMatchChecklist) ---
-  // PostMatch Issues (11)
+  // PostMatch Issues (12)
   issueNoShow: boolean;
   issueCrashed: boolean;
   issueEStop: boolean;
@@ -114,6 +114,7 @@ export interface ScoutingData {
   issueLowVoltage: boolean;
   issueIntakeStuck: boolean;
   issueShooterOff: boolean;
+  issueShooterStutter: boolean;
   issueStuckBump: boolean;
   issueHitTrench: boolean;
   issuePartFell: boolean;
@@ -199,6 +200,7 @@ export const INITIAL_DATA: ScoutingData = {
   issueLowVoltage: false,
   issueIntakeStuck: false,
   issueShooterOff: false,
+  issueShooterStutter: false,
   issueStuckBump: false,
   issueHitTrench: false,
   issuePartFell: false,
