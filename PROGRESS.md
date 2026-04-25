@@ -2340,4 +2340,92 @@ Option A — 保留舊 `ratingShoot`，新增 3 個 `ratingIntakeFuel / ratingTr
    - Scanner repo: `src/constants/schema.ts`、`src/utils/decoder.ts`、`src/i18n/locales/en.ts`、`src/i18n/locales/zh-TW.ts`、`google-apps-script/Code.gs`
 
 ---
-*Last updated: 2026-04-21 (third session — flat-fields implementation + fuel ratings + scanner sync bug fix)*
+
+## Session: 2026-04-26 — issueShooterStutter「射球不順」(v1.8.0, 47 → 48 欄)
+
+### Overview
+使用者要求新增第 12 個 PostMatch issue chip「射球不順」（射球射到一半短暫卡頓又恢復）。本次特別把上次（2026-04-21）踩過的坑列入 spec 對照表，全程精準防範。流程：用 `superpowers:brainstorming` 釐清語意 → 寫 spec → `superpowers:writing-plans` 寫 plan → EnterPlanMode 給使用者批准 → auto mode 連續執行 → 三方 schema 程式化驗證 → commit/push 兩 repo。
+
+---
+
+### Phase 46: issueShooterStutter 新增 (47 → 48 欄)
+- **Status:** ✅ complete
+- **Completed:** 2026-04-26
+
+#### 命名決策
+- TSV key: `issueShooterStutter`（key 與 label 對齊，避免重蹈 `issueShooterOff` key 名「Off」但 label「不準」的歷史包袱）
+- 內部 key: `'shooterStutter'`
+- ZH label: 射球不順
+- EN label: Shooter stutters
+- Schema 位置：緊接 `issueShooterOff` 後（idx 24，三方都一致）
+
+#### 修改檔案 — 主 repo (4)
+- `constants.ts`: `TSV_SCHEMA_MATCH` 47 → 48 + 檔頭 v1.8.0 註解
+- `types.ts`: `ScoutingData` 加 `issueShooterStutter: boolean`、`INITIAL_DATA` 加 `false`、註解 (11) → (12)
+- `utils/checklistSerializer.ts`: `ISSUE_KEYS` + `ISSUE_FIELD_MAP`
+- `contexts/LanguageContext.tsx`: EN + ZH `issue_shooterStutter`
+
+**未修改且驗證確認不需動：**
+- `services/googleSheets.ts` — issue 欄位是 boolean → '0'/'1'，不在 PRESERVE_EMPTY_KEYS
+- `components/TabViews.tsx` — UI schema-driven，自動渲染新 chip
+- `PostMatchChecklist.issues` 型別是 `string[]` 寬鬆型別，不需動
+
+#### 修改檔案 — Scanner repo (5) — 三處鏡像 + i18n 全到位
+- `google-apps-script/Code.gs`: TSV_SCHEMA_MATCH + version `'1.7.0'` → `'1.8.0'` + 後續欄位編號註解全部 +1 保持一致
+- `src/constants/schema.ts`: TSV_SCHEMA_MATCH + FIELD_LABELS（簡中「射球不顺」）
+- `src/utils/decoder.ts`: 註解 47 → 48 (`detectQRType` 已用 `.length` 動態比對，邏輯自動跟上)
+- `src/i18n/locales/en.ts`: `'Shooter stutters'`
+- `src/i18n/locales/zh-TW.ts`: `'射球不順'`
+
+#### 程式化驗證（防上次踩坑）
+```
+main length: 48 | gas length: 48 | scanner length: 48
+main vs gas:     OK
+main vs scanner: OK
+issueShooterStutter idx in three: 24 24 24
+```
+
+#### 上次踩坑對照表（這次防範）
+| 上次坑 | 這次處理 |
+|--------|----------|
+| Scanner 前端 `schema.ts` + `decoder.ts` 漏同步 | ✅ 兩個都改、加程式化驗證 |
+| `detectQRType` 長度比對沒改 | ✅ 確認已動態 `.length`（過去事件改正後遺留），僅需更新註解 |
+| i18n locales 漏更新 | ✅ scanner en.ts + zh-TW.ts 都加 |
+| 部署後忘記 fixHeaders | ✅ 寫進 spec 部署順序 |
+| PRESERVE_EMPTY_KEYS 漏 | ✅ 本次無 text 欄位變更，不適用 |
+
+#### Git Commits（跨兩 repo）
+- 主 repo: `c5da198` — feat(schema): add issueShooterStutter (47 -> 48 columns)（含 spec + plan 文件）
+- Scanner repo: `d017015` — feat(schema): sync to v1.8.0 (47 -> 48 columns)
+- 兩 commit 都已 push 到各自的 origin/main
+
+#### 文件
+- Spec: `FRC/docs/superpowers/specs/2026-04-26-issue-shooter-stutter-design.md`
+- Plan: `FRC/docs/superpowers/plans/2026-04-26-issue-shooter-stutter.md`
+
+---
+
+### 觀察 / 學習
+- **`detectQRType` 已自動動態化**（`length === TSV_SCHEMA_MATCH.length`）— 之前的 bug 修復已改成讀 `.length`，未來改 schema 不再需要硬編碼長度。但**註解** 仍要手動同步避免誤導讀者
+- **欄位編號註解**：scanner `Code.gs` 中每行的欄位編號註解（// 17、// 18、...）是 readability 用，沒功能。這次插入新欄位後一併把後續編號 +1 是正確選擇（避免半套狀態），但要意識到這會讓 commit diff 看起來比實際變動大
+- **PostMatchChecklist.issues 寬鬆型別**：用 `string[]` 而非 `IssueKey[]`，所以新增 issue key 完全不影響 type checking。這個 trade-off 是好的（schema-driven 自動兼容），代價是 typo 不會被 TS 抓到
+- **使用者語氣 → auto mode 信號**：使用者「沒差你就弄上去就對了」+「這你決定就好了吧」連續兩次後 → 確認可以 auto mode；EnterPlanMode 一次性批准 + ExitPlanMode → 全程不打斷實作
+
+---
+
+## 5-Question Reboot Check（給明日接續用）
+
+1. **做什麼？** Phase 46：新增 `issueShooterStutter`「射球不順」issue chip（v1.7.0 → v1.8.0，47 → 48 欄）
+2. **進度？** ✅ 兩個 repo 共 2 commits 已 push 到 origin/main；主 repo + scanner repo 各自 `npm run build` 通過；三方 schema 程式化驗證 OK
+3. **下一步？** 使用者外部手動操作：
+   - (a) 把 scanner 最新 `google-apps-script/Code.gs` 覆貼到 GAS project → 部署新版（內部版本字串 1.8.0）
+   - (b) 對每個活躍 Sheet GET `<webAppUrl>?action=fixHeaders` 升級到 48 欄標頭
+   - (c) 端對端 QR 掃描驗證（48 欄 Match QR 解碼成功 + 射球不順 chip 勾選後 TSV 該欄輸出 1）
+4. **阻礙？** 無程式碼阻礙；僅外部部署步驟待使用者執行（同 v1.7.0 上次部署流程）
+5. **檔案？**
+   - 主 repo: `constants.ts`、`types.ts`、`utils/checklistSerializer.ts`、`contexts/LanguageContext.tsx`、`CLAUDE.md`、`PROGRESS.md`
+   - 主 repo 文件: `docs/superpowers/specs/2026-04-26-issue-shooter-stutter-design.md`、`docs/superpowers/plans/2026-04-26-issue-shooter-stutter.md`
+   - Scanner repo: `google-apps-script/Code.gs`、`src/constants/schema.ts`、`src/utils/decoder.ts`、`src/i18n/locales/en.ts`、`src/i18n/locales/zh-TW.ts`
+
+---
+*Last updated: 2026-04-26 (Phase 46 — issueShooterStutter v1.8.0, 47 → 48 columns)*
