@@ -730,5 +730,47 @@ Scanner repo 的 TSV schema 有**三個鏡像位置**：
 3. i18n locales 漏更新不會 block 功能（會 fallback 到 raw key），但顯示會變醜，不屬於阻斷性漏點
 
 ---
-*Last updated: 2026-04-21 (第三段 session — flat-fields impl + scanner schema mirror discovery)*
+
+## `detectQRType` 已動態化、長度比對自動跟上 schema (2026-04-26)
+
+### 觀察
+Phase 45 修 scanner 漏同步 bug 後，`src/utils/decoder.ts` 的 `detectQRType` 已從硬編碼長度比對（`length === 47`）改寫為動態 `length === TSV_SCHEMA_MATCH.length`。本次 Phase 46 把 schema 47 → 48 欄時，`decoder.ts` 的**邏輯**完全不需動 — `.length` 自動跟上新值。
+
+### 影響：未來 schema 擴充剩兩件事
+1. **schema.ts** 替換 `TSV_SCHEMA_MATCH` 陣列 + `FIELD_LABELS` 對應
+2. **註解**手動同步（例如 `// 47 個欄位` 改 `// 48 個欄位`）— 純 readability，不影響邏輯
+
+### 為何這個改寫值得記
+- 屬於「修一次 bug 順手做的設計改進」，事後價值更高（每次 schema 改動省一處同步點）
+- 程式化驗證 (`length === TSV_SCHEMA_MATCH.length`) 把「常數對齊」這件事從**人類記憶**轉成**程式自動檢查**
+- 本次 Phase 46 加上的「三方 schema 比對驗證 script」是同類思路 — 把同步檢查從手動 review 改成程式化 assert
+
+### 通用原則
+當你發現自己在多處硬編碼同一個常數值，優先讓所有引用點都讀同一個 source-of-truth 變數的 `.length` / `.size` / `Object.keys()`。這比「記得每次同時改」可靠得多。
+
+---
+
+## issueShooterOff key 名與 label 語意不對齊（保留歷史包袱） (2026-04-26)
+
+### 現況
+- TSV key: `issueShooterOff`
+- ZH label: 射球不準
+- EN label: Shooter inaccurate
+
+key 用 "Off"（語意接近「壞掉/離線」）但 label 用「不準」（語意是 inaccurate）。本次新增 `issueShooterStutter`（射球不順 — 短暫卡頓又恢復）時刻意讓 key 與 label 對齊（key=`Stutter`、label=「不順」），避免重蹈覆轍。
+
+### 為何不重構舊 key
+- 重構 `issueShooterOff` → `issueShooterInaccurate` 會：
+  1. 主 repo 4 檔（含 `ISSUE_FIELD_MAP` 反查）
+  2. Scanner repo Code.gs / schema.ts / FIELD_LABELS / 兩 i18n 共 5 檔
+  3. 既有 Sheets 標頭（要再跑一次 fixHeaders）
+  4. 既有 localStorage `frc_match_history` 資料保留舊 key（資料遷移成本）
+- benefit 只有「key 與 label 一致看起來舒服」，純 cosmetic
+- ROI 太低，列入 FINDINGS 警示後人即可
+
+### 通用原則
+新增 schema 欄位時 key 名直接對齊使用者可見的 label 語意。重構既有不對齊欄位的成本通常比看起來高，特別是有跨 repo 鏡像 + 既有資料遷移時。
+
+---
+*Last updated: 2026-04-26 (Phase 46 — issueShooterStutter v1.8.0)*
 *Note: Video Analyzer 相關內容已移至獨立專案*
