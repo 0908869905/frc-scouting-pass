@@ -2429,3 +2429,116 @@ issueShooterStutter idx in three: 24 24 24
 
 ---
 *Last updated: 2026-04-26 (Phase 46 — issueShooterStutter v1.8.0, 47 → 48 columns)*
+
+---
+
+## Session: 2026-04-26 (Part 2) — v1.9.0 Spec + Plan 寫好（實作未開始）
+
+### Overview
+
+使用者透過 `/full-workflow` 啟動完整工作流程，要求三件事：
+
+1. **PostMatch 新增「其他」區段（含三題）：**
+   - Q1: 需不需要球在自己 alliance zone（不需要 / 普通 / 很需要）
+   - Q2: 會不會去對方 alliance zone 偷球（**boolean toggle**，不是 3 級評分 — 使用者明確選 C 方案）
+   - Q3: 被 defense 對射球準確率影響（還好 / 普通 / 嚴重）
+
+2. **Teleop 移除三欄 Counter：**
+   - `bumpCount`（穿越 Bump 次數）
+   - `trenchCount`（穿越 Trench 次數）
+   - `fuelDroppedOnBumpCount`（穿越 Bump 時 Fuel 掉落）
+
+3. **PostMatch 機器表現中 stuck on ball 改 stuck on fuel**（**只改 i18n label**，TSV/types key `flagStuckBall` 不動；中文用「卡在 fuel 上」）
+
+**Schema 版本：** v1.8.0 (48 欄) → v1.9.0（仍 48 欄但結構大改：移 3 加 3 個欄位 + 改 1 個 i18n label）
+
+本次 session 完成 brainstorming + writing-plans 兩個階段，**實作 0/17 tasks 尚未開始**。
+
+---
+
+### 完成項目
+
+#### Brainstorming 階段（superpowers:brainstorming skill）
+- ✅ 4 個釐清問題依序確認：
+  1. 「偷球」用 boolean toggle 而非 3 級評分（使用者選 C）
+  2. 「其他」區段獨立於既有的「機器異常」、「機器表現」、「碰撞」等區段
+  3. Q1 / Q3 的 ratings 沿用既有的 good / ok / bad 字串值（與 RATING_ROW_KEYS 一致）
+  4. stuck on ball 改 stuck on fuel **只改 label**，key `flagStuckBall` 保留（避免歷史包袱）
+- ✅ Spec 完成並 commit `7acf323` — `docs/superpowers/specs/2026-04-26-postmatch-other-section-design.md`（370 行）
+
+#### Writing-plans 階段（superpowers:writing-plans skill）
+- ✅ Plan 完成並 commit `207d480` — `docs/superpowers/plans/2026-04-26-postmatch-other-section.md`（1343 行）
+- ✅ Plan 結構：**17 tasks 跨 6 stages**
+  - Stage A：主 repo schema / types / serializer 改動
+  - Stage B：主 repo i18n + UI 改動
+  - Stage C：主 repo verify + commit
+  - Stage D：Scanner repo 同步（schema.ts / decoder.ts / Code.gs / i18n locales）
+  - Stage E：程式化驗證 + scanner commit
+  - Stage F：docs 更新 + 部署 checklist
+
+#### Git history（D:\FRC\frc-6998-scouting-pass\FRC main branch）
+- `7acf323` — docs(spec): add v1.9.0 PostMatch Other section + Teleop trim spec
+- `207d480` — docs(plan): add v1.9.0 PostMatch Other section implementation plan
+
+---
+
+### 未完成項目（重要 — 避免明天誤判進度）
+
+⚠️ **本次 session 僅產出 spec + plan 兩份文件，實作完全未開始。**
+
+- ❌ 17 個 implementation tasks 全數**未執行**（0 / 17）
+- ❌ 主 repo 任何程式碼檔案**未改動**：
+  - `constants.ts`（schema 仍是 v1.8.0 = 48 欄 = 含 bumpCount / trenchCount / fuelDroppedOnBumpCount）
+  - `types.ts`、`utils/checklistSerializer.ts`、`services/googleSheets.ts`
+  - `contexts/LanguageContext.tsx`、`components/TabViews.tsx`、`components/HistoryEditForm.tsx`
+- ❌ Scanner repo（`D:\FRC\frc-scout-scanner`）**今天完全未改動**
+  - `google-apps-script/Code.gs` / `src/constants/schema.ts` / `src/utils/decoder.ts` / `src/i18n/locales/*.ts`
+- ❌ 三方 schema 程式化驗證**未執行**
+- ❌ 兩 repo build / commit / push（implementation commits）**未執行**
+- ❌ 使用者外部部署：GAS 部署 v1.9.0 + fixHeaders + 端對端 QR 驗證**未執行**
+
+---
+
+### 修改檔案
+
+僅兩個 docs 檔案 + 兩個 commits：
+- `docs/superpowers/specs/2026-04-26-postmatch-other-section-design.md`（新增，commit `7acf323`）
+- `docs/superpowers/plans/2026-04-26-postmatch-other-section.md`（新增，commit `207d480`）
+
+**未改動**：所有 `.ts` / `.tsx` 程式碼檔案、`CLAUDE.md`（schema 描述仍標 v1.8.0 是正確的）。
+
+---
+
+### 4 個 Brainstorming 設計決策
+
+| # | 議題 | 選擇 | 理由 |
+|---|------|------|------|
+| 1 | 「偷球」資料型別 | **boolean toggle**（不是 good / ok / bad） | 使用者選 C — 偷球這件事更像「會 / 不會」的二元行為，不是程度評分 |
+| 2 | 「其他」區段位置 | **獨立區段** | 與既有的「機器異常」「機器表現」「碰撞」並列，不混入既有區塊 |
+| 3 | Q1 / Q3 rating 字串值 | **沿用 good / ok / bad**（與 RATING_ROW_KEYS 一致） | 統一現有 rating 機制，serializer 不必特別處理新格式 |
+| 4 | stuck on ball → stuck on fuel | **只改 i18n label，key `flagStuckBall` 不動** | 重構 key 跨 repo 成本太高（同 issueShooterOff 的歷史教訓 — 見 FINDINGS.md），純 cosmetic 變更不值得 |
+
+完整脈絡見 spec：`docs/superpowers/specs/2026-04-26-postmatch-other-section-design.md`
+
+---
+
+## 5-Question Reboot Check（給明日接續用）
+
+1. **做什麼？** Phase 47：v1.9.0 schema 改造 — PostMatch 新增「其他」區段（3 題）、Teleop 移除 3 欄 Counter、stuck on ball → stuck on fuel label 改字
+   - 狀態：**spec + plan 已寫好；實作 0 / 17 tasks 未開始**
+2. **進度？** spec + plan 已 commit 到主 repo origin/main（`7acf323` + `207d480`）；implementation 尚未啟動；scanner repo 完全未動
+3. **下一步？**
+   - **(a) 先請使用者選執行模式**：上次 session 結束前 present 了兩個選項但使用者沒回覆就 `/finish` —
+     - **Subagent-Driven**（每 task 派 subagent 執行）
+     - **Inline Execution**（在 main session 內直接執行；上次推薦此模式）
+   - **(b) 確認模式後從 plan 的 Task 1 開始** — 修 `constants.ts` 的 `TSV_SCHEMA_MATCH`（移除 bumpCount / trenchCount / fuelDroppedOnBumpCount，新增 needBallInAllianceZone / stealsFromOpponent / shootingAffectedByDefense）
+4. **阻礙？** 等使用者選執行模式（Subagent-Driven vs Inline Execution）
+5. **檔案？**
+   - **Spec**：`docs/superpowers/specs/2026-04-26-postmatch-other-section-design.md`
+   - **Plan**：`docs/superpowers/plans/2026-04-26-postmatch-other-section.md`（17 tasks 詳細步驟，含每 task 的修改範圍 / 驗證指令 / commit 訊息範本）
+   - 待改主 repo 檔案：`constants.ts`、`types.ts`、`utils/checklistSerializer.ts`、`services/googleSheets.ts`、`contexts/LanguageContext.tsx`、`components/TabViews.tsx`、`components/HistoryEditForm.tsx`
+   - 待改 scanner repo 檔案：`google-apps-script/Code.gs`、`src/constants/schema.ts`、`src/utils/decoder.ts`、`src/i18n/locales/en.ts`、`src/i18n/locales/zh-TW.ts`
+
+---
+
+*Last updated: 2026-04-26 (Phase 47 — v1.9.0 spec + plan 寫好，實作未開始)*

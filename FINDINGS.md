@@ -774,3 +774,57 @@ key 用 "Off"（語意接近「壞掉/離線」）但 label 用「不準」（�
 ---
 *Last updated: 2026-04-26 (Phase 46 — issueShooterStutter v1.8.0)*
 *Note: Video Analyzer 相關內容已移至獨立專案*
+
+---
+
+## v1.9.0 PostMatch「其他」區段 4 個關鍵設計決策 (2026-04-26)
+
+> 本條目記錄 Phase 47（v1.9.0 = PostMatch 新增「其他」區段 + Teleop 移除 3 欄 Counter + stuck on ball → fuel label 改字）的 brainstorming 階段四個設計選擇與理由，供未來新增類似 PostMatch 互動欄位時參考。Spec 寫於 `docs/superpowers/specs/2026-04-26-postmatch-other-section-design.md`，當前狀態：**spec + plan 已寫，17 tasks 實作未開始**。
+
+### 決策 1：「偷球」用 boolean 而非 3 級 rating
+
+**情境：** 「會不會去對方 alliance zone 偷球」這題候選方案：
+- (A) 3 級 rating（不會 / 偶爾 / 經常） — 與既有 8 個 rating 欄位一致
+- (B) Counter 計數
+- (C) **boolean toggle**（採用）
+
+**選擇理由：** 偷球更像策略意圖的二元判斷（「這隊有沒有偷球行為」），程度區分對 alliance scouting 不會增加決策資訊。Counter 在 5 秒內難以正確計數。Boolean 型別讓資料分析端的 COUNTIF 統計更簡潔。
+
+**通用原則：** 新增 PostMatch 欄位時先問「使用者實際看到甚麼就會勾」— 若是離散事件（有 / 無），boolean 比 rating 更貼合認知；若是觀感（順 / 普通 / 卡），rating 才合適。
+
+### 決策 2：「其他」區段獨立、不併入既有區段
+
+**情境：** 三個新題（球需求度 / 偷球 / 被 defense 影響）能否塞進既有「機器異常」/「機器表現」/「碰撞」區段？
+
+**選擇：** 開**獨立**「其他」可摺疊區段。
+
+**理由：** 三題語意是「策略觀察 / 跨隊互動」，與既有區段「自身機器狀態觀察」性質不同。混入會破壞區段語意一致性，未來新增同類型策略題也無處放。
+
+**通用原則：** PostMatch 區段語意分類比塞滿欄位更重要 — 寧可開新區段也不要污染既有語意。
+
+### 決策 3：Q1 / Q3 sufficient 沿用 good / ok / bad 字串值
+
+**情境：** 兩個新 rating 題（球需求度、被 defense 影響）的字串值要設新詞彙還是復用？
+
+**選擇：** **沿用** 既有 RATING_ROW_KEYS 機制，字串值用 `good` / `ok` / `bad`（label 在 i18n 層分別翻成「不需要 / 普通 / 很需要」與「還好 / 普通 / 嚴重」）。
+
+**理由：** serializer (`checklistToFlatFields`) 不必為新格式分支；分析端 `COUNTIF(..., "good")` 對所有 rating 欄位都統一；i18n label 可獨立翻譯不受 key 限制。
+
+**通用原則：** 序列化值（TSV 寫入）跟使用者看到的 label 兩層分離 — 新增評分類欄位優先沿用 good / ok / bad，i18n label 隨意換。
+
+### 決策 4：stuck on ball → stuck on fuel **只改 i18n label，key 不動**
+
+**情境：** 球體名稱從 ball 改成 fuel，TSV / types 中的 `flagStuckBall` 是否一併重構？
+
+**選擇：** 只改 EN / ZH i18n label（"Stuck on fuel" / 「卡在 fuel 上」），key `flagStuckBall` 保留。
+
+**理由（與 issueShooterOff 同樣的歷史包袱權衡）：**
+- 重構 key 影響：主 repo 4 檔 + scanner 5 檔 + 既有 Sheets 標頭（要再 fixHeaders 一次）+ 既有 localStorage `frc_match_history` 舊 key 資料遷移
+- benefit 純 cosmetic（key 與 label 一致看起來舒服）
+- ROI 太低，列警示即可
+
+**通用原則：** 一旦 key 已上線進入 Sheets / localStorage，只要 label 仍可達意就不要改 key。新增欄位時要一次設對，但既有欄位不重構。
+
+---
+
+*Last updated: 2026-04-26 (Phase 47 — v1.9.0 spec + plan 設計決策)*
