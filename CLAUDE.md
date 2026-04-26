@@ -105,18 +105,20 @@ All form tabs use `TabProps` interface: `{ data: ScoutingData, update: (updates)
 |-------|-----------|
 | PreMatch | scouterName, eventCode, matchLevel, matchNumber, **alliance** (Red/Blue), teamNumber |
 | Auton | autoPath (FieldCanvas), autoFuel, autoClimbStatus, autoClimbTime (Stopwatch) |
-| Teleop | bumpCount, trenchCount, fuelDroppedOnBump, teleFuel, minorPenalty, majorPenalty, teleClimbStatus, teleClimbPosition, teleClimbTime (Stopwatch) |
-| PostMatch | defenseRating, driverSkill, speedRating, subjectiveNotes, **postMatchChecklist** (issues/flags/collision/ratings/**extraComments**) — 扁平化為 28 欄：12 issue (0/1) + 6 flag (0/1) + 4 collision (3 bool + 1 text) + 8 rating text (good/ok/bad/空) + 1 comments (free-text) |
+| Teleop | minorPenalty, majorPenalty, teleClimbStatus, teleClimbPosition, teleClimbTime (Stopwatch) |
+| PostMatch | defenseRating, driverSkill, speedRating, subjectiveNotes, **postMatchChecklist** (issues/flags/collision/ratings/**otherSection**/extraComments) — 扁平化為 31 欄：12 issue (0/1) + 6 flag (0/1) + 4 collision (3 bool + 1 text) + 8 rating + 3 other (1 bool + 2 rating) + 1 comments (free-text) |
 
 **TSV Schema**:
-- `TSV_SCHEMA_MATCH`: **48 欄位** (v1.8.0，自 2026-04-26 起)
-  - 演進：v1.5.0 (23 欄，拆 comments 為 3) → v1.6.0 (44 欄，扁平化 PostMatch) → v1.7.0 (47 欄，+3 fuel ratings) → v1.8.0 (48 欄，+issueShooterStutter)
-  - 前 17 欄（PreMatch / Auto / Teleop / Penalty / Climb）完全不變
-  - 後 31 欄：12 issue (0/1) + 6 flag (0/1) + 3 collision bool + 1 collision text + 8 rating text + 1 comments
+- `TSV_SCHEMA_MATCH`: **48 欄位** (v1.9.0，自 2026-04-26 起)
+  - 演進：v1.5.0 (23 欄，拆 comments 為 3) → v1.6.0 (44 欄，扁平化 PostMatch) → v1.7.0 (47 欄，+3 fuel ratings) → v1.8.0 (48 欄，+issueShooterStutter) → v1.9.0 (48 欄，移 Teleop 3 加 Other 3)
+  - 前 14 欄（PreMatch / Auto / Penalty / Climb）完全不變
+  - 後 34 欄：12 issue (0/1) + 6 flag (0/1) + 3 collision bool + 1 collision text + 8 rating + 3 other (1 bool + 2 rating) + 1 comments
   - 12 issue：noShow, crashed, eStop, aStop, lowVoltage, intakeStuck, **shooterOff（不準）**, **shooterStutter（射球不順 — 短暫卡頓又恢復，v1.8.0）**, stuckBump, hitTrench, partFell, movement
   - 8 rating：ratingPushTrench, ratingPushBump, ratingShoot（射球回 Alliance Zone）, ratingHuman, ratingDefense, ratingIntakeFuel, ratingTransportFuel, ratingShootFuel
+  - 3 other (v1.9.0)：otherStealsOpponent (boolean — 偷球), ratingNeedFuel (alliance zone 需要球 — 不需要/普通/很需要), ratingShotUnderDefense (被 defense 影響射球 — 還好/普通/嚴重)
 - `TSV_SCHEMA_PATH`: 5 欄位 (eventCode, matchNumber, teamNumber, alliance, autoPath)
 - v1.6.0 已**刪除** `robotDied` / `almostTipped` / `ridingOnBall` 欄位（Phase 39 UI 已無 Toggle，Phase 43 schema 一併清理）
+- v1.9.0 已**刪除** `bumpCount` / `trenchCount` / `fuelDroppedOnBumpCount` 欄位（Teleop Counter UI 一併移除）
 
 ### Adding New Form Fields
 1. Add field to `ScoutingData` interface in `types.ts`
@@ -170,6 +172,8 @@ All form tabs use `TabProps` interface: `{ data: ScoutingData, update: (updates)
 - ⚠️ **PostMatch 可摺疊區段 pattern**: 多 chip toggle 頁面（機器異常 11 chips、機器表現 6 chips）採用「點擊標題展開收合 + header 顯示啟用數量 badge」的 pattern，未來類似 UI 應延用
 - ✅ **PostMatch 扁平化 + fuel ratings 已完成 (2026-04-21)**: v1.7.0 = 47 欄 schema。前 17 欄不變；後 30 欄 = 11 issue (0/1) + 6 flag (0/1) + 4 collision (3 bool + 1 text) + 8 rating text (good/ok/bad/空) + 1 comments (free-text)。架構：`checklistToFlatFields()` 單一入口展開扁平欄位、collision clamp 邏輯確保輸出一致、`PRESERVE_EMPTY_KEYS` Set 控制空值格式。8 rating 包含 5 個原有 + 3 個新增 fuel 動作評分（intakeFuel / transportFuel / shootFuel）
 - ✅ **issueShooterStutter「射球不順」已新增 (2026-04-26)**: v1.8.0 = 48 欄 schema。新增第 12 個 issue chip 描述「射球射到一半短暫卡頓又恢復」，與既有 `issueShooterOff`（label 為「shooter 不準」/「Shooter inaccurate」）區分（注意：`issueShooterOff` key 名與 label 語意有歷史不對齊，未重構保留歷史包袱）。三方 schema 鏡像精準同步通過程式化驗證
+- ✅ **PostMatch「其他」區段 + Teleop 三欄移除已完成 (2026-04-26)**: v1.9.0 = 48 欄但結構大改。移除 Teleop bumpCount/trenchCount/fuelDroppedOnBumpCount。新增「其他」可摺疊區段：otherStealsOpponent (boolean) + ratingNeedFuel + ratingShotUnderDefense（每 row 客製 button label：不需要/普通/很需要、還好/普通/嚴重）。flag_stuckBall i18n label 改「Stuck on fuel」/「卡在 fuel 上」(key 不變)。RATING_ROW_KEYS 拆 MAIN(8) + OTHER(2)。**部署時必跑 fixHeaders**（欄位順序大改）
+- ⚠️ **per-row rating button label**: 「其他」區段的 2 個 rating row 用 `rating{Row}_${value}` i18n key 客製按鈕標籤（如 `ratingNeedFuel_good = '不需要'`）；既有 8 個 rating row 仍用共用 `rating_good/ok/bad`。新增此類 row 時需同時加 6 個 per-row label keys
 
 ## Before Committing
 

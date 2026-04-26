@@ -2542,3 +2542,100 @@ issueShooterStutter idx in three: 24 24 24
 ---
 
 *Last updated: 2026-04-26 (Phase 47 — v1.9.0 spec + plan 寫好，實作未開始)*
+
+---
+
+## Session: 2026-04-26 (Part 3) — v1.9.0 實作完成（Inline Execution）
+
+### Overview
+
+接續 Part 2 的 spec + plan，本段 session 用 `superpowers:executing-plans` skill + Inline Execution 模式完整實作 17 tasks。從 Stage A 改 schema/types/serializer，到 Stage B 改 i18n + UI，到 Stage D scanner 同步，到 Stage F 文件更新 — 全程一次完成，4 commits 跨 2 repos 全數 push 到 origin/main。
+
+---
+
+### Phase 47: v1.9.0 PostMatch「其他」區段 + Teleop 三欄移除（實作）
+- **Status:** ✅ complete
+- **Completed:** 2026-04-26
+
+#### 主 repo 改動 (8 檔；分 2 commits)
+
+**Stage A commit (`42425fa`) — schema/types/serializer**
+- `constants.ts`: TSV_SCHEMA_MATCH 移 3 (bumpCount/trenchCount/fuelDroppedOnBumpCount) 加 3 (otherStealsOpponent/ratingNeedFuel/ratingShotUnderDefense) + v1.9.0 註解
+- `types.ts`: ScoutingData/INITIAL_DATA 同步移加；PostMatchChecklist 加 `stealsOpponent: boolean` + ratings.{needFuel, shotUnderDefense}
+- `utils/checklistSerializer.ts`: 拆 RATING_ROW_KEYS → MAIN_RATING_ROW_KEYS (8) + OTHER_RATING_ROW_KEYS (2) + 全部 RATING_ROW_KEYS spread；checklistToFlatFields 加 `out.otherStealsOpponent = c.stealsOpponent`
+
+**Stage B commit (`61364c7`) — i18n + UI**
+- `services/googleSheets.ts`: PRESERVE_EMPTY_KEYS += ratingNeedFuel + ratingShotUnderDefense
+- `contexts/LanguageContext.tsx`: 移 3 (EN+ZH) + flag_stuckBall「Stuck on fuel」/「卡在 fuel 上」+ 加 10 keys per locale（4 主 keys + 6 per-row button labels）
+- `components/TabViews.tsx` Teleop: 移除整段 `<div className="grid grid-cols-1 gap-5">` 含 3 個 Counter
+- `components/TabViews.tsx` PostMatchTab: import 改 MAIN/OTHER + showOther state + fallback 補齊全部 ratings + stealsOpponent + ratings render 從 RATING_ROW_KEYS 改 MAIN_RATING_ROW_KEYS + 加完整「其他」可摺疊區段（Toggle + 2 rating rows with per-row tKey labels）
+- `components/HistoryEditForm.tsx`: 移除 3 個 Counter input field
+
+#### Scanner repo 改動 (5 檔；1 commit `605071b`)
+- `src/constants/schema.ts`: TSV_SCHEMA_MATCH 移 3 加 3 + 檔頭 v1.9.0 註解 + flag_stuckBall 簡中改「卡 fuel」+ FIELD_LABELS 移 3 加 3 + SCHEMA_LENGTHS 註解 47→48
+- `src/utils/decoder.ts`: 註解 v1.8.0→v1.9.0（detectQRType 已動態 .length 比對，邏輯不需改）
+- `src/i18n/locales/en.ts`: header 註解 + 移 3 + 加 3 + flagStuckBall 'Stuck on fuel' + // Teleop comment 改 // Penalty + Climb
+- `src/i18n/locales/zh-TW.ts`: 同上 + 「卡在 fuel 上」
+- `google-apps-script/Code.gs`: 檔頭 changelog + TSV_SCHEMA_MATCH 移 3 加 3 + 全部欄位編號註解重編 + flag_stuckBall 註解 label 標 v1.9.0 + version '1.8.0'→'1.9.0' + 測試資料清理 (1 multi-line + 12 inline 行)
+
+#### Code.gs 編輯技巧
+- 12 個 inline 重複行 + 1 個 multi-line block 用 single-Edit 容易 collision，改用一次性 node regex 批次處理（`node -e` script 跑 string.replace + writeFileSync）
+- CRLF 檔案 + multiline regex 有副作用：`^\s*` 會吃掉前一行的 `\n`，需手動 fix 1 行（補回 `\n`）
+
+#### 程式化驗證腳本（一次性，跑完已刪除）
+位置：`FRC/scripts/verify-v1.9.cjs`（commit 前刪掉）
+- 解析 main constants.ts / scanner schema.ts / Code.gs 三方 TSV_SCHEMA_MATCH array
+- 驗證：三方 length 都 48、欄位逐一 idx 對齊、移除欄位三方都消失、新增欄位三方 idx 一致
+- 修了一個 parser bug：原版 plan 範例只認 multi-line 寫法（每行一個 `'xxx',`），對 main 的 inline 寫法（一行多個）會漏算。改用 `matchAll(/['"]([a-zA-Z_][a-zA-Z0-9_]*)['"]/g)` 解所有 quoted identifier
+
+#### 驗證結果
+```
+main length:     48
+gas length:      48
+scanner length:  48
+main vs gas    : OK
+main vs scanner: OK
+
+Removed (must NOT exist):
+  bumpCount                    main: OK gas: OK scanner: OK
+  trenchCount                  main: OK gas: OK scanner: OK
+  fuelDroppedOnBumpCount       main: OK gas: OK scanner: OK
+
+Added (must exist at same idx):
+  otherStealsOpponent          main idx: 44 gas: 44 scanner: 44 OK
+  ratingNeedFuel               main idx: 45 gas: 45 scanner: 45 OK
+  ratingShotUnderDefense       main idx: 46 gas: 46 scanner: 46 OK
+```
+
+#### 部署順序
+1. ✅ 主 repo 6 commits 已 push (4 docs from Part 2 + Stage A + Stage B)
+2. ✅ Scanner repo 1 commit (`605071b`) 已 push
+3. ⏸ 使用者：把 scanner 最新 `google-apps-script/Code.gs` 覆貼到 GAS project → 部署新版（version 1.9.0）
+4. ⏸ 使用者：對每個活躍 Sheet GET `<webAppUrl>?action=fixHeaders` 升級到 48 欄新順序標頭（**必跑**：本次欄位順序大改）
+5. ⏸ 使用者：端對端 QR 掃描驗證
+
+#### 觀察 / 學習
+- **Inline Execution 流暢度**：用 `superpowers:executing-plans` skill 全程一次跑完 17 tasks 沒打斷。Plan 17 tasks 詳細到 step 級別，配合 TaskCreate 追蹤每 task 進度，沒踩任何 baseline-noise vs 新錯誤的混淆陷阱
+- **TS type check 策略**：`npm run build` (Vite) 不跑 TS type check，需 `npx tsc --noEmit` 才能驗 type 錯誤。Inline Execution 在 Stage A 改完才跑 type check 是對的 — 中間每改 1 檔跑會有大量「預期會錯的」噪音
+- **Baseline noise 避坑**：v1.9.0 改前已有 13 個預存 TS errors（App.tsx useRef/MatchLevel unused、googleSheets index errors 等）。Stage A commit 前先用 `git stash` 跑 baseline tsc 算 error 數，作為比對基準避免誤判
+- **CRLF + JS regex 多行 bug**：`^\s*xxx,\r?\n\s*yyy,...` 在 multiline mode + CRLF 檔案會把前一行的 `\n` 也吃掉。原因是 `\r` 也是 line terminator，`^` 會在 `\r` 之後 activate，導致 `\s*` 跨越 `\n` 邊界。修法：刪除後手動 fix 受影響的 1 行
+- **Verifier parser 必須兼容 inline 和 multi-line array 寫法**：原 plan verifier 只解 multi-line（每行一個 `'xxx',`），對 main constants.ts 的 inline 寫法只解 16/48 個欄位。修法：用 regex `matchAll` 直接抽 quoted identifier 跨任意排版
+
+---
+
+## 5-Question Reboot Check（給明日接續用）
+
+1. **做什麼？** Phase 47 v1.9.0 完整實作 — PostMatch 加「其他」區段 (3 欄)、Teleop 移 3 欄、flag_stuckBall label 改名
+2. **進度？** ✅ 全部 17 tasks 完成；兩 repo 共 4 implementation commits + 4 docs commits 已 push 到 origin/main；主 repo build (Vite) 過，scanner build 過；三方 schema 程式化驗證通過 (48/48/48 OK + 移除欄位三方消失 + 新增欄位 idx 44/45/46 一致)
+3. **下一步？** 使用者外部手動操作（同 v1.7.0/v1.8.0 部署流程）：
+   - (a) 把 scanner 最新 `google-apps-script/Code.gs` 覆貼到 GAS project → 部署新版（內部版本字串應顯示 1.9.0）
+   - (b) 對每個活躍 Sheet GET `<webAppUrl>?action=fixHeaders`（**必跑** — 本次欄位順序大改）
+   - (c) 端對端 QR 掃描驗證（48 欄 Match QR 解碼成功 + 偷球 toggle 輸出 1 + 需要球/被 defense 評分輸出 good/ok/bad）
+4. **阻礙？** 無；僅外部部署待使用者執行
+5. **檔案？**
+   - 主 repo: `constants.ts`、`types.ts`、`utils/checklistSerializer.ts`、`services/googleSheets.ts`、`contexts/LanguageContext.tsx`、`components/TabViews.tsx`、`components/HistoryEditForm.tsx`、`CLAUDE.md`、`PROGRESS.md`
+   - Scanner repo: `google-apps-script/Code.gs`、`src/constants/schema.ts`、`src/utils/decoder.ts`、`src/i18n/locales/en.ts`、`src/i18n/locales/zh-TW.ts`
+
+---
+
+*Last updated: 2026-04-26 (Phase 47 — v1.9.0 PostMatch Other section + Teleop trim 實作完成)*
