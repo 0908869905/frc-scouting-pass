@@ -2531,7 +2531,7 @@ issueShooterStutter idx in three: 24 24 24
    - **(a) 先請使用者選執行模式**：上次 session 結束前 present 了兩個選項但使用者沒回覆就 `/finish` —
      - **Subagent-Driven**（每 task 派 subagent 執行）
      - **Inline Execution**（在 main session 內直接執行；上次推薦此模式）
-   - **(b) 確認模式後從 plan 的 Task 1 開始** — 修 `constants.ts` 的 `TSV_SCHEMA_MATCH`（移除 bumpCount / trenchCount / fuelDroppedOnBumpCount，新增 needBallInAllianceZone / stealsFromOpponent / shootingAffectedByDefense）
+   - **(b) 確認模式後從 plan 的 Task 1 開始** — 修 `constants.ts` 的 `TSV_SCHEMA_MATCH`（移除 bumpCount / trenchCount / fuelDroppedOnBumpCount，新增 otherStealsOpponent / ratingNeedFuel / ratingShotUnderDefense）
 4. **阻礙？** 等使用者選執行模式（Subagent-Driven vs Inline Execution）
 5. **檔案？**
    - **Spec**：`docs/superpowers/specs/2026-04-26-postmatch-other-section-design.md`
