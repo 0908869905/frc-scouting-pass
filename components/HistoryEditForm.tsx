@@ -78,40 +78,6 @@ export const HistoryEditForm: FC<HistoryEditFormProps> = ({ record, onSave, onCa
         </div>
       </div>
 
-      {/* Counters Row */}
-      <div className="grid grid-cols-3 gap-3">
-        <div>
-          <label className="text-xs text-slate-500 uppercase font-bold">{t('bumpCount')}</label>
-          <input
-            type="number"
-            className="w-full bg-slate-800 border border-slate-600 rounded-lg p-2 text-white text-center"
-            value={editData.bumpCount}
-            onChange={e => updateField({ bumpCount: parseInt(e.target.value) || 0 })}
-            min={0}
-          />
-        </div>
-        <div>
-          <label className="text-xs text-slate-500 uppercase font-bold">{t('trenchCount')}</label>
-          <input
-            type="number"
-            className="w-full bg-slate-800 border border-slate-600 rounded-lg p-2 text-white text-center"
-            value={editData.trenchCount}
-            onChange={e => updateField({ trenchCount: parseInt(e.target.value) || 0 })}
-            min={0}
-          />
-        </div>
-        <div>
-          <label className="text-xs text-slate-500 uppercase font-bold">{t('fuelDroppedOnBump')}</label>
-          <input
-            type="number"
-            className="w-full bg-slate-800 border border-slate-600 rounded-lg p-2 text-white text-center"
-            value={editData.fuelDroppedOnBumpCount}
-            onChange={e => updateField({ fuelDroppedOnBumpCount: parseInt(e.target.value) || 0 })}
-            min={0}
-          />
-        </div>
-      </div>
-
       {/* Climb Status Row */}
       <div className="grid grid-cols-2 gap-3">
         <div>

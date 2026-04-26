@@ -14,7 +14,8 @@ import {
   toggleInArray,
   ISSUE_KEYS,
   FLAG_KEYS,
-  RATING_ROW_KEYS,
+  MAIN_RATING_ROW_KEYS,
+  OTHER_RATING_ROW_KEYS,
   RATING_VALUES,
   type IssueKey,
   type FlagKey,
@@ -579,34 +580,6 @@ export const TeleopTab: FC<TabProps> = ({ data, update, handedness }) => {
         <h2 className="text-2xl font-display font-bold text-blue-400">{t('teleopHeader')}</h2>
       </div>
 
-      {/* Main Content */}
-      <div className="grid grid-cols-1 gap-5">
-        {/* Bump & Trench Section */}
-        <Counter
-          label={t('bumpCount')}
-          value={data.bumpCount}
-          onChange={val => update({ bumpCount: val })}
-          handedness={handedness}
-          accentColor="blue"
-        />
-        <Counter
-          label={t('trenchCount')}
-          value={data.trenchCount}
-          onChange={val => update({ trenchCount: val })}
-          handedness={handedness}
-          accentColor="blue"
-        />
-
-        {/* Fuel Dropped on Bump */}
-        <Counter
-          label={t('fuelDroppedOnBump')}
-          value={data.fuelDroppedOnBumpCount}
-          onChange={val => update({ fuelDroppedOnBumpCount: val })}
-          handedness={handedness}
-          accentColor="orange"
-        />
-      </div>
-
       {/* Penalty Section - Merged into Teleop */}
       <div className="space-y-4 pt-4 border-t border-red-500/30">
         <div className="flex items-center gap-3">
@@ -713,6 +686,7 @@ export const PostMatchTab: FC<TabProps> = ({ data, update }) => {
   const { t } = useLanguage();
   const [showIssues, setShowIssues] = useState(false);
   const [showPerformance, setShowPerformance] = useState(false);
+  const [showOther, setShowOther] = useState(false);
 
   const checklist: PostMatchChecklist = data.postMatchChecklist ?? {
     issues: [],
@@ -721,7 +695,12 @@ export const PostMatchTab: FC<TabProps> = ({ data, update }) => {
     collisionField: false,
     collisionRobot: false,
     collisionTeamNumbers: '',
-    ratings: { pushTrench: '', pushBump: '', shoot: '', human: '', defense: '' },
+    ratings: {
+      pushTrench: '', pushBump: '', shoot: '', human: '', defense: '',
+      intakeFuel: '', transportFuel: '', shootFuel: '',
+      needFuel: '', shotUnderDefense: '',
+    },
+    stealsOpponent: false,
     extraComments: '',
   };
 
@@ -897,7 +876,7 @@ export const PostMatchTab: FC<TabProps> = ({ data, update }) => {
             {/* Ratings */}
             <div className="space-y-2 rounded-xl border border-slate-800 bg-slate-900/40 p-3">
               <div className="text-xs font-bold text-slate-400 uppercase">{t('ratingsSubHeader')}</div>
-              {RATING_ROW_KEYS.map(row => (
+              {MAIN_RATING_ROW_KEYS.map(row => (
                 <div key={row} className="space-y-1">
                   <div className="text-sm text-slate-300">{tAny(`rating_${row}`)}</div>
                   <div className="flex gap-2">
@@ -932,6 +911,85 @@ export const PostMatchTab: FC<TabProps> = ({ data, update }) => {
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Section: 其他 (collapsible) — v1.9.0 */}
+      <div className="rounded-xl border border-slate-800 bg-slate-900/40 overflow-hidden">
+        <button
+          type="button"
+          onClick={() => setShowOther(v => !v)}
+          className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-slate-800/50 transition-colors"
+        >
+          <span className="text-sm font-bold text-slate-300 uppercase">
+            {t('section_other')}
+            {(() => {
+              const count = (checklist.stealsOpponent ? 1 : 0)
+                + (checklist.ratings.needFuel !== '' ? 1 : 0)
+                + (checklist.ratings.shotUnderDefense !== '' ? 1 : 0);
+              return count > 0 ? (
+                <span className="ml-2 px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 text-xs">
+                  {count}
+                </span>
+              ) : null;
+            })()}
+          </span>
+          <span className={`text-slate-400 transition-transform ${showOther ? 'rotate-180' : ''}`}>▾</span>
+        </button>
+        {showOther && (
+          <div className="px-4 pb-4 space-y-3">
+            {/* Steals from opponent (boolean toggle) */}
+            <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-3">
+              <Toggle
+                label={t('other_stealsOpponent')}
+                checked={checklist.stealsOpponent}
+                onChange={v => updateChecklist({ stealsOpponent: v })}
+                variant="warning"
+              />
+            </div>
+
+            {/* OTHER rating rows with per-row custom button labels */}
+            <div className="space-y-2 rounded-xl border border-slate-800 bg-slate-900/40 p-3">
+              {OTHER_RATING_ROW_KEYS.map(row => {
+                const tKey = (suffix: string) => `rating${row.charAt(0).toUpperCase()}${row.slice(1)}_${suffix}`;
+                return (
+                  <div key={row} className="space-y-1">
+                    <div className="text-sm text-slate-300">{tAny(`rating_${row}`)}</div>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setRating(row, '')}
+                        className={`flex-1 py-2 rounded-lg border-2 text-xs font-semibold transition-all active:scale-95 ${
+                          checklist.ratings[row] === ''
+                            ? 'bg-slate-700 border-slate-500 text-white'
+                            : 'bg-slate-900 border-slate-700 text-slate-500'
+                        }`}
+                      >
+                        —
+                      </button>
+                      {RATING_VALUES.map(v => {
+                        const active = checklist.ratings[row] === v;
+                        const colorClass =
+                          v === 'good' ? (active ? 'bg-green-500/30 border-green-500 text-green-300' : 'bg-slate-900 border-slate-700 text-slate-400') :
+                          v === 'ok'   ? (active ? 'bg-amber-500/30 border-amber-500 text-amber-300' : 'bg-slate-900 border-slate-700 text-slate-400') :
+                                         (active ? 'bg-red-500/30 border-red-500 text-red-300'     : 'bg-slate-900 border-slate-700 text-slate-400');
+                        return (
+                          <button
+                            key={v}
+                            type="button"
+                            onClick={() => setRating(row, v)}
+                            className={`flex-1 py-2 rounded-lg border-2 text-xs font-semibold transition-all active:scale-95 ${colorClass}`}
+                          >
+                            {tAny(tKey(v))}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}

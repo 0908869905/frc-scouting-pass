@@ -84,6 +84,8 @@ const PRESERVE_EMPTY_KEYS = new Set<string>([
   'ratingIntakeFuel',
   'ratingTransportFuel',
   'ratingShootFuel',
+  'ratingNeedFuel',          // v1.9.0
+  'ratingShotUnderDefense',  // v1.9.0
 ]);
 
 // Safely stringify JSON with Unicode escaping to ensure correct transmission

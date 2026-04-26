@@ -31,9 +31,6 @@ const translations = {
     teleFuel: "Fuel Scored",
     teleClimbStatus: "Climb Status (End Game)",
     teleClimbTime: "Climb Time (sec)",
-    bumpCount: "Bump Crossings",
-    trenchCount: "Trench Crossings",
-    fuelDroppedOnBump: "Fuel Dropped on Bump",
 
     // Penalty
     penaltyCount: "Penalty Count",
@@ -73,7 +70,7 @@ const translations = {
     flag_belowExpected: "Below expected",
     flag_tipped: "Tipped",
     flag_ridingFuel: "Riding on FUEL",
-    flag_stuckBall: "Stuck on ball",
+    flag_stuckBall: "Stuck on fuel",
 
     // Post Match Checklist - collision
     collision_toggle: "Hard collision",
@@ -93,6 +90,19 @@ const translations = {
     rating_good: "Good",
     rating_ok: "OK",
     rating_bad: "Poor",
+
+    // PostMatch「其他」區段 (v1.9.0)
+    section_other: "Other",
+    other_stealsOpponent: "Steals fuel from opponent zone",
+    rating_needFuel: "Need fuel in alliance zone",
+    rating_shotUnderDefense: "Shot accuracy under defense",
+    // Per-row button labels (override default Good/OK/Poor)
+    ratingNeedFuel_good: "Don't need",
+    ratingNeedFuel_ok: "Normal",
+    ratingNeedFuel_bad: "Need a lot",
+    ratingShotUnderDefense_good: "Fine",
+    ratingShotUnderDefense_ok: "Normal",
+    ratingShotUnderDefense_bad: "Severe",
 
     // Climb Position (5 positions)
     climbPosition: "Climb Position",
@@ -223,9 +233,6 @@ const translations = {
     teleFuel: "進球燃料數",
     teleClimbStatus: "攀爬狀態 (終局)",
     teleClimbTime: "攀爬時間 (秒)",
-    bumpCount: "穿越 Bump 次數",
-    trenchCount: "穿越 Trench 次數",
-    fuelDroppedOnBump: "穿越 Bump 時 Fuel 掉落",
 
     // Penalty
     penaltyCount: "犯規次數",
@@ -265,7 +272,7 @@ const translations = {
     flag_belowExpected: "不符合預期表現",
     flag_tipped: "翻車",
     flag_ridingFuel: "騎在 FUEL 上",
-    flag_stuckBall: "卡在球上",
+    flag_stuckBall: "卡在 fuel 上",
 
     // Post Match Checklist - collision
     collision_toggle: "有過劇烈撞擊",
@@ -285,6 +292,19 @@ const translations = {
     rating_good: "很好",
     rating_ok: "還不錯",
     rating_bad: "差",
+
+    // PostMatch「其他」區段 (v1.9.0)
+    section_other: "其他",
+    other_stealsOpponent: "去對方 alliance zone 偷球",
+    rating_needFuel: "alliance zone 需要有球",
+    rating_shotUnderDefense: "被 defense 影響射球",
+    // Per-row button labels
+    ratingNeedFuel_good: "不需要",
+    ratingNeedFuel_ok: "普通",
+    ratingNeedFuel_bad: "很需要",
+    ratingShotUnderDefense_good: "還好",
+    ratingShotUnderDefense_ok: "普通",
+    ratingShotUnderDefense_bad: "嚴重",
 
     // Climb Position (5 positions)
     climbPosition: "攀爬位置",
