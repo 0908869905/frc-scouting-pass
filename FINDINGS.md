@@ -779,7 +779,7 @@ key 用 "Off"（語意接近「壞掉/離線」）但 label 用「不準」（�
 
 ## v1.9.0 PostMatch「其他」區段 4 個關鍵設計決策 (2026-04-26)
 
-> 本條目記錄 Phase 47（v1.9.0 = PostMatch 新增「其他」區段 + Teleop 移除 3 欄 Counter + stuck on ball → fuel label 改字）的 brainstorming 階段四個設計選擇與理由，供未來新增類似 PostMatch 互動欄位時參考。Spec 寫於 `docs/superpowers/specs/2026-04-26-postmatch-other-section-design.md`，當前狀態：**spec + plan 已寫，17 tasks 實作未開始**。
+> 本條目記錄 Phase 47（v1.9.0 = PostMatch 新增「其他」區段 + Teleop 移除 3 欄 Counter + stuck on ball → fuel label 改字）的 brainstorming 階段四個設計選擇與理由，供未來新增類似 PostMatch 互動欄位時參考。Spec 寫於 `docs/superpowers/specs/2026-04-26-postmatch-other-section-design.md`，當前狀態：**spec + plan + 17 tasks 實作全數完成（2026-04-26 Part 3）**。三方 schema 程式化驗證通過（main / scanner / gas 全部 48 欄、新增欄位 idx 44/45/46 一致）。
 
 ### 決策 1：「偷球」用 boolean 而非 3 級 rating
 
@@ -827,4 +827,114 @@ key 用 "Off"（語意接近「壞掉/離線」）但 label 用「不準」（�
 
 ---
 
-*Last updated: 2026-04-26 (Phase 47 — v1.9.0 spec + plan 設計決策)*
+## CRLF 檔案 + JavaScript regex multiline 模式邊界 bug (2026-04-26)
+
+### 觀察
+v1.9.0 實作 Phase 47 用 `node -e` 一次性 script 在 scanner 的 `Code.gs`（CRLF line endings）批次刪除 12 個 inline 重複行 + 1 個 multi-line block 時，下面這個 regex：
+
+```js
+content.replace(/^\s*previousLine,\r?\n\s*targetLine,\r?\n/gm, '');
+```
+
+**意外症狀：** 刪除動作成功，但前一行的尾端 `\n` 也被吃掉，導致 `prevLine,targetLine,` 黏成一行（不是 `prevLine,\ntargetLine,`）。
+
+### 根因
+JavaScript regex 的 `gm` flag 下，`^` 在 line terminator 之後 activate。但 line terminator 包含 `\r`（CR）和 `\n`（LF）。CRLF 檔案的每行結尾是 `\r\n`：
+- 上一行尾端 → `prev,\r\n`
+- 此處 `^` 先在 `\r` **之後**就 activate（不需等到 `\n`）
+- `\s*` 是貪婪的，從 `\r` 後開始往後吃，**會跨越接下來的 `\n` 邊界**繼續吃 target 行的 leading whitespace
+- 結果：前一行的 `\n` 被當成 target 行的「leading whitespace」一起吃掉
+
+### 修法
+1. **規範化 line ending 後再跑 regex**：先 `content.replace(/\r\n/g, '\n')` → 改 → 寫回時補 `\r\n`（如果需要保留 CRLF）
+2. **避免靠 `^\s*` 抓行首**：改用 `\r\n\s*` 顯式比對 line ending → 但這對檔案首行不 work
+3. **事後手動 fix**：本次選這個（影響範圍只 1 行 + 已有 git diff 可看），刪除完手動補回受影響行的 `\n`
+
+### 通用原則
+- Windows-origin 檔案（含 Code.gs / .ts / .md，git 預設 `core.autocrlf=true`）跑 multi-line regex 前，先確認 line ending 為何
+- `^\s*` + `gm` 在 CRLF 檔案要小心；安全做法是 `^[ \t]*`（不含 `\r\n`）或先 normalize
+- 同類陷阱也存在於 `$\s*` — 會吃掉下一行的內容
+
+---
+
+## Vite build 不跑 TS type check（必須 `npx tsc --noEmit` 才能驗 type 錯誤）(2026-04-26)
+
+### 觀察
+v1.9.0 Stage A 改完 schema 層（4 檔）後想驗證沒打壞既有 type 體系，跑 `npm run build`（執行 Vite production bundle）顯示 PASS — 但其實這只證明 esbuild transform 成功，**TS type check 完全沒跑**。需要另外跑 `npx tsc --noEmit` 才會顯示真正的 type errors。
+
+### 為何 Vite 預設不跑 type check
+Vite 的設計哲學是「dev / build 速度優先」，把 type check 視為 IDE / CI 的職責，不阻塞 build。esbuild 只做語法 transform，不做語義分析。常見的補強方式：
+- 在 `package.json` 加 `"type-check": "tsc --noEmit"` script
+- 在 CI / pre-commit hook 強制跑 `tsc --noEmit`
+- 用 `vite-plugin-checker` 在 dev / build 時併行跑 type check
+
+### 本次操作策略：刻意不在每改 1 檔跑 type check
+v1.9.0 Plan 17 tasks 中，前半段是 schema / types / serializer 連動修改（移 3 欄 + 加 3 欄），中間任何一個檔案修一半時，下游檔案會出現「**預期**的」type 錯誤（例如 types.ts 移除 `bumpCount` 後，`TabViews.tsx` 還沒改的 Counter 行會炸 type）。
+
+如果每改 1 檔跑一次 type check，會被「預期錯誤」噪音淹沒，難以辨識「**新引入的非預期錯誤**」。Inline Execution 在 Stage A（schema/types/serializer 全改完）才跑 type check 是策略性選擇 — 等到一致性回復後再驗，差值才有意義。
+
+### Baseline TS errors 比對技巧
+專案累積有 13 個預存 TS errors（App.tsx useRef/MatchLevel unused、googleSheets index errors 等歷史包袱）。要區分「我新引入的」vs「pre-existing」：
+
+```bash
+# 改前
+git stash                                 # 暫存所有改動
+npx tsc --noEmit 2>&1 | grep -c error    # → 13 (baseline noise)
+git stash pop                             # 還原改動
+
+# 改後
+npx tsc --noEmit 2>&1 | grep -c error    # → 13（差值 0 即合格）
+```
+
+差值才是新引入的。本次 Stage A / B 完工後 baseline 維持 13，零新增。
+
+### 通用原則
+- Vite 專案 = build pass ≠ type pass。要驗 type 必跑 `tsc --noEmit`
+- 大型重構連動多檔時，先全部改完再跑 type check，不要每檔跑（會被預期錯誤淹沒）
+- 既有 type errors 用 `git stash` baseline 比對技巧，把新 vs 舊分開
+
+---
+
+## Verifier parser 必須同時支援 inline 與 multi-line array 寫法 (2026-04-26)
+
+### 情境
+v1.9.0 Phase 47 寫了一次性程式化驗證腳本（`scripts/verify-v1.9.cjs`，commit 前刪掉），目的：解析 main `constants.ts` / scanner `schema.ts` / GAS `Code.gs` 三方的 `TSV_SCHEMA_MATCH` array → 驗 length 都 48、欄位逐一 idx 對齊。
+
+Plan 範例的 parser 用的 regex 是：
+```js
+/^\s*'([a-zA-Z_]+)',?\s*$/gm   // 每行一個 'xxx',
+```
+
+### 問題
+- ✅ scanner `schema.ts` 的寫法：每欄獨立一行（multi-line），上面 regex 解 48/48 OK
+- ✅ GAS `Code.gs` 的寫法：同上 multi-line，OK
+- ❌ main `constants.ts` 的寫法：**inline**（每行多個 `'xxx', 'yyy', 'zzz',`），上面 regex 只能解到 16/48（每行只取一個）
+
+### 修法
+改用「跨任意排版抽 quoted identifier」的 regex：
+
+```js
+// 1. 先 strip 註解，避免歷史 changelog 字串裡的 keyword 被誤抓
+const stripped = content.replace(/\/\/[^\n]*/g, '').replace(/\/\*[\s\S]*?\*\//g, '');
+
+// 2. 抽 array literal 範圍（避免抓到別的字串常數）
+const arrayMatch = stripped.match(/TSV_SCHEMA_MATCH\s*=\s*\[([\s\S]*?)\]/);
+const body = arrayMatch[1];
+
+// 3. matchAll 抽所有 quoted identifier
+const fields = [...body.matchAll(/['"]([a-zA-Z_][a-zA-Z0-9_]*)['"]/g)].map(m => m[1]);
+```
+
+關鍵：
+- `matchAll` + `g` flag 抽全部 match（不限每行一個）
+- 限定 identifier 字符 `[a-zA-Z_][a-zA-Z0-9_]*` 排除其他字串字面量
+- **strip 註解**很關鍵 — 沒這步會把歷史 changelog 註解（例如 `// v1.7.0 加了 8 個 ratingXxx`）裡的 keyword 一起抓進來，造成假性 length mismatch
+
+### 通用原則
+- 跨檔程式化驗證腳本必須對「同一個資料結構在不同檔案的不同寫法」robust — schema 可能是 inline / multi-line / 帶註解 / 不帶註解
+- 用 `matchAll` 跨任意排版抽 token，比 line-based regex 可靠得多
+- **永遠先 strip 註解再 parse**：歷史 changelog 註解常意外含 schema keyword，會污染解析結果
+
+---
+
+*Last updated: 2026-04-26 (Phase 47 — v1.9.0 PostMatch Other section 實作完成 + 3 implementation findings: CRLF regex bug / Vite vs tsc / verifier parser)*
