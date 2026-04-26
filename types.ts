@@ -63,7 +63,12 @@ export interface PostMatchChecklist {
     intakeFuel:    ChecklistRating;
     transportFuel: ChecklistRating;
     shootFuel:     ChecklistRating;
+    needFuel:         ChecklistRating;  // v1.9.0 — alliance zone 需要有球
+    shotUnderDefense: ChecklistRating;  // v1.9.0 — 被 defense 影響射球
   };
+
+  // 「其他」區段 boolean (v1.9.0)
+  stealsOpponent: boolean;
 
   // 自由輸入備註
   extraComments?: string;
@@ -97,9 +102,6 @@ export interface ScoutingData {
   teleClimbStatus: TeleClimbStatus; // Level1-3/Failed/None
   teleClimbTime: number;         // Seconds to climb
   teleClimbPosition: ClimbPosition; // 5 positions
-  bumpCount: number;             // Times crossed Bump
-  trenchCount: number;           // Times crossed Trench
-  fuelDroppedOnBumpCount: number; // Times dropped fuel on Bump crossing
 
   // --- Penalty (within Teleop) ---
   minorPenalty: number;          // Minor penalty count
@@ -140,6 +142,10 @@ export interface ScoutingData {
   ratingIntakeFuel: ChecklistRating;
   ratingTransportFuel: ChecklistRating;
   ratingShootFuel: ChecklistRating;
+  // PostMatch Other (3) — v1.9.0
+  otherStealsOpponent: boolean;
+  ratingNeedFuel: ChecklistRating;
+  ratingShotUnderDefense: ChecklistRating;
   // PostMatch free-text (mirrors postMatchChecklist.extraComments)
   comments: string;
   postMatchChecklist?: PostMatchChecklist; // UI single source of truth; flat fields derived from it
@@ -184,9 +190,6 @@ export const INITIAL_DATA: ScoutingData = {
   teleClimbStatus: TeleClimbStatus.None,
   teleClimbTime: 0,
   teleClimbPosition: 'None',
-  bumpCount: 0,
-  trenchCount: 0,
-  fuelDroppedOnBumpCount: 0,
 
   // Penalty (within Teleop)
   minorPenalty: 0,
@@ -226,6 +229,10 @@ export const INITIAL_DATA: ScoutingData = {
   ratingIntakeFuel: '',
   ratingTransportFuel: '',
   ratingShootFuel: '',
+  // PostMatch Other (v1.9.0)
+  otherStealsOpponent: false,
+  ratingNeedFuel: '',
+  ratingShotUnderDefense: '',
   // PostMatch free-text
   comments: '',
   postMatchChecklist: {
@@ -244,7 +251,10 @@ export const INITIAL_DATA: ScoutingData = {
       intakeFuel: '',
       transportFuel: '',
       shootFuel: '',
+      needFuel: '',
+      shotUnderDefense: '',
     },
+    stealsOpponent: false,
   },
 
   // Pit defaults

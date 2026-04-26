@@ -29,7 +29,8 @@ export const FLAG_KEYS = [
   'stuckBall',
 ] as const;
 
-export const RATING_ROW_KEYS = [
+// 動作評分區段（PostMatch「動作評分」UI 區塊）
+export const MAIN_RATING_ROW_KEYS = [
   'pushTrench',
   'pushBump',
   'shoot',
@@ -38,6 +39,18 @@ export const RATING_ROW_KEYS = [
   'intakeFuel',
   'transportFuel',
   'shootFuel',
+] as const;
+
+// 「其他」區段（PostMatch「其他」UI 區塊，v1.9.0）
+export const OTHER_RATING_ROW_KEYS = [
+  'needFuel',
+  'shotUnderDefense',
+] as const;
+
+// 全部 ratings — 序列化 / type 用
+export const RATING_ROW_KEYS = [
+  ...MAIN_RATING_ROW_KEYS,
+  ...OTHER_RATING_ROW_KEYS,
 ] as const;
 
 export const RATING_VALUES: Exclude<ChecklistRating, ''>[] = ['good', 'ok', 'bad'];
@@ -88,6 +101,8 @@ const RATING_FIELD_MAP: Record<RatingRow, keyof ScoutingData> = {
   intakeFuel:    'ratingIntakeFuel',
   transportFuel: 'ratingTransportFuel',
   shootFuel:     'ratingShootFuel',
+  needFuel:         'ratingNeedFuel',
+  shotUnderDefense: 'ratingShotUnderDefense',
 };
 
 // hasCollision clamp: when collision toggle is off, sub-fields do not leak to TSV.
@@ -112,6 +127,9 @@ export function checklistToFlatFields(c: PostMatchChecklist): Partial<ScoutingDa
   (RATING_ROW_KEYS as readonly RatingRow[]).forEach(row => {
     (out as Record<string, unknown>)[RATING_FIELD_MAP[row]] = c.ratings[row];
   });
+
+  // PostMatch「其他」區段 boolean (v1.9.0)
+  out.otherStealsOpponent = c.stealsOpponent;
 
   out.comments = (c.extraComments ?? '').trim();
 

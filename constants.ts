@@ -38,19 +38,21 @@ export const CLIMB_POSITION_OPTIONS: ClimbPosition[] = ['LeftSide', 'Left', 'Cen
 // (ratingIntakeFuel / ratingTransportFuel / ratingShootFuel) before `comments`.
 // v1.8.0 (2026-04-26): 47 → 48 columns. Add issueShooterStutter
 // (射球不順 — 射到一半短暫卡頓後恢復) inserted after issueShooterOff.
+// v1.9.0 (2026-04-26): 48 → 48 columns. Remove Teleop bump/trench/fuelDropped (3),
+// add PostMatch "Other" section (otherStealsOpponent boolean + ratingNeedFuel +
+// ratingShotUnderDefense, 3 cols) before `comments`. Rename flag_stuckBall i18n
+// label only (column key preserved).
 export const TSV_SCHEMA_MATCH = [
   // PreMatch (6)
   'scouterName', 'eventCode', 'matchLevel', 'matchNumber', 'alliance', 'teamNumber',
   // Auto (3)
   'autoClimbStatus', 'autoClimbTime', 'autoClimbPosition',
-  // Teleop (3)
-  'bumpCount', 'trenchCount', 'fuelDroppedOnBumpCount',
   // Penalty (2)
   'minorPenalty', 'majorPenalty',
   // Climb (3)
   'teleClimbStatus', 'teleClimbTime', 'teleClimbPosition',
-  // --- 17 above unchanged ---
-  // PostMatch Issues (11) — 0/1
+  // --- 14 above unchanged from v1.8.0 (Teleop bump/trench/fuelDropped removed) ---
+  // PostMatch Issues (12) — 0/1
   'issueNoShow', 'issueCrashed', 'issueEStop', 'issueAStop', 'issueLowVoltage',
   'issueIntakeStuck', 'issueShooterOff', 'issueShooterStutter', 'issueStuckBump', 'issueHitTrench',
   'issuePartFell', 'issueMovement',
@@ -62,6 +64,10 @@ export const TSV_SCHEMA_MATCH = [
   // PostMatch Ratings (8) — good/ok/bad or empty
   'ratingPushTrench', 'ratingPushBump', 'ratingShoot', 'ratingHuman', 'ratingDefense',
   'ratingIntakeFuel', 'ratingTransportFuel', 'ratingShootFuel',
+  // PostMatch Other (3) — v1.9.0
+  'otherStealsOpponent',     // boolean: 0/1 — 去對方 alliance zone 偷球
+  'ratingNeedFuel',          // good/ok/bad — alliance zone 需要有球
+  'ratingShotUnderDefense',  // good/ok/bad — 被 defense 影響射球
   // PostMatch free-text (1)
   'comments',
 ];
