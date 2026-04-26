@@ -182,12 +182,12 @@ export const INITIAL_DATA: ScoutingData = {
 
   // Auto
   autoPath: [],
-  autoClimbStatus: AutoClimbStatus.None,
+  autoClimbStatus: AutoClimbStatus.Level1,
   autoClimbTime: 0,
   autoClimbPosition: 'None',
 
   // Teleop
-  teleClimbStatus: TeleClimbStatus.None,
+  teleClimbStatus: TeleClimbStatus.Level1,
   teleClimbTime: 0,
   teleClimbPosition: 'None',
 
