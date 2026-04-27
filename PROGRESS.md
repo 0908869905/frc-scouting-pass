@@ -2638,4 +2638,96 @@ Added (must exist at same idx):
 
 ---
 
+## Session: 2026-04-27 — Climb 預設值改為 Level1 + 補上 Part 3 漏 commit 的 FINDINGS
+
+### Overview
+
+延續 Part 3 — v1.9.0 程式碼工作 100% 完成（外部 GAS 部署仍待使用者執行）。本次 session 兩件事：(a) 使用者要求把吊掛預設從「無」改成「層級1」，先釐清歧義（auto vs tele）後選 C 雙改；(b) 補 push Part 3 沒 commit 到的 `FINDINGS.md`。兩 commits 已 push 到 origin/main。
+
+---
+
+### Phase 48: INITIAL_DATA Climb 預設值調整
+- **Status:** ✅ complete
+- **Completed:** 2026-04-27
+
+#### 釐清歧義
+專案有 **autoClimbStatus** 與 **teleClimbStatus** 兩個 climb 欄位 — 給使用者三選項（A: 只改 auto / B: 只改 tele / C: 兩個都改），使用者選 **C**，並指示 climb position 維持 None 不需動。
+
+#### 改動範圍
+**僅 `types.ts` 1 檔，2 行（INITIAL_DATA 內）**
+- Line 185: `autoClimbStatus: AutoClimbStatus.None` → `AutoClimbStatus.Level1`
+- Line 190: `teleClimbStatus: TeleClimbStatus.None` → `TeleClimbStatus.Level1`
+
+#### 為何只動 INITIAL_DATA 一處夠
+先 grep 過：
+- `App.tsx` 的 `handleReset()` 用 `...INITIAL_DATA` spread 重置，無硬編碼 None
+- `TabViews.tsx` 530/540/643/653 行 `!== None` 條件渲染本來就是「非 None 才顯示時間/位置欄位」，原邏輯正確
+
+→ 修一處 cascade 到所有預設值入口（首次載入 + reset 後）。
+
+#### 驗證
+`npm run build` ✓（2.18s 完成，零 errors）。改動是 UI 預設值，**不動 schema 不需要 GAS 部署 / fixHeaders**。
+
+---
+
+### 補 Push 上次 Session 漏 commit 的 FINDINGS.md
+- **Status:** ✅ complete
+- **Note:** Part 3 (2026-04-26) 寫了 3 個 implementation findings 但忘記 commit `FINDINGS.md`，本次只是補 push（不是這次 session 才寫的內容）
+
+#### FINDINGS.md 變動 (+112 / -2)
+- (a) v1.9.0 PostMatch Other section 條目從「spec + plan only」改為「全部 17 tasks 完成」
+- (b) 新增 CRLF + JS regex multiline bug 條目（`^\s*` + `\r?\n` 跨越 `\n` 邊界）
+- (c) 新增 Vite build 不跑 TS type check + baseline-stash 技巧條目
+- (d) 新增 verifier parser 必須兼容 inline 與 multi-line array layouts 條目
+
+---
+
+### 修改檔案
+
+| 檔案 | 變動 | Commit |
+|------|------|--------|
+| `types.ts` | 2 行（INITIAL_DATA climb default） | `ec47280` |
+| `FINDINGS.md` | +112 / -2 | `241cc2c` |
+
+**未改動**：`CLAUDE.md`（純預設值不算架構變更）、scanner repo（climb default 只在主 repo INITIAL_DATA）。
+
+---
+
+### Commits（兩個都已 push 到 origin/main）
+
+1. **`ec47280`** — `feat: default both climb statuses to Level1 in INITIAL_DATA`
+   - 範圍：`types.ts` 1 檔，2 行
+   - Body 提到 climb position 仍 None（依使用者偏好）
+2. **`241cc2c`** — `docs(findings): mark v1.9.0 complete + add 3 implementation findings`
+   - 範圍：`FINDINGS.md` +112 / -2
+
+---
+
+### 沒處理的事
+- working tree 留下的 untracked files（`docs/PATH_FORMAT_GUIDE.md`、`docs/superpowers/plans/2026-04-20-postmatch-checklist.md`、`nul`、一張舊截圖 png）— 已告知使用者由他自行處理
+- v1.9.0 GAS 部署 + fixHeaders + QR 端對端驗證 — 仍待使用者執行（見下方 reboot check）
+
+---
+
+## 5-Question Reboot Check（給明日接續用）
+
+1. **做什麼？** 把 INITIAL_DATA 的 `autoClimbStatus` / `teleClimbStatus` 預設從 None 改成 Level1（climb position 維持 None）
+2. **進度？** ✅ 完成；`types.ts` 改 2 行 + build 過 + push (`ec47280`)；同時補 push 上次漏 commit 的 `FINDINGS.md` (`241cc2c`)
+3. **下一步？** 沒有立即 dev 工作。**跨 session 持續待辦（v1.9.0 外部部署，從 2026-04-26 Part 3 起持續）**：
+   - (a) 把 scanner 最新 `google-apps-script/Code.gs` 覆貼到 GAS project → 部署新版（內部版本字串應顯示 1.9.0）
+   - (b) 對每個活躍 Sheet GET `<webAppUrl>?action=fixHeaders`（**必跑** — v1.9.0 欄位順序大改）
+   - (c) 端對端 QR 掃描驗證（48 欄 Match QR 解碼成功 + 偷球 toggle 輸出 1 + 需要球/被 defense 評分輸出 good/ok/bad）
+4. **阻礙？** v1.9.0 GAS 部署仍未執行（需使用者在 GAS Web 介面操作，本助理無法代勞）
+5. **檔案？** 明日若繼續最可能要看的：
+   - 若使用者部署完回報部署成功 → 沒有 follow-up dev 工作
+   - 若部署過程出錯 → 看 scanner 的 `google-apps-script/Code.gs`（v1.9.0 schema 來源）+ 主 repo 的 `constants.ts`（schema 對照）
+   - 若使用者要 follow-up 新功能 → 先讀本 session + Part 3 session 的脈絡，再決定是否要 brainstorm
+   - 本次改動的 `types.ts:185-190` 區塊（INITIAL_DATA）
+
+---
+
+*Last updated: 2026-04-27 (climb defaults: None → Level1)*
+
+---
+
 *Last updated: 2026-04-26 (Phase 47 — v1.9.0 PostMatch Other section + Teleop trim 實作完成)*
