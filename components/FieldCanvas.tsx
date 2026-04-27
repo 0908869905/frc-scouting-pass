@@ -14,6 +14,8 @@ interface FieldCanvasProps {
   climbTime?: number;
   onClimbTimeChange?: (val: number) => void;
   climbLabel?: string;
+  isFlipped: boolean;
+  onFlipChange: (flipped: boolean) => void;
 }
 
 // Full-field aspect ratio (height/width) - 2:1 matching scanner's aspectRatio: '2/1'
@@ -30,7 +32,7 @@ const POINT_RADIUS_RATIO = 0.02;
 const POINT_STROKE_RATIO = 0.005;
 const MID_POINT_RADIUS_RATIO = 0.01;
 
-export const FieldCanvas: FC<FieldCanvasProps> = ({ path, onPathChange, alliance, climbTime, onClimbTimeChange, climbLabel }) => {
+export const FieldCanvas: FC<FieldCanvasProps> = ({ path, onPathChange, alliance, climbTime, onClimbTimeChange, climbLabel, isFlipped, onFlipChange }) => {
   const { t } = useLanguage();
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);

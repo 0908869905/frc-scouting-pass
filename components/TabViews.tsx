@@ -33,6 +33,11 @@ interface TabProps {
   handedness?: Handedness;
 }
 
+interface AutonTabProps extends TabProps {
+  isFlipped: boolean;
+  onFlipChange: (flipped: boolean) => void;
+}
+
 // Team number validation helper (must be positive integer)
 function isTeamNumberInvalid(teamNumber: string): boolean {
   if (!teamNumber) return false;
@@ -472,7 +477,7 @@ export const PreMatchTab: FC<TabProps> = ({ data, update }) => {
 // Auton Tab - Green Theme
 // -----------------------------------------------------------------------------
 
-export const AutonTab: FC<TabProps> = ({ data, update, handedness }) => {
+export const AutonTab: FC<AutonTabProps> = ({ data, update, handedness, isFlipped, onFlipChange }) => {
   const { t } = useLanguage();
 
   const alliance: 'red' | 'blue' = data.alliance.startsWith('R') ? 'red' : 'blue';
@@ -494,6 +499,8 @@ export const AutonTab: FC<TabProps> = ({ data, update, handedness }) => {
         climbTime={data.autoClimbTime}
         onClimbTimeChange={(val) => update({ autoClimbTime: val })}
         climbLabel={t('autoClimbTime')}
+        isFlipped={isFlipped}
+        onFlipChange={onFlipChange}
       />
 
       {/* Main Content */}

@@ -45,6 +45,9 @@ function AppContent() {
   // Auto-save indicator timestamp
   const [lastSaveTime, setLastSaveTime] = useState<number | null>(null);
 
+  // FieldCanvas 180° flip state (session-only, persists across phases & match resets)
+  const [isFlipped, setIsFlipped] = useState(false);
+
   useEffect(() => {
     setUnsyncedCount(getUnsyncedCount());
     const interval = setInterval(() => {
@@ -285,7 +288,7 @@ function AppContent() {
         onTouchEnd={swipeHandlers.onTouchEnd}
       >
         {currentPhase === 'PreMatch' && <PreMatchTab data={data} update={updateData} handedness={handedness} />}
-        {currentPhase === 'Auton' && <AutonTab data={data} update={updateData} handedness={handedness} />}
+        {currentPhase === 'Auton' && <AutonTab data={data} update={updateData} handedness={handedness} isFlipped={isFlipped} onFlipChange={setIsFlipped} />}
         {currentPhase === 'Teleop' && <TeleopTab data={data} update={updateData} handedness={handedness} />}
         {currentPhase === 'PostMatch' && <PostMatchTab data={data} update={updateData} handedness={handedness} />}
         {currentPhase === 'QRCode' && <QRCodeTab data={data} onReset={handleReset} />}
