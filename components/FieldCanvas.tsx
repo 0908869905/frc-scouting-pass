@@ -275,19 +275,26 @@ export const FieldCanvas: FC<FieldCanvasProps> = ({ path, onPathChange, alliance
   }, [path, currentStroke, canvasSize, startingZoneOffset]);
 
   // Convert pointer event to percentage coordinates
+  // When isFlipped, the canvas is visually rotated 180° but pointer events use viewport coords;
+  // we invert (x, y) so the stored point[] always uses the original (un-flipped) reference frame.
   const getPointFromEvent = useCallback((e: PointerEvent): PathPoint => {
     const canvas = canvasRef.current;
     if (!canvas) return { x: 0, y: 0 };
 
     const rect = canvas.getBoundingClientRect();
-    const x = ((e.clientX - rect.left) / rect.width) * 100;
-    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    let x = ((e.clientX - rect.left) / rect.width) * 100;
+    let y = ((e.clientY - rect.top) / rect.height) * 100;
+
+    if (isFlipped) {
+      x = 100 - x;
+      y = 100 - y;
+    }
 
     return {
       x: Math.max(0, Math.min(100, x)),
       y: Math.max(0, Math.min(100, y))
     };
-  }, []);
+  }, [isFlipped]);
 
   const handlePointerDown = useCallback((e: PointerEvent) => {
     e.preventDefault();
