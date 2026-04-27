@@ -414,30 +414,44 @@ export const FieldCanvas: FC<FieldCanvasProps> = ({ path, onPathChange, alliance
           className="relative overflow-hidden"
           style={{ touchAction: 'none', width: canvasSize.width, height: canvasSize.height }}
         >
-          <img src={fieldImage} alt="FRC Field" className="absolute inset-0 w-full h-full object-fill pointer-events-none" draggable={false} />
+          {/* Flip layer — visually rotated 180° when isFlipped */}
+          <div
+            className="absolute inset-0"
+            style={isFlipped ? { transform: 'rotate(180deg)' } : undefined}
+          >
+            <img src={fieldImage} alt="FRC Field" className="absolute inset-0 w-full h-full object-fill pointer-events-none" draggable={false} />
+            <canvas
+              ref={canvasRef}
+              width={canvasSize.width}
+              height={canvasSize.height}
+              className="absolute inset-0 z-10 cursor-crosshair"
+              onPointerDown={handlePointerDown}
+              onPointerMove={handlePointerMove}
+              onPointerUp={handlePointerUp}
+              onPointerLeave={handlePointerUp}
+              onPointerCancel={handlePointerUp}
+            />
+          </div>
+
+          {/* Alliance indicator — outside flip layer */}
           <div className={`absolute top-2 left-2 px-2 py-1 rounded text-xs font-bold z-20 ${alliance === 'red' ? 'bg-red-500/30 text-red-400' : 'bg-blue-500/30 text-blue-400'}`}>
             {alliance === 'red' ? 'RED' : 'BLUE'}
           </div>
-          <canvas
-            ref={canvasRef}
-            width={canvasSize.width}
-            height={canvasSize.height}
-            className="absolute inset-0 z-10 cursor-crosshair"
-            onPointerDown={handlePointerDown}
-            onPointerMove={handlePointerMove}
-            onPointerUp={handlePointerUp}
-            onPointerLeave={handlePointerUp}
-            onPointerCancel={handlePointerUp}
-          />
+
+          {/* Hint text — outside flip layer */}
           {path.length === 0 && currentStroke.length === 0 && (
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
               <span className="text-slate-500 text-sm bg-slate-900/80 px-3 py-1 rounded-full">{t('drawPathHint')}</span>
             </div>
           )}
-          <div className="absolute top-2 px-2 py-1 rounded text-xs font-medium bg-green-500/20 text-green-400 pointer-events-none z-20"
-            style={{ left: `${startingZoneOffset + STARTING_ZONE_WIDTH / 2}%`, transform: 'translateX(-50%)' }}>
-            {t('startingZone')}
-          </div>
+
+          {/* Starting zone label — hidden when flipped */}
+          {!isFlipped && (
+            <div className="absolute top-2 px-2 py-1 rounded text-xs font-medium bg-green-500/20 text-green-400 pointer-events-none z-20"
+              style={{ left: `${startingZoneOffset + STARTING_ZONE_WIDTH / 2}%`, transform: 'translateX(-50%)' }}>
+              {t('startingZone')}
+            </div>
+          )}
         </div>
 
         {/* Fullscreen left bar - vertical centered */}
@@ -449,6 +463,14 @@ export const FieldCanvas: FC<FieldCanvasProps> = ({ path, onPathChange, alliance
           <button onClick={handleUndo} disabled={path.length === 0}
             className="p-3 rounded-xl text-orange-400 disabled:opacity-30 transition-all active:scale-95">
             <Undo2 size={20} />
+          </button>
+          <button onClick={() => onFlipChange(!isFlipped)}
+            aria-label={t('flipField')}
+            title={t('flipField')}
+            className={`p-3 rounded-xl transition-all active:scale-95 ${
+              isFlipped ? 'text-brand-400 bg-brand-500/20' : 'text-slate-300'
+            }`}>
+            <RotateCcw size={20} />
           </button>
 
           {/* Climb Time Stopwatch */}
