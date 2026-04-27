@@ -24,6 +24,7 @@ const translations = {
     undoPath: "Undo",
     savePath: "Save Image",
     drawPathHint: "Draw robot path with finger",
+    flipField: "Flip Field 180°",
     autoClimbStatus: "Climb Status",
     autoClimbTime: "Climb Time (sec)",
 
@@ -226,6 +227,7 @@ const translations = {
     undoPath: "撤銷",
     savePath: "儲存圖片",
     drawPathHint: "用手指繪製機器人路徑",
+    flipField: "翻轉場地 180°",
     autoClimbStatus: "攀爬狀態",
     autoClimbTime: "攀爬時間 (秒)",
 
