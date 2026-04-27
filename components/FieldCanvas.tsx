@@ -1,7 +1,7 @@
 import { useRef, useEffect, useState, useCallback, PointerEvent, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import type { FC } from 'react';
-import { Trash2, Undo2, Share2, AlertTriangle, Maximize2, Minimize2, Play, Square } from 'lucide-react';
+import { Trash2, Undo2, Share2, AlertTriangle, Maximize2, Minimize2, Play, Square, RotateCcw } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { PathPoint } from '../types';
 import { STARTING_ZONE_WIDTH, RED_STARTING_ZONE_OFFSET, BLUE_STARTING_ZONE_OFFSET } from '../constants';
@@ -478,43 +478,63 @@ export const FieldCanvas: FC<FieldCanvasProps> = ({ path, onPathChange, alliance
         className="relative w-full rounded-xl overflow-hidden border-2 border-slate-700 bg-slate-900"
         style={{ touchAction: 'none', height: canvasSize.height || 'auto' }}
       >
-        {/* Field Background Image */}
-        <img
-          src={fieldImage}
-          alt="FRC Field"
-          className="absolute inset-0 w-full h-full object-fill pointer-events-none"
-          draggable={false}
-        />
+        {/* Flip layer — visually rotated 180° when isFlipped; contains background + drawing canvas */}
+        <div
+          className="absolute inset-0"
+          style={isFlipped ? { transform: 'rotate(180deg)' } : undefined}
+        >
+          {/* Field Background Image */}
+          <img
+            src={fieldImage}
+            alt="FRC Field"
+            className="absolute inset-0 w-full h-full object-fill pointer-events-none"
+            draggable={false}
+          />
 
-        {/* Alliance indicator */}
+          {/* Drawing Canvas */}
+          <canvas
+            ref={canvasRef}
+            width={canvasSize.width}
+            height={canvasSize.height}
+            className="absolute inset-0 z-10 cursor-crosshair"
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerUp}
+            onPointerLeave={handlePointerUp}
+            onPointerCancel={handlePointerUp}
+          />
+        </div>
+
+        {/* Alliance indicator — outside flip layer, stays upright top-left */}
         <div className={`absolute top-2 left-2 px-2 py-1 rounded text-xs font-bold z-20 ${
           alliance === 'red' ? 'bg-red-500/30 text-red-400' : 'bg-blue-500/30 text-blue-400'
         }`}>
           {alliance === 'red' ? 'RED' : 'BLUE'}
         </div>
 
-        {/* Fullscreen button */}
-        <button
-          onClick={handleEnterFullscreen}
-          className="absolute top-2 right-2 p-1.5 rounded bg-slate-900/70 border border-slate-600 text-slate-300 hover:text-white z-20 transition-all active:scale-95"
-        >
-          <Maximize2 size={16} />
-        </button>
+        {/* Top-right buttons cluster: Flip + Fullscreen */}
+        <div className="absolute top-2 right-2 z-20 flex gap-1.5">
+          <button
+            onClick={() => onFlipChange(!isFlipped)}
+            aria-label={t('flipField')}
+            title={t('flipField')}
+            className={`p-1.5 rounded border transition-all active:scale-95 ${
+              isFlipped
+                ? 'bg-brand-500/30 border-brand-500/50 text-brand-400'
+                : 'bg-slate-900/70 border-slate-600 text-slate-300 hover:text-white'
+            }`}
+          >
+            <RotateCcw size={16} />
+          </button>
+          <button
+            onClick={handleEnterFullscreen}
+            className="p-1.5 rounded bg-slate-900/70 border border-slate-600 text-slate-300 hover:text-white transition-all active:scale-95"
+          >
+            <Maximize2 size={16} />
+          </button>
+        </div>
 
-        {/* Drawing Canvas */}
-        <canvas
-          ref={canvasRef}
-          width={canvasSize.width}
-          height={canvasSize.height}
-          className="absolute inset-0 z-10 cursor-crosshair"
-          onPointerDown={handlePointerDown}
-          onPointerMove={handlePointerMove}
-          onPointerUp={handlePointerUp}
-          onPointerLeave={handlePointerUp}
-          onPointerCancel={handlePointerUp}
-        />
-
-        {/* Hint text when empty */}
+        {/* Hint text when empty — outside flip layer, always upright */}
         {path.length === 0 && currentStroke.length === 0 && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
             <span className="text-slate-500 text-sm bg-slate-900/80 px-3 py-1 rounded-full">
@@ -523,13 +543,15 @@ export const FieldCanvas: FC<FieldCanvasProps> = ({ path, onPathChange, alliance
           </div>
         )}
 
-        {/* Starting zone label - centered in the alliance-specific zone */}
-        <div
-          className="absolute top-2 px-2 py-1 rounded text-xs font-medium bg-green-500/20 text-green-400 pointer-events-none z-20"
-          style={{ left: `${startingZoneOffset + STARTING_ZONE_WIDTH / 2}%`, transform: 'translateX(-50%)' }}
-        >
-          {t('startingZone')}
-        </div>
+        {/* Starting zone label — hidden when flipped (green zone background still visible) */}
+        {!isFlipped && (
+          <div
+            className="absolute top-2 px-2 py-1 rounded text-xs font-medium bg-green-500/20 text-green-400 pointer-events-none z-20"
+            style={{ left: `${startingZoneOffset + STARTING_ZONE_WIDTH / 2}%`, transform: 'translateX(-50%)' }}
+          >
+            {t('startingZone')}
+          </div>
+        )}
       </div>
 
       {/* Warning when start point is outside starting zone */}
